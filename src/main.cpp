@@ -11,43 +11,43 @@
 
 void *getPointerFromSymbol(void *handle, const char *symbol)
 {
-	return reinterpret_cast<void *>(dlsym(handle, symbol));
+    return reinterpret_cast<void *>(dlsym(handle, symbol));
 }
 
 bool (*EditLevelLayer_initO)(EditLevelLayer* self,GJGameLevel * level);
 bool EditLevelLayer_initH(EditLevelLayer* ptr,GJGameLevel * level){
-	auto ret = EditLevelLayer_initO(ptr, level);
+    auto ret = EditLevelLayer_initO(ptr, level);
 
-	auto dir = cocos2d::CCDirector::sharedDirector();
-	if (dir->getScheduler()->_fTimeScale != 1)
-	{
-		dir->getScheduler()->_fTimeScale = 1;
-	}
+    auto dir = cocos2d::CCDirector::sharedDirector();
+    if (dir->getScheduler()->_fTimeScale != 1)
+    {
+        dir->getScheduler()->_fTimeScale = 1;
+    }
 
-	auto menu = ptr->_btnMenu();
-	auto editBtn = (CCMenuItemSpriteExtra *)menu->getChildren()->objectAtIndex(0);
+    auto menu = ptr->_btnMenu();
+    auto editBtn = (CCMenuItemSpriteExtra *)menu->getChildren()->objectAtIndex(0);
 
-	auto editBtnCustom = CCMenuItemSpriteExtra::create(CCSprite::createWithSpriteFrameName("GJ_editBtn_001.png"), nullptr, ptr, menu_selector(EditLevelLayer::onEditCustom));
-	menu->addChild(editBtnCustom);
-	editBtnCustom->setPosition(editBtn->getPosition());
-	editBtn->removeFromParent();
-	editBtn->cleanup();
+    auto editBtnCustom = CCMenuItemSpriteExtra::create(CCSprite::createWithSpriteFrameName("GJ_editBtn_001.png"), nullptr, ptr, menu_selector(EditLevelLayer::onEditCustom));
+    menu->addChild(editBtnCustom);
+    editBtnCustom->setPosition(editBtn->getPosition());
+    editBtn->removeFromParent();
+    editBtn->cleanup();
 
-	auto btn2 = CCSprite::createWithSpriteFrameName("GJ_optionsBtn_001.png");
-	auto myButton2 = CCMenuItemSpriteExtra::create(
-			btn2,
-			nullptr,
-			ptr,
-			menu_selector(MenuLayer::onOptions));
-	btn2->setScale(.7);
-	myButton2->setPosition(CCLEFT - 255, editBtn->getPositionY() - 10);
-	menu->addChild(myButton2, 1000);
-	return ret;
+    auto btn2 = CCSprite::createWithSpriteFrameName("GJ_optionsBtn_001.png");
+    auto myButton2 = CCMenuItemSpriteExtra::create(
+            btn2,
+            nullptr,
+            ptr,
+            menu_selector(MenuLayer::onOptions));
+    btn2->setScale(.7);
+    myButton2->setPosition(CCLEFT - 255, editBtn->getPositionY() - 10);
+    menu->addChild(myButton2, 1000);
+    return ret;
 }
 class events : public EditLevelLayer {
 public:
-	void onCLick(){
-	    LOGD("ENTER! onClick!");
+    void onCLick(){
+        LOGD("ENTER! onClick!");
 
         auto dir = cocos2d::CCDirector::sharedDirector( );
         auto layer = LevelEditorLayer::create( this->gameLevel_ ,false);
@@ -61,7 +61,7 @@ public:
         dir->pushScene( scene );
 
 
-	}
+    }
 };
 
 void createArrayAndAssign(LevelEditorLayer* p,int offset){
@@ -372,40 +372,40 @@ void EditorPauseLayer_removeH(LevelEditorLayer* p,GameObject * obj,bool a1){
 
 void loader()
 {
-	auto cocos2d = dlopen(targetLibName != "" ? targetLibName : NULL, RTLD_LAZY);
-    HookManager::do_hook(getPointerFromSymbol(cocos2d, "_ZN11GameManager19tryShowInterstitialEiii"),
-                   (void *)GameManager_tryShowAdH,
-                   (void **)&GameManager_tryShowAdO);
+    auto cocos2d = dlopen(targetLibName != "" ? targetLibName : NULL, RTLD_LAZY);
+    HookManager::do_hook(getPointerFromSymbol(cocos2d, "_ZN9AdToolbox16showInterstitialEv"),
+                         (void *)GameManager_tryShowAdH,
+                         (void **)&GameManager_tryShowAdO);
     HookManager::do_hook(getPointerFromSymbol(cocos2d, "_ZN14EditLevelLayer4initEP11GJGameLevel"),
-                   (void *)setUpLevelInfo_hk,
-                   (void **)&setUpLevelInfo);
+                         (void *)setUpLevelInfo_hk,
+                         (void **)&setUpLevelInfo);
     HookManager::do_hook(getPointerFromSymbol(cocos2d, "_ZN16LevelEditorLayer4initEP11GJGameLevelb"),
-                   (void *)editor_callback,
-                   (void **)&editor_callback_trp);
+                         (void *)editor_callback,
+                         (void **)&editor_callback_trp);
     HookManager::do_hook(getPointerFromSymbol(cocos2d, "_ZN16LevelEditorLayer16updateVisibilityEf"),
-                   (void *)LevelEditorLayer_updateVisibilityH,
-                   (void **)&LevelEditorLayer_updateVisibilityO);
+                         (void *)LevelEditorLayer_updateVisibilityH,
+                         (void **)&LevelEditorLayer_updateVisibilityO);
     HookManager::do_hook(getPointerFromSymbol(cocos2d, "_ZN7cocos2d18CCSpriteFrameCache17spriteFrameByNameEPKc"),
-                   (void *)CCSpriteFrameCache_spriteFrameByNameH,
-                   (void **)&CCSpriteFrameCache_spriteFrameByNameO);
+                         (void *)CCSpriteFrameCache_spriteFrameByNameH,
+                         (void **)&CCSpriteFrameCache_spriteFrameByNameO);
     HookManager::do_hook(getPointerFromSymbol(cocos2d, "_ZN16EditorPauseLayer8onResumeEPN7cocos2d8CCObjectE"),
-                   (void *)EditorPauseLayer_onResumeH,
-                   (void **)&EditorPauseLayer_onResumeO);
+                         (void *)EditorPauseLayer_onResumeH,
+                         (void **)&EditorPauseLayer_onResumeO);
     HookManager::do_hook(getPointerFromSymbol(cocos2d, "_ZN16LevelEditorLayer12removeObjectEP10GameObjectb"),
-                   (void *)EditorPauseLayer_removeH,
-                   (void **)&EditorPauseLayer_removeO);
+                         (void *)EditorPauseLayer_removeH,
+                         (void **)&EditorPauseLayer_removeO);
 }
 
 JNIEXPORT jint JNI_OnLoad(JavaVM *vm, void *reserved)
 {
-	// init_handle();
-	pthread_t t;
-	pthread_create(&t, NULL,
-				   reinterpret_cast<void *(*)(void *)>(loader), NULL);
+    // init_handle();
+    pthread_t t;
+    pthread_create(&t, NULL,
+                   reinterpret_cast<void *(*)(void *)>(loader), NULL);
 
 
 
 
 
-	return JNI_VERSION_1_6;
+    return JNI_VERSION_1_6;
 }

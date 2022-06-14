@@ -44,18 +44,11 @@ include $(PREBUILT_SHARED_LIBRARY)
 
 
 include $(CLEAR_VARS)
+LOCAL_CFLAGS := -w
 LOCAL_CPP_FEATURES := rtti
 LOCAL_MODULE := game
-
-LOCAL_CFLAGS := -w -s -Wno-error=format-security -fpermissive -fexceptions
-LOCAL_CPPFLAGS := -w -s -Wno-error=format-security -Werror -std=c++17
-LOCAL_CPPFLAGS += -Wno-error=c++11-narrowing -fpermissive -Wall -fexceptions
-LOCAL_LDFLAGS += -Wl,--gc-sections,--strip-all,-llog
-LOCAL_LDLIBS := -llog -landroid -lEGL -lGLESv2
-LOCAL_ARM_MODE := arm
-
 LOCAL_DISABLE_FORMAT_STRING_CHECKS := true
-LOCAL_SHARED_LIBRARIES := cocos2dcpp
+LOCAL_SHARED_LIBRARIES := cocos2dcpp hooking
 TARGET_ARCH_ABI := all
 LOCAL_C_INCLUDES += $(LOCAL_PATH)/include \
 LOCAL_C_INCLUDES += $(LOCAL_PATH)/include/includes \
@@ -64,5 +57,10 @@ LOCAL_C_INCLUDES += $(LOCAL_PATH)/include/KittyMemory \
 LOCAL_C_INCLUDES += $(LOCAL_PATH)/include/layers \
 
 LOCAL_SRC_FILES := 	src/main.cpp
+
+LOCAL_LDLIBS := -llog \
+				-frtti \
+				-lEGL \
+				-lGLESv2
 
 include $(BUILD_SHARED_LIBRARY)
