@@ -43,11 +43,15 @@ public:
     CCArray* arr_2803;   //2803
     PAD(4)
     CCArray* arr_2805;   //2805
-    PAD(40)
+    PAD(4);
+    CCArray* arr_2807;
+    PAD(32)
     CCArray* arr_2816;   //2816
     PAD(4)
-    CCArray* arr_2818;   //2816
-    PAD(24)
+    CCArray* arr_2818;   //2818
+    PAD(8)
+    CCArray* arr_2821;
+    PAD(12)
     OBB2D* obb2d2_;      //2825
     PAD(4)
     cocos2d::CCSprite* dCross_;
@@ -74,6 +78,7 @@ public:
     vector<bool> vector_2873;   //2873
     std::vector<unsigned char> vector_2878;    //2878
     vector<float> vector_2881;   //2881
+
 
 
 public:

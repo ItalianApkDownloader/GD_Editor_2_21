@@ -9,6 +9,26 @@
 
 #define targetLibName ("libcocos2dcpp.so")
 
+#include <typeinfo>
+#include <memory>
+#include <cxxabi.h>
+std::string get_name_for_node(cocos2d::CCObject* node)
+{
+    // stolen from mat (thanks mat)
+    // and also stolen from https://stackoverflow.com/a/4541470
+
+    auto name = typeid(*node).name();
+    auto status = -1;
+
+    std::unique_ptr<char, void (*)(void*)> res {
+            abi::__cxa_demangle(name, nullptr, nullptr, &status),
+            std::free
+    };
+
+    return (status == 0) ? res.get() : name;
+}
+
+
 void *getPointerFromSymbol(void *handle, const char *symbol)
 {
     return reinterpret_cast<void *>(dlsym(handle, symbol));
@@ -77,7 +97,10 @@ bool editor_callback( LevelEditorLayer* p, GJGameLevel* level )
         return false;
 
 
-    LOGE("Member address = %d",(int*)&p->vector_2873 - (int*)p);
+
+
+
+
 
     auto gm = GameManager::sharedState( );
     *((bool *)gm + 442) = true;
@@ -103,7 +126,6 @@ bool editor_callback( LevelEditorLayer* p, GJGameLevel* level )
 
     p->_level = level;
     p->_level->retain();
-
 
     gm->playLayer_ = p;
     p->retain();
@@ -149,6 +171,13 @@ bool editor_callback( LevelEditorLayer* p, GJGameLevel* level )
     p->arr_2801->retain();
     p->arr_2818 = CCArray::create();
     p->arr_2818->retain();
+    p->arr_2807 = CCArray::create();
+    p->arr_2807->retain();
+    p->arr_2821 = CCArray::create();
+    p->arr_2821->retain();
+
+
+    *((bool *)p + 316) = *((bool *)level + 393);
 
 
     p->vector_2868.reserve( 9999 );
@@ -157,6 +186,7 @@ bool editor_callback( LevelEditorLayer* p, GJGameLevel* level )
     p->vector_2853.reserve( 9999 );
     p->vector_2873.reserve( 9999 );
     p->vector_2881.reserve( 9999 );
+    p->_something().reserve( 9999 );
     p->objectsVector_.reserve( 9999 );
 
 
@@ -175,7 +205,7 @@ bool editor_callback( LevelEditorLayer* p, GJGameLevel* level )
         //*(bool *)(*((int *)p + 2878) + i) = 0;
         p->vector_2878[ i ] = 0;
         p->vector_2881[ i ] = 0;
-
+        p->_something()[i] = 0;
     }
 
 
@@ -185,11 +215,24 @@ bool editor_callback( LevelEditorLayer* p, GJGameLevel* level )
     p->setupLayers( );
 
     p->gridLayer_ = DrawGridLayer::create( p->gameLayer_, p );
+
     p->gameLayer_->addChild( p->gridLayer_, gm->getGameVariable( "0039" ) ? 99 : -100 );
 
     p->createPlayer();
     *(bool *)(*((int *)p + 204) + 1556) = false;
     *(bool *)(*((int *)p + 205) + 1556) = false;
+
+    if(GM->getGameVariable("0114")){
+        *(bool *)(*((int *)p + 204) + 3008) = true;
+        *(bool *)(*((int *)p + 205) + 3008) = true;
+    }
+
+    p->unk_arr_209 = CCArray::create();
+    p->unk_arr_209->retain();
+    p->unk_arr_211 = CCArray::create();
+    p->unk_arr_211->retain();
+    p->arr_260 = CCArray::create();
+    p->arr_260->retain();
 
 
     p->dCross_ = CCSprite::createWithSpriteFrameName( "d_cross_01_001.png" );
@@ -218,6 +261,15 @@ bool editor_callback( LevelEditorLayer* p, GJGameLevel* level )
     }
     p->editorUI_ = EditorUI::create( p );
     p->addChild( p->editorUI_, 100 );
+
+
+    //put the editor in the last position/zoom
+    p->gameLayer_->setPosition(p->_level->lastCameraPos_);
+    if(p->_level->lastEditorZoom != 0.0)
+        p->gameLayer_->setScale(p->_level->lastEditorZoom);
+
+
+    p->editorUI_->updateSlider();
     p->createGroundLayer(true,true);
     p->gridLayer_->updateTimeMarkers();
     p->createBackground(0);
@@ -228,9 +280,15 @@ bool editor_callback( LevelEditorLayer* p, GJGameLevel* level )
     p->sortStickyGroups();
     p->updateEditorMode();
     p->schedule( schedule_selector( LevelEditorLayer::updateVisibility ));
+    p->schedule( schedule_selector( LevelEditorLayer::updateEditor ));
+
+    //fix to the glitched background with updateEditor
+    p->editorUI_->onStopPlaytest(nullptr);
+
 
     return true;
 }
+
 
 bool (*setUpLevelInfo)(EditLevelLayer *, GJGameLevel *);
 bool setUpLevelInfo_hk(EditLevelLayer *ptr, GJGameLevel *level)
@@ -239,7 +297,7 @@ bool setUpLevelInfo_hk(EditLevelLayer *ptr, GJGameLevel *level)
     auto ret = setUpLevelInfo(ptr, level);
 
 
-
+//*(_DWORD *)(GameManager::sharedState(v40) + 360
 
     auto menu = ptr->_btnMenu();
 
@@ -276,7 +334,9 @@ void GameManager_tryShowAdH(){
 bool test = false;
 void (*LevelEditorLayer_updateVisibilityO)(LevelEditorLayer*,float);
 void LevelEditorLayer_updateVisibilityH(LevelEditorLayer* p,float a1){
-    p->sortBatchnodeChildren(0.0);
+
+    //((PlayLayer*)p)->updateVisibility(a1);
+
 
     auto node = *((CCNode **)p + 284);
     auto position = node->getPosition();
@@ -312,14 +372,14 @@ void LevelEditorLayer_updateVisibilityH(LevelEditorLayer* p,float a1){
                             auto objectPos = obj->getPosition();
                             if(rect.containsPoint(objectPos)){
                                 if(!obj->getParent()){
-                                    p->gridLayer_->addChild(obj);
+                                    p->gameLayer_->addChild(obj);
                                 }
                                 obj->setVisible(true);
                             }else{
                                 if(obj->isVisible()){
                                     obj->setVisible(false);
                                     obj->retain();
-                                    p->gridLayer_->removeChild(obj);
+                                    p->gameLayer_->removeChild(obj);
                                 }
                             }
                         }
@@ -329,7 +389,8 @@ void LevelEditorLayer_updateVisibilityH(LevelEditorLayer* p,float a1){
 
         }
     }
-
+    p->processAreaVisualActions();
+    p->sortBatchnodeChildren(0.0);
 }
 void (*CCSpriteFrameCache_spriteFrameByNameO)(CCSpriteFrameCache* self,const char* a1);
 void CCSpriteFrameCache_spriteFrameByNameH(CCSpriteFrameCache* self,const char* a1){
@@ -370,6 +431,21 @@ void EditorPauseLayer_removeH(LevelEditorLayer* p,GameObject * obj,bool a1){
 
 
 
+
+
+void (*GJBaseGameLayer_addToSectionO)(GJBaseGameLayer* self,GameObject* obj);
+void GJBaseGameLayer_addToSectionH(GJBaseGameLayer* self,GameObject* obj){
+    if(obj)
+        GJBaseGameLayer_addToSectionO(self,obj);
+}
+
+void (*GJBaseGameLayer_removeObjectFromSectionO)(GJBaseGameLayer* self,GameObject* obj);
+void GJBaseGameLayer_removeObjectFromSectionH(GJBaseGameLayer* self,GameObject* obj){
+    if(obj)
+        GJBaseGameLayer_removeObjectFromSectionO(self,obj);
+}
+
+
 void loader()
 {
     auto cocos2d = dlopen(targetLibName != "" ? targetLibName : NULL, RTLD_LAZY);
@@ -394,6 +470,33 @@ void loader()
     HookManager::do_hook(getPointerFromSymbol(cocos2d, "_ZN16LevelEditorLayer12removeObjectEP10GameObjectb"),
                          (void *)EditorPauseLayer_removeH,
                          (void **)&EditorPauseLayer_removeO);
+    HookManager::do_hook(getPointerFromSymbol(cocos2d, "_ZN15GJBaseGameLayer12addToSectionEP10GameObject"),
+                         (void *) GJBaseGameLayer_addToSectionH,
+                         (void **)&GJBaseGameLayer_addToSectionO);
+    HookManager::do_hook(getPointerFromSymbol(cocos2d, "_ZN15GJBaseGameLayer23removeObjectFromSectionEP10GameObject"),
+                         (void *) GJBaseGameLayer_removeObjectFromSectionH,
+                         (void **)&GJBaseGameLayer_removeObjectFromSectionO);
+
+
+
+    patch *tmp = new patch();
+    tmp->addPatch("libcocos2dcpp.so", 0x26DB2E, "00 bf 00 bf");
+
+
+    //playtest
+    tmp->addPatch("libcocos2dcpp.so", 0x2B87EE, "00 bf 00 bf");
+    tmp->addPatch("libcocos2dcpp.so", 0x2B87FC, "00 bf 00 bf");
+    tmp->addPatch("libcocos2dcpp.so", 0x2B8894, "00 bf");
+
+    //test fix colors
+    /*
+    tmp->addPatch("libcocos2dcpp.so", 0x2CA80E, "00 bf");
+    tmp->addPatch("libcocos2dcpp.so", 0x2CA81A, "00 bf");
+    tmp->addPatch("libcocos2dcpp.so", 0x2CA758, "00 bf");
+
+    tmp->addPatch("libcocos2dcpp.so", 0x2CA7D6, "11 e0");
+    */
+    tmp->Modify();
 }
 
 JNIEXPORT jint JNI_OnLoad(JavaVM *vm, void *reserved)

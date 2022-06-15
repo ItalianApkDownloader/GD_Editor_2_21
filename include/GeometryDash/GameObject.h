@@ -270,6 +270,8 @@ public:
 
     void setMyAction( cocos2d::CCAction* action );
 
+    void resetObject();
+
     void addColorSprite( );
     void saveActiveColors( );
 

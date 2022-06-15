@@ -56,11 +56,18 @@ LOCAL_C_INCLUDES += $(LOCAL_PATH)/include/hooks \
 LOCAL_C_INCLUDES += $(LOCAL_PATH)/include/KittyMemory \
 LOCAL_C_INCLUDES += $(LOCAL_PATH)/include/layers \
 
-LOCAL_SRC_FILES := 	src/main.cpp
+LOCAL_SRC_FILES := 	src/main.cpp \
+					src/KittyMemory/KittyMemory.cpp \
+					src/KittyMemory/KittyUtils.cpp \
+					src/KittyMemory/MemoryBackup.cpp \
+					src/KittyMemory/MemoryPatch.cpp \
 
 LOCAL_LDLIBS := -llog \
 				-frtti \
 				-lEGL \
-				-lGLESv2
+				-lGLESv2 \
+				-lGLESv1_CM \
+				-ldl \
+				-landroid \
 
 include $(BUILD_SHARED_LIBRARY)

@@ -31,6 +31,9 @@ public:
   char field_1F5;
   bool platformerMode_; // 0x1F6
 
+
+    CLASS_MEMBER(CCSprite*, objTEST, 117*4);
+
 public:
     UILayer( );
     virtual ~UILayer( );

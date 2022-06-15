@@ -218,7 +218,7 @@ public:
    	}
 
 
-protected:
+public:
     // properties
     HttpRequestType             _requestType;    /// kHttpRequestGet, kHttpRequestPost or other enums
     std::string                 _url;            /// target url that this request is sent to
@@ -228,6 +228,7 @@ protected:
     SEL_HttpResponse            _pSelector;      /// callback function, e.g. MyLayer::onHttpResponse(CCHttpClient *sender, CCHttpResponse * response)
     void*                       _pUserData;      /// You can add your customed data here 
     std::vector<std::string>    _headers;		      /// custom http headers
+
 };
 
 NS_CC_EXT_END

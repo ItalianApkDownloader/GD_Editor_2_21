@@ -24,4 +24,5 @@ public:
     void toggleInfoLabel( );
     void stopRecording( );
     void removeAllObjects();
+    void updateVisibility(float);
 };

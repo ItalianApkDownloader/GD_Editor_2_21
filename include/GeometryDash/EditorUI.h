@@ -19,7 +19,11 @@ public:
     CreateMenuItem* getCreateBtn( int objectID, int a1 );
 
     void updateSlider( );
-    
+
+    void onPause(CCObject* sender);
+    void onResume(CCObject* sender);
+    void onStopPlaytest(CCObject* sender);
     void updateGroupIDLabel( );
     void toggleStickyControls( bool toggle );
+    void updateZoom(float);
 };
