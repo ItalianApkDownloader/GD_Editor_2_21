@@ -206,7 +206,7 @@ public:
     CLASS_MEMBER(PlayLayer*, objTEST, 360);
     CLASS_MEMBER(int, playerSwingRand, 0x210);
     CLASS_MEMBER(int, playerSwing, 0x214);
-	    CLASS_MEMBER(PlayLayer*, playLayer, 0x158);
+	CLASS_MEMBER(PlayLayer*, playLayer, 0x168);
 
 
     CLASS_MEMBER(LastGameScene, lastScene, 0x1AC);
