@@ -1,3 +1,4 @@
+#pragma once
 #include <gd.h>
 
 using namespace cocos2d;

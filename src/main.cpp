@@ -6,8 +6,10 @@
 #include "cocos2d.h"
 #include "gd.h"
 #include "hooking.h"
+#include "obfuscate.h"
 
 #define targetLibName ("libcocos2dcpp.so")
+#define contains(x, y) strstr(x, y) != NULL
 
 #include <typeinfo>
 #include <memory>
@@ -445,6 +447,278 @@ void GJBaseGameLayer_removeObjectFromSectionH(GJBaseGameLayer* self,GameObject* 
         GJBaseGameLayer_removeObjectFromSectionO(self,obj);
 }
 
+bool (*UILayer_ccTouchBeganO)(UILayer* self, CCTouch* touch, CCEvent* event);
+bool UILayer_ccTouchBeganH(UILayer* self, CCTouch* touch, CCEvent* event) {
+	
+	bool ret = UILayer_ccTouchBeganO(self, touch, event);
+
+	// println("touch {} {}", touch->getID(), from<int>(touch, 0x30));
+	
+	bool is_platformer = self->_platformer();
+	if (is_platformer) {
+		auto& touch_id = self->_touchID();
+		// already a touch going on, ignore multiple
+		if (touch_id != -1) return ret;
+
+		auto touch_pos = touch->getLocation();
+		touch_pos = self->convertToNodeSpace(touch_pos);
+
+		// dont know if the order is right but doesnt matter
+		auto left_btn = self->_leftBtn();
+		auto right_btn = self->_rightBtn();
+		if (!left_btn.containsPoint(touch_pos) && !right_btn.containsPoint(touch_pos)) {
+			touch_id = touch->_touchID();
+			GameManager::sharedState()->_playLayer()->queueButton(1, true, false);
+		}
+	}
+
+	return ret;
+}
+
+
+
+void (*UILayer_ccTouchEndedO)(UILayer* self, CCTouch* touch, CCEvent* event);
+void UILayer_ccTouchEnded(UILayer* self, CCTouch* touch, CCEvent* event) {
+	
+	UILayer_ccTouchEndedO(self, touch, event);
+	
+	bool is_platformer = self->_platformer();
+	auto& touch_id = self->_touchID();
+	if (is_platformer && touch_id == touch->_touchID() ) {
+		touch_id = -1;
+		GameManager::sharedState()->_playLayer()->queueButton(1, false, false);
+	}
+}
+
+bool (*isIconUnlockedO)(void*, int, int);
+bool isIconUnlockedH(void* self, int a1, int a2) {
+	
+	return true;
+
+}
+
+CCSprite* (*spriteCreateO)(const char* textureName);
+CCSprite* spriteCreateH(const char* textureName) {
+
+	auto ret = spriteCreateO(textureName);
+	
+	if(contains(textureName,"GJ_square05.png"))
+	return spriteCreateO("GJ_square04.png");
+	
+	if(ret != nullptr) 
+	return ret;
+
+
+
+	return spriteCreateO("pixel.png");
+
+}
+
+bool isGDPSSettings;
+
+
+
+void (*OptionsLayerInitO)(OptionsLayer* self);
+void OptionsLayerInitH(OptionsLayer* self) {
+	
+	
+		auto dir = CCDirector::sharedDirector();
+		auto midx = dir->getScreenRight() / 2;
+		auto midy = dir->getScreenTop() / 2;
+	auto old_menu = CCMenu::create();
+	auto layer = reinterpret_cast<CCLayer*>(self->getChildren()->objectAtIndex(0));
+
+	auto oldSprite = cocos2d::CCSprite::createWithSpriteFrameName("accountBtn_settings_001.png");
+	auto old_btn = CCMenuItemSpriteExtra::create(
+		oldSprite,
+		oldSprite,
+		self,
+		menu_selector(OptionsLayer::onGDPSSettings));
+	old_menu->addChild(old_btn, 100);
+	old_btn->setPositionX(midx - 110);
+	old_btn->setPositionY(midy);
+	old_menu->setPosition({0, 0});
+	layer->addChild(old_menu, 100);
+	
+	return OptionsLayerInitO(self);
+}
+
+
+void (*addToggle_trp)(MoreOptionsLayer * self,const char * title, const char * code, const char * desc);
+void addToggle_hk(MoreOptionsLayer* self, const char * title, const char * code, const char * desc) {
+	
+	if (isGDPSSettings)
+    {
+        if (strcmp(title, "Show Orb Guide") == 0)
+        {
+            addToggle_trp(self, "Robtop Servers", "100001", "Change servers to robtop servers");
+            addToggle_trp(self, "Force Platformer", "100002", "All levels are platformer mode");
+			addToggle_trp(self, "Instantly open editor\nat startup", "100003", 0);
+            isGDPSSettings = false;
+        }
+    }
+    else
+    {
+        addToggle_trp(self, title, code, desc);
+    }
+}
+bool first = true;
+bool (*MenuLayerInitO)(MenuLayer*);
+bool MenuLayerInitH(MenuLayer* self) {
+	
+	CCLog(AY_OBFUSCATE("This apk belongs to TheMilkCat"));
+	
+	
+	if(first) {
+		if(GM->getGameVariable("100003"))
+			self->runAction(CCCallFuncO::create(self, callfuncO_selector(CreatorLayer::onMyLevels), self));
+	first = false;
+	}
+		
+
+	auto dir = CCDirector::sharedDirector();
+	auto old_menu = CCMenu::create();
+	auto oldSprite = cocos2d::CCSprite::createWithSpriteFrameName("GJ_profileButton_001.png");
+	auto old_btn = CCMenuItemSpriteExtra::create(
+		oldSprite,
+		oldSprite,
+		self,
+		menu_selector(MenuLayer::onMyProfile));
+	old_menu->addChild(old_btn, 100);
+	old_btn->setPositionX(dir->getScreenLeft() + 50);
+	old_btn->setPositionY(dir->getScreenBottom() + 110);
+	old_menu->setPosition({0, 0});
+	
+	/*
+	auto sprite = CCSprite::createWithSpriteFrameName("communityCreditsBtn_001.png");
+	sprite->setScale(2);
+	auto btn = CCMenuItemSpriteExtra::create(sprite, sprite, self, menu_selector(CreatorLayer::onMyLevels));
+	auto menu = CCMenu::create();
+	menu->setPositionY(menu->getPositionY() - 50);
+	menu->addChild(btn, 500);
+	self->addChild(menu, 500);
+	*/
+	
+	
+	self->addChild(old_menu, 900);
+	
+return MenuLayerInitO(self);
+
+}
+
+CCSprite* (*spriteCreateFrameNameO)(const char* textureName);
+CCSprite* spriteCreateFrameNameH(const char* textureName) {
+	
+		 CCLog(textureName);
+
+	
+	auto ret = spriteCreateFrameNameO(textureName);
+	
+	if(contains(textureName, "GJ_fullBtn_001.png"))
+	return spriteCreateFrameNameO("GJ_creatorBtn_001.png");
+
+	if(ret != nullptr)
+	return ret;
+
+
+
+	return spriteCreateFrameNameO("GJ_optionsTxt_001.png");
+
+}
+
+
+#include "cocos2dx/extensions/network/HttpClient.h"
+#include "cocos2dx/extensions/network/HttpRequest.h"
+#include "cocos2dx/extensions/network/HttpResponse.h"
+#include "obfuscate.h"
+
+const char* gdpseditor = AY_OBFUSCATE("http://game.gdpseditor.com/server");
+const char* boomlings = AY_OBFUSCATE("http://www.boomlings.com/database");
+
+//epic servers obfuscate moment
+
+string replaceServers(std::string original) {
+
+    if (GM->getGameVariable("100001")) {
+		if(!contains(original.c_str(), "syncGJAccountNew.php"))
+     if (!contains(original.c_str(), AY_OBFUSCATE("boomlings.com"))) {
+          for (int i = 0; i < strlen(boomlings); i++)
+            original[i] = boomlings[i];
+        }
+      }
+      else {
+
+        for (int i = 0; i < strlen(gdpseditor); i++)
+          original[i] = gdpseditor[i];
+      }
+
+      return original;
+    }
+	
+	
+void* (*LevelProcessO)(GameManager* gm, string a1, string a2, string a3, int a4);
+void* LevelProcessH(GameManager* gm, string a1, string a2, string a3, int a4)
+{	
+	return LevelProcessO(gm, replaceServers(a1), a2, a3, a4);
+}
+
+void* (*MusicProcessO)(void* idk, string a1, string a2, string a3, int a4);
+void* MusicProcessH(void* idk, string a1, string a2, string a3, int a4)
+{	
+	return MusicProcessO(idk, replaceServers(a1), a2, a3, a4);
+}
+
+void* (*AccountProcessO)(void* idk, string a1, string a2, string a3, int a4);
+void* AccountProcessH(void* idk, string a1, string a2, string a3, int a4)
+{	
+	return AccountProcessO(idk, replaceServers(a1), a2, a3, a4);
+}
+
+
+
+const char *(*CCString_getCStringO)(CCString *);
+const char *CCString_getCStringH(CCString *self)
+{
+	auto ret = CCString_getCStringO(self);
+	
+	if(contains(ret, AY_OBFUSCATE("http"))) {
+		
+		char *s = new char[strlen(ret)];
+		strcpy(s, ret);
+		
+		const char* server = AY_OBFUSCATE("http://game.gdpseditor.com/server");
+	
+		for(int i = 0; i < strlen(server); i++)
+			s[i] = server[i];
+		ret = s;
+		return ret;
+	}
+	return ret;
+
+}
+
+
+bool (*canPlayOnlineLevelsO)(CreatorLayer* self);
+bool canPlayOnlineLevelsH(CreatorLayer* self){
+	return true;
+}
+
+LevelSettingsObject* (*objectfromDictO)(LevelSettingsObject*, CCDictionary* keys);
+LevelSettingsObject* objectfromDictH(LevelSettingsObject* a1, CCDictionary* keys) {
+	
+	if(GM->getGameVariable("100002")) {
+		auto ret = objectfromDictO(a1, keys);
+		*((bool *)ret + 275) = true; 	//platformer - 0x113
+		return ret;
+	}
+	auto ret = objectfromDictO(a1, keys);
+	return ret;
+}
+
+
+#define HOOK(a, b, c) HookManager::do_hook(getPointerFromSymbol(cocos2d, a), (void*)b, (void**)&c);
+
+
 
 void loader()
 {
@@ -475,7 +749,40 @@ void loader()
                          (void **)&GJBaseGameLayer_addToSectionO);
     HookManager::do_hook(getPointerFromSymbol(cocos2d, "_ZN15GJBaseGameLayer23removeObjectFromSectionEP10GameObject"),
                          (void *) GJBaseGameLayer_removeObjectFromSectionH,
-                         (void **)&GJBaseGameLayer_removeObjectFromSectionO);
+                         (void **)&GJBaseGameLayer_removeObjectFromSectionO);	 
+    HookManager::do_hook(getPointerFromSymbol(cocos2d, "_ZN7UILayer12ccTouchBeganEPN7cocos2d7CCTouchEPNS0_7CCEventE"),
+                         (void *)UILayer_ccTouchBeganH,
+                         (void **)&UILayer_ccTouchBeganO);
+    HookManager::do_hook(getPointerFromSymbol(cocos2d, "_ZN7UILayer12ccTouchEndedEPN7cocos2d7CCTouchEPNS0_7CCEventE"),
+                         (void *)UILayer_ccTouchEnded,
+                         (void **)&UILayer_ccTouchEndedO);
+						 
+	HOOK("_ZN7cocos2d8CCSprite6createEPKc", 
+	spriteCreateH, spriteCreateO);
+	HOOK("_ZN7cocos2d8CCSprite25createWithSpriteFrameNameEPKc",
+	spriteCreateFrameNameH, spriteCreateFrameNameO);
+	HOOK("_ZN16GameStatsManager14isItemUnlockedE10UnlockTypei",
+	isIconUnlockedH, isIconUnlockedO);
+	HOOK("_ZN9MenuLayer4initEv",
+	MenuLayerInitH, MenuLayerInitO);
+	HOOK("_ZN16MoreOptionsLayer9addToggleEPKcS1_S1_",
+	addToggle_hk, addToggle_trp);
+	HOOK("_ZN12OptionsLayer11customSetupEv",
+	OptionsLayerInitH, OptionsLayerInitO);
+	//HOOK("_ZN7cocos2d9extension12CCHttpClient4sendEPNS0_13CCHttpRequestE",
+	//HttpSendH, HttpSendO);
+	//HOOK("_ZNK7cocos2d8CCString10getCStringEv",
+	//CCString_getCStringH, CCString_getCStringO);
+	HOOK("_ZN16GameLevelManager18ProcessHttpRequestESsSsSs10GJHttpType",
+	LevelProcessH, LevelProcessO);
+	HOOK("_ZN20MusicDownloadManager18ProcessHttpRequestESsSsSs10GJHttpType",
+	MusicProcessH, MusicProcessO);
+	HOOK("_ZN16GJAccountManager18ProcessHttpRequestESsSsSs10GJHttpType",
+	AccountProcessH, AccountProcessO);
+	HOOK("_ZN12CreatorLayer19canPlayOnlineLevelsEv",
+	canPlayOnlineLevelsH, canPlayOnlineLevelsO);
+	HOOK("_ZN19LevelSettingsObject14objectFromDictEPN7cocos2d12CCDictionaryE",
+	objectfromDictH, objectfromDictO);
 
 
 
@@ -496,6 +803,25 @@ void loader()
 
     tmp->addPatch("libcocos2dcpp.so", 0x2CA7D6, "11 e0");
     */
+	
+	
+		//ads
+	tmp->addPatch("libcocos2dcpp.so", 0x26E970, "00 BF 00 BF");
+	tmp->addPatch("libcocos2dcpp.so", 0x34478C, "00 BF 00 BF");
+	tmp->addPatch("libcocos2dcpp.so", 0x346CC4, "00 BF 00 BF");
+	tmp->addPatch("libcocos2dcpp.so", 0x26E976, "00 BF 00 BF");
+	tmp->addPatch("libcocos2dcpp.so", 0x2E6960, "00 BF 00 BF");
+	tmp->addPatch("libcocos2dcpp.so", 0x2E7968, "00 BF 00 BF");
+	tmp->addPatch("libcocos2dcpp.so", 0x27BEB0, "00 BF 00 BF");
+	tmp->addPatch("libcocos2dcpp.so", 0x27BF7E, "00 BF 00 BF");
+	
+	//gauntlets (crash after exiting)
+	tmp->addPatch("libcocos2dcpp.so", 0x2E95A8, "00 BF 00 BF");
+	
+	//remove tos popup
+//	tmp->addPatch("libcocos2dcpp.so", 0x26C15C, "00 BF 00 BF");
+
+	
     tmp->Modify();
 }
 

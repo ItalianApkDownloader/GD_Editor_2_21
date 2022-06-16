@@ -1,11 +1,6 @@
 LOCAL_PATH := $(call my-dir)
 
-include $(CLEAR_VARS)
-LOCAL_CPP_FEATURES := rtti
-LOCAL_MODULE := shira
-LOCAL_SRC_FILES := libraries/libgdkit.so
-LOCAL_EXPORT_C_INCLUDES := $(LOCAL_PATH)/include/libzip
-include $(PREBUILT_SHARED_LIBRARY)
+
 
 include $(CLEAR_VARS)
 LOCAL_CPP_FEATURES := rtti

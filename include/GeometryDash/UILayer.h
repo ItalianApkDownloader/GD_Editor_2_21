@@ -30,6 +30,11 @@ public:
   bool gap1E6[15];
   char field_1F5;
   bool platformerMode_; // 0x1F6
+  
+  CLASS_MEMBER(bool, platformer, 0x202);
+  CLASS_MEMBER(int, touchID, 0x1cc);
+  CLASS_MEMBER(CCRect, leftBtn, 0x1dc);
+  CLASS_MEMBER(CCRect, rightBtn, 0x1ec);
 
 
     CLASS_MEMBER(CCSprite*, objTEST, 117*4);

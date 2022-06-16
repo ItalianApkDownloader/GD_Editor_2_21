@@ -20,4 +20,5 @@ public:
 	void onGarage(CCObject*);
 	void onStats(CCObject*);
 	void onAchievements(CCObject*);
+	void onMyProfile(CCObject*);
 };

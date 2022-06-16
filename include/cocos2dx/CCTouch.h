@@ -27,6 +27,7 @@ public:
 	CCPoint getStartLocation() const;
 	CCPoint getStartLocationInView() const;
 	void setTouchInfo(int, float, float);
+	CLASS_MEMBER(int, touchID, 0x30);
 };
 
 class CC_DLL CCEvent : public CCObject

@@ -30,8 +30,14 @@ public:
 	virtual void FLAlert_Clicked(FLAlertLayer *layer, bool accept);
 
 
-	void onGDPSSettings(CCObject *sender);
+	
+	void onGDPSSettings(CCObject *sender) {
+		extern bool isGDPSSettings;
+		isGDPSSettings = true;
+		this->runAction(CCCallFuncO::create(this, callfuncO_selector(OptionsLayer::onOptions), this));
+	}
 	void onVideo(CCObject* sender);
+	void onOptions(CCObject* sender);
 
 
 };
