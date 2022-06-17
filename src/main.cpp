@@ -337,8 +337,10 @@ bool test = false;
 void (*LevelEditorLayer_updateVisibilityO)(LevelEditorLayer*,float);
 void LevelEditorLayer_updateVisibilityH(LevelEditorLayer* p,float a1){
 
+	
     //((PlayLayer*)p)->updateVisibility(a1);
-
+	
+if(!GM->getGameVariable("100004")) {
 
     auto node = *((CCNode **)p + 284);
     auto position = node->getPosition();
@@ -393,6 +395,7 @@ void LevelEditorLayer_updateVisibilityH(LevelEditorLayer* p,float a1){
     }
     p->processAreaVisualActions();
     p->sortBatchnodeChildren(0.0);
+}
 }
 void (*CCSpriteFrameCache_spriteFrameByNameO)(CCSpriteFrameCache* self,const char* a1);
 void CCSpriteFrameCache_spriteFrameByNameH(CCSpriteFrameCache* self,const char* a1){
@@ -554,6 +557,7 @@ void addToggle_hk(MoreOptionsLayer* self, const char * title, const char * code,
             addToggle_trp(self, "Robtop Servers", "100001", "Change servers to robtop servers");
             addToggle_trp(self, "Force Platformer", "100002", "All levels are platformer mode");
 			addToggle_trp(self, "Instantly open editor\nat startup", "100003", 0);
+			addToggle_trp(self, "Disable editor\nobject visibility", "100004", 0);
             isGDPSSettings = false;
         }
     }
@@ -566,7 +570,7 @@ bool first = true;
 bool (*MenuLayerInitO)(MenuLayer*);
 bool MenuLayerInitH(MenuLayer* self) {
 	
-	CCLog(AY_OBFUSCATE("This apk belongs to TheMilkCat"));
+	//CCLog(AY_OBFUSCATE("This apk belongs to TheMilkCat"));
 	
 	
 	if(first) {
@@ -609,7 +613,7 @@ return MenuLayerInitO(self);
 CCSprite* (*spriteCreateFrameNameO)(const char* textureName);
 CCSprite* spriteCreateFrameNameH(const char* textureName) {
 	
-		 CCLog(textureName);
+		// CCLog(textureName);
 
 	
 	auto ret = spriteCreateFrameNameO(textureName);
@@ -637,7 +641,7 @@ const char* boomlings = AY_OBFUSCATE("http://www.boomlings.com/database");
 
 //epic servers obfuscate moment
 
-string replaceServers(std::string original) {
+inline string replaceServers(std::string original) {
 
     if (GM->getGameVariable("100001")) {
 		if(!contains(original.c_str(), "syncGJAccountNew.php"))
@@ -703,6 +707,12 @@ bool canPlayOnlineLevelsH(CreatorLayer* self){
 	return true;
 }
 
+bool (*UILayerInitO)(UILayer* self);
+bool UILayerInitH(UILayer* self){
+	
+	return UILayerInitO(self);
+}
+
 LevelSettingsObject* (*objectfromDictO)(LevelSettingsObject*, CCDictionary* keys);
 LevelSettingsObject* objectfromDictH(LevelSettingsObject* a1, CCDictionary* keys) {
 	
@@ -715,10 +725,56 @@ LevelSettingsObject* objectfromDictH(LevelSettingsObject* a1, CCDictionary* keys
 	return ret;
 }
 
+CCArray* (*getTriggerGroupO)(LevelEditorLayer* self, int a1);
+CCArray* getTriggerGroupH(LevelEditorLayer* self, int a1) {
+	
+	CCArray* a = CCArray::create();
+	return a;
+	/*
+	
+	CCLog("Trigger group func %d", a1);
+	
+	auto ret = getTriggerGroupO(self, a1);
+		CCLog("Trigger group func 2 %d", a1);
+
+	CCLog(typeid(ret).name());
+	return getTriggerGroupO(self, a1);
+	*/
+}
+
+void* (*addToGroupO)(GJBaseGameLayer* self, GameObject* a2, int a3,  bool a4);
+void* addToGroupH(GJBaseGameLayer* self, GameObject* a2, int a3,  bool a4) {
+	/*
+	if(a4)
+	CCLog("add group | a1 : %d, a4 : true", a3);
+	else
+	CCLog("add group | a1 : %d, a4 : false", a3);
+*/
+
+	*((bool *)a2 + 1157) = false;
+	/*
+	bool unk = *((bool *)a2 + 1157);
+	
+		if(unk)
+	CCLog("add group true, %d", a3);
+	else
+	CCLog("add grop false, %d", a3);
+*/
+
+	auto ret = addToGroupO(self, a2, a3, a4);
+/*
+		CCLog(typeid(*(CCObject*)ret).name());
+
+	if(unk)
+	CCLog("add group true %d", a3);
+	else
+	CCLog("add grop false %d", a3);
+*/
+	return ret;
+}
+
 
 #define HOOK(a, b, c) HookManager::do_hook(getPointerFromSymbol(cocos2d, a), (void*)b, (void**)&c);
-
-
 
 void loader()
 {
@@ -732,8 +788,8 @@ void loader()
     HookManager::do_hook(getPointerFromSymbol(cocos2d, "_ZN16LevelEditorLayer4initEP11GJGameLevelb"),
                          (void *)editor_callback,
                          (void **)&editor_callback_trp);
-    HookManager::do_hook(getPointerFromSymbol(cocos2d, "_ZN16LevelEditorLayer16updateVisibilityEf"),
-                         (void *)LevelEditorLayer_updateVisibilityH,
+   HookManager::do_hook(getPointerFromSymbol(cocos2d, "_ZN16LevelEditorLayer16updateVisibilityEf"),
+                        (void *)LevelEditorLayer_updateVisibilityH,
                          (void **)&LevelEditorLayer_updateVisibilityO);
     HookManager::do_hook(getPointerFromSymbol(cocos2d, "_ZN7cocos2d18CCSpriteFrameCache17spriteFrameByNameEPKc"),
                          (void *)CCSpriteFrameCache_spriteFrameByNameH,
@@ -783,6 +839,12 @@ void loader()
 	canPlayOnlineLevelsH, canPlayOnlineLevelsO);
 	HOOK("_ZN19LevelSettingsObject14objectFromDictEPN7cocos2d12CCDictionaryE",
 	objectfromDictH, objectfromDictO);
+	HOOK("_ZN16LevelEditorLayer15getTriggerGroupEi",
+	getTriggerGroupH, getTriggerGroupO);
+	HOOK("_ZN7UILayer4initEv",
+	UILayerInitH, UILayerInitO);
+	HOOK("_ZN16LevelEditorLayer10addToGroupEP10GameObjectib",
+	addToGroupH, addToGroupO);
 
 
 
@@ -791,9 +853,9 @@ void loader()
 
 
     //playtest
-    tmp->addPatch("libcocos2dcpp.so", 0x2B87EE, "00 bf 00 bf");
-    tmp->addPatch("libcocos2dcpp.so", 0x2B87FC, "00 bf 00 bf");
-    tmp->addPatch("libcocos2dcpp.so", 0x2B8894, "00 bf");
+    tmp->addPatch("libcocos2dcpp.so", 0x2B8896, "00 bf 00 bf");
+    tmp->addPatch("libcocos2dcpp.so", 0x2B88A4, "00 bf 00 bf");
+    tmp->addPatch("libcocos2dcpp.so", 0x2B893C, "00 bf");
 
     //test fix colors
     /*
@@ -817,6 +879,9 @@ void loader()
 	
 	//gauntlets (crash after exiting)
 	tmp->addPatch("libcocos2dcpp.so", 0x2E95A8, "00 BF 00 BF");
+	
+	//shit
+//	tmp->addPatch("libcocos2dcpp.so", 0x2B8828, "00 BF 00 BF");
 	
 	//remove tos popup
 //	tmp->addPatch("libcocos2dcpp.so", 0x26C15C, "00 BF 00 BF");
