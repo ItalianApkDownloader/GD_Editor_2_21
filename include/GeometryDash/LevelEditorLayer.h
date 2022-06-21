@@ -79,7 +79,8 @@ public:
     std::vector<unsigned char> vector_2878;    //2878
     vector<float> vector_2881;   //2881
 
-
+public:
+    CLASS_MEMBER(bool, isPreviewMode, 0x2C5E);
 
 public:
     LevelEditorLayer();
@@ -130,4 +131,6 @@ public:
     virtual cocos2d::CCParticleSystemQuad* claimCustomParticle( std::string, int, int );
     virtual void unclaimCustomParticle( std::string, cocos2d::CCParticleSystemQuad* );
     virtual void levelSettingsUpdated( void );
+
+    void updateObjectColors(CCArray*);
 };

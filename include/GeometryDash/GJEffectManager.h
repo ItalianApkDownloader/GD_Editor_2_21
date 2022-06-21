@@ -20,4 +20,7 @@ public:
 
     ColorAction* getColorAction( int colorID );
     ColorActionSprite* getColorSprite( int colorID );
+
+    cocos2d::_ccColor3B activeColorForIndex(int index);
+    float activeOpacityForIndex(int index);
 };
