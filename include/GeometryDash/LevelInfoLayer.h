@@ -68,4 +68,5 @@ public:
     void onPlayReplay( cocos2d::CCObject* ref );
 
     void onFeatured( cocos2d::CCObject* ref );
+    void onClone( cocos2d::CCObject* ref );
 };

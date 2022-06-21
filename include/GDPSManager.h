@@ -5,17 +5,11 @@
 class GDPSManager{
 
 public:
-    int opacity;
-    int opacityTimer;
-    bool isGDPSSettings;
-    bool playTest;
-    bool pauseBtn;
-    bool oldTextures;
-    bool cleanMenu;
+    string password;
 	
 	public:
     void createToggleButton(const char*, CCPoint, CCObject*, cocos2d::SEL_MenuHandler, CCMenu*, bool, bool);
-
+	std::string itos(int);
 
 protected:
     bool init();
@@ -37,7 +31,6 @@ public:
 	void setPlayerSwing(int id);
 	void setPlayerJetpack(int id);
 	void setWorldIsland(int id);
-	string itos(int Number);
 
 protected:
     CCDictionary * dictionary = nullptr;

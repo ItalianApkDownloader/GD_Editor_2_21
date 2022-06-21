@@ -245,6 +245,7 @@ int getIntGameVariable(const char* variable);
 	void setPlayerJetpack(int);
 	void setPlayerFrame(int);
 	void resetAllIcons();
+	void toggleGameVariable(const char* key);
 };
 
 #define GM GameManager::sharedState()

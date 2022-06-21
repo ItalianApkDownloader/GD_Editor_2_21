@@ -80,6 +80,8 @@ public:
     vector<float> vector_2881;   //2881
 
 
+    CLASS_MEMBER(bool, isPreviewMode, 0x2C5E);
+
 
 public:
     LevelEditorLayer();
@@ -107,12 +109,14 @@ public:
     void updateGround( float a1 );
 
     bool shouldBlend( int id );
+    void updateObjectColors(CCArray*);
 
 
 
     void addSpecial( GameObject* gameObj );
     void addToUndoList( UndoObject* undoObj, bool add );
     void updateEditor(float);
+	int getNextFreeGroupID(cocos2d::CCArray *a1);
     
     virtual void update( float );
     virtual void draw( void );

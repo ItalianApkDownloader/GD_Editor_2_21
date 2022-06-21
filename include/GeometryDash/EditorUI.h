@@ -12,6 +12,10 @@ public:
     LevelEditorLayer* levelEditor_; // 0x2D4
 
 public:
+
+CLASS_MEMBER(LevelEditorLayer*, levelEditor, 0xBD);
+
+public:
     EditorUI();
     virtual ~EditorUI();
 
@@ -26,4 +30,6 @@ public:
     void updateGroupIDLabel( );
     void toggleStickyControls( bool toggle );
     void updateZoom(float);
+    CCArray* getSelectedObjects();
+	void replaceGroupID(GameObject* go, int old, int newgroup);
 };

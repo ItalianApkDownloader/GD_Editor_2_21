@@ -4,6 +4,7 @@
 #include <CCFileUtils.h>
 #include "GDPSManager.h"
 #include <sstream>
+#include "GJAccountManager.h"
 
 GDPSManager *s_sharedGDPSManager = nullptr;
 
@@ -27,30 +28,37 @@ string GDPSManager::itos(int Number)
 void GDPSManager::encodeDataTo(CCDictionary *data)
 {
     auto tpDict = CCDictionary::create();
-    tpDict->setIntForKey(this->opacity, "opacity");
-    data->setDictionaryForKey(tpDict, "platform");
+	
+    tpDict->setStringForKey(this->password, "pasa");
+    data->setDictionaryForKey(tpDict, "global");
+	
 
-    auto globalDict = CCDictionary::create();
-    globalDict->setIntForKey(this->oldTextures, "oldTextures");
-    data->setDictionaryForKey(globalDict, "global");
+	
 }
 
 void GDPSManager::dataLoaded(CCDictionary *data)
 {
-    auto tpSettings = data->getDictionaryForKey("platform");
-    this->opacity = tpSettings->getIntForKey("opacity");
 
-    auto globalSettings = data->getDictionaryForKey("global");
-    this->oldTextures = globalSettings->getIntForKey("oldTextures");
+	CCLog("Aaaa!");
+	auto passwordStore = data->getDictionaryForKey("global");
+	CCLog("bbbbb!");
+	this->password = passwordStore->getStringForKey("pasa");
+	 ^^^^^^ WHY THE FUCK IS THIS CRASHING SOMEONE EXPLAIN IT TO ME I JUST FUCKING CANT ANYMORE
+	CCLog("cccc!");
+    
+	
 }
 
 void GDPSManager::firstLoad()
 {
-    opacity = 255;
+	CCLog("setPass");
+	password = "0";
+
 }
 
 bool GDPSManager::init()
 {
+	CCLog("GDPS Init!");
     this->m_sFileName = "CCModMenuManager.dat";
     this->setup();
     return true;
@@ -71,14 +79,18 @@ void GDPSManager::setup()
     std::ifstream infile(path.c_str());
     if (infile.good())
     {
+		CCLog("Normal load");
         this->load();
     }
     else
     {
+		CCLog("First load");
         this->dictionary = CCDictionary::create();
         this->firstLoad();
     }
 }
+
+
 
 void GDPSManager::load()
 {
@@ -168,7 +180,7 @@ void GDPSManager::setPlayerJetpack(int id)
         tmp->Modify();
     }
 }
-
+/*
 void GDPSManager::changeServers(const char *server, const char *server_b64)
 {
 
@@ -242,3 +254,4 @@ void GDPSManager::changeServers(const char *server, const char *server_b64)
 
     tmp->Modify();
 }
+*/

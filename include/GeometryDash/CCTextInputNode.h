@@ -9,4 +9,5 @@ public:
     CLASS_MEMBER(cocos2d::CCLabelBMFont*, placeholderLabel, 0x174);
 	
 	void setString(std::string);
+	string getString();
 };

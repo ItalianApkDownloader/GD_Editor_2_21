@@ -51,6 +51,7 @@ public:
 	PAD(10001);
 
     CLASS_MEMBER(vector<int>,something,2778*4);
+	CLASS_MEMBER(GJEffectManager*, effectManager, 0x158);
 
 	
 	public:

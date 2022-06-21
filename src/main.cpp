@@ -7,6 +7,8 @@
 #include "gd.h"
 #include "hooking.h"
 #include "obfuscate.h"
+#include <bits/stdc++.h>
+#include "GDPSManager.h"
 
 #define targetLibName ("libcocos2dcpp.so")
 #define contains(x, y) strstr(x, y) != NULL
@@ -14,6 +16,119 @@
 #include <typeinfo>
 #include <memory>
 #include <cxxabi.h>
+
+string passwordTemp = "";
+bool shouldAdd = true;
+
+static const std::string base64_chars =
+             "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+             "abcdefghijklmnopqrstuvwxyz"
+             "0123456789+/";
+
+
+static inline bool is_base64(unsigned char c) {
+  return (isalnum(c) || (c == '+') || (c == '/'));
+}
+
+std::string base64_encode(unsigned char const* bytes_to_encode, unsigned int in_len) {
+  std::string ret;
+  int i = 0;
+  int j = 0;
+  unsigned char char_array_3[3];
+  unsigned char char_array_4[4];
+
+  while (in_len--) {
+    char_array_3[i++] = *(bytes_to_encode++);
+    if (i == 3) {
+      char_array_4[0] = (char_array_3[0] & 0xfc) >> 2;
+      char_array_4[1] = ((char_array_3[0] & 0x03) << 4) + ((char_array_3[1] & 0xf0) >> 4);
+      char_array_4[2] = ((char_array_3[1] & 0x0f) << 2) + ((char_array_3[2] & 0xc0) >> 6);
+      char_array_4[3] = char_array_3[2] & 0x3f;
+
+      for(i = 0; (i <4) ; i++)
+        ret += base64_chars[char_array_4[i]];
+      i = 0;
+    }
+  }
+
+  if (i)
+  {
+    for(j = i; j < 3; j++)
+      char_array_3[j] = '\0';
+
+    char_array_4[0] = (char_array_3[0] & 0xfc) >> 2;
+    char_array_4[1] = ((char_array_3[0] & 0x03) << 4) + ((char_array_3[1] & 0xf0) >> 4);
+    char_array_4[2] = ((char_array_3[1] & 0x0f) << 2) + ((char_array_3[2] & 0xc0) >> 6);
+    char_array_4[3] = char_array_3[2] & 0x3f;
+
+    for (j = 0; (j < i + 1); j++)
+      ret += base64_chars[char_array_4[j]];
+
+    while((i++ < 3))
+      ret += '=';
+
+  }
+
+  return ret;
+
+}
+
+std::string base64_decode(std::string const& encoded_string) {
+  int in_len = encoded_string.size();
+  int i = 0;
+  int j = 0;
+  int in_ = 0;
+  unsigned char char_array_4[4], char_array_3[3];
+  std::string ret;
+
+  while (in_len-- && ( encoded_string[in_] != '=') && is_base64(encoded_string[in_])) {
+    char_array_4[i++] = encoded_string[in_]; in_++;
+    if (i ==4) {
+      for (i = 0; i <4; i++)
+        char_array_4[i] = base64_chars.find(char_array_4[i]);
+
+      char_array_3[0] = (char_array_4[0] << 2) + ((char_array_4[1] & 0x30) >> 4);
+      char_array_3[1] = ((char_array_4[1] & 0xf) << 4) + ((char_array_4[2] & 0x3c) >> 2);
+      char_array_3[2] = ((char_array_4[2] & 0x3) << 6) + char_array_4[3];
+
+      for (i = 0; (i < 3); i++)
+        ret += char_array_3[i];
+      i = 0;
+    }
+  }
+
+  if (i) {
+    for (j = i; j <4; j++)
+      char_array_4[j] = 0;
+
+    for (j = 0; j <4; j++)
+      char_array_4[j] = base64_chars.find(char_array_4[j]);
+
+    char_array_3[0] = (char_array_4[0] << 2) + ((char_array_4[1] & 0x30) >> 4);
+    char_array_3[1] = ((char_array_4[1] & 0xf) << 4) + ((char_array_4[2] & 0x3c) >> 2);
+    char_array_3[2] = ((char_array_4[2] & 0x3) << 6) + char_array_4[3];
+
+    for (j = 0; (j < i - 1); j++) ret += char_array_3[j];
+  }
+
+  return ret;
+}
+
+std::string gjp(std::string password) {
+	
+const char* key = "37526";
+const size_t keyLen = 5;
+size_t gjpCurrent = 0;
+	for(auto& character : password) {
+		character ^= key[gjpCurrent];
+		gjpCurrent = (gjpCurrent + 1) % keyLen;
+	}
+	return base64_encode((const unsigned char *)password.c_str(), password.length());
+}
+
+
+
+
 std::string get_name_for_node(cocos2d::CCObject* node)
 {
     // stolen from mat (thanks mat)
@@ -103,12 +218,11 @@ bool editor_callback( LevelEditorLayer* p, GJGameLevel* level )
 
 
 
-
     auto gm = GameManager::sharedState( );
     *((bool *)gm + 442) = true;
     p->ignoreDamage_ = gm->getGameVariable( "0009");
     p->unk_bool_01 = gm->getGameVariable( "0001");
-    p->unk_bool_02 = gm->getGameVariable( "0044");
+    p->unk_bool_02 = false; //orbs
     p->unk_bool_03 = gm->getGameVariable( "0045");
     p->unk_bool_04 = gm->getGameVariable( "0038");
     p->unk_bool_06 = gm->getGameVariable( "0043");
@@ -177,6 +291,12 @@ bool editor_callback( LevelEditorLayer* p, GJGameLevel* level )
     p->arr_2807->retain();
     p->arr_2821 = CCArray::create();
     p->arr_2821->retain();
+	
+	
+	    auto stickyGroupsDict = *((CCDictionary**)p + 0x45C);
+    stickyGroupsDict = CCDictionary::create();
+    stickyGroupsDict->retain();
+	
 
 
     *((bool *)p + 316) = *((bool *)level + 393);
@@ -279,9 +399,9 @@ bool editor_callback( LevelEditorLayer* p, GJGameLevel* level )
     p->editorUI_->updateSlider( );
 
     p->resetGroupCounters(false);
-    p->sortStickyGroups();
+	//p->sortStickyGroups();
     p->updateEditorMode();
-    p->schedule( schedule_selector( LevelEditorLayer::updateVisibility ));
+   // p->schedule( schedule_selector( LevelEditorLayer::updateVisibility ));
     p->schedule( schedule_selector( LevelEditorLayer::updateEditor ));
 
     //fix to the glitched background with updateEditor
@@ -370,15 +490,43 @@ if(!GM->getGameVariable("100004")) {
                 auto sect = reinterpret_cast<CCArray*>(section);
 
                 if (sect) {
+					p->updateObjectColors(sect); 
                     if (sect->count() > 0) {
                         for (int k = 0; k < sect->count(); k++) {
                             GameObject *obj = dynamic_cast<GameObject *>(sect->objectAtIndex(k));
                             auto objectPos = obj->getPosition();
                             if(rect.containsPoint(objectPos)){
+								
+								  ////////////////////////////////////
+                                // COLORS!!!!!!!!!!!!!!!!!!!!!!!!
+                                if(p->_isPreviewMode()) {
+                                    auto mainColorIndex = obj->getMainColorMode();
+                                    auto sprColor = obj->getMainColor();
+                                    sprColor->_opacity() = 0.4;
+                                    auto color = p->_effectManager()->activeColorForIndex(mainColorIndex);
+                                    obj->updateMainColor(color);
+                                }
+								
+								
+								auto selected = p->editorUI_->getSelectedObjects();
+								
+								for (int i = 0; i < selected->count(); i++)
+								{
+									auto object = (GameObject*)selected->objectAtIndex(i);	
+									object->updateMainColor({0, 255, 0});
+								}
+			
+
+                                ////////////////////////////////////
+
+								
+								
+								
                                 if(!obj->getParent()){
                                     p->gameLayer_->addChild(obj);
                                 }
                                 obj->setVisible(true);
+							//	obj->updateMainColor({255,0,0});
                             }else{
                                 if(obj->isVisible()){
                                     obj->setVisible(false);
@@ -410,7 +558,7 @@ void EditorPauseLayer_onResumeH(EditorPauseLayer* p,CCObject* a1){
     auto gm = GameManager::sharedState();
     *((bool *)p + 770) = gm->getGameVariable( "0009");
     *((bool *)p + 11600) = gm->getGameVariable( "0001");
-    *((bool *)p + 11601) = gm->getGameVariable( "0044");
+  //  *((bool *)p + 11601) = gm->getGameVariable( "0044");
     *((bool *)p + 11602) = gm->getGameVariable( "0045");
     *((bool *)p + 11603) = gm->getGameVariable( "0038");
     *((bool *)p + 11605) = gm->getGameVariable( "0043");
@@ -446,8 +594,10 @@ void GJBaseGameLayer_addToSectionH(GJBaseGameLayer* self,GameObject* obj){
 
 void (*GJBaseGameLayer_removeObjectFromSectionO)(GJBaseGameLayer* self,GameObject* obj);
 void GJBaseGameLayer_removeObjectFromSectionH(GJBaseGameLayer* self,GameObject* obj){
-    if(obj)
+		if(obj)
         GJBaseGameLayer_removeObjectFromSectionO(self,obj);
+		obj->removeFromParent();
+		
 }
 
 bool (*UILayer_ccTouchBeganO)(UILayer* self, CCTouch* touch, CCEvent* event);
@@ -547,6 +697,34 @@ void OptionsLayerInitH(OptionsLayer* self) {
 }
 
 
+const char* (*getStringO)(LoadingLayer* self);
+const char* getStringH(LoadingLayer* self) {
+	
+		auto m_sFileName = "password.dat";
+	
+
+    auto path = CCFileUtils::sharedFileUtils()->getWritablePath() + m_sFileName;
+	
+	  std::ifstream infile(path.c_str());
+    if (infile.good())
+    {
+		string myText;
+		while (getline (infile, myText))
+			passwordTemp = myText;
+		CCLog("password done");
+    }
+	else
+	{ 
+		passwordTemp = "0";
+		CCLog("no file found");
+	}
+	
+	GM->setGameVariable("0122", false);
+	return "Italian APK Downloader | Catto | iAndy_HD3";
+}
+	
+	
+
 void (*addToggle_trp)(MoreOptionsLayer * self,const char * title, const char * code, const char * desc);
 void addToggle_hk(MoreOptionsLayer* self, const char * title, const char * code, const char * desc) {
 	
@@ -571,8 +749,10 @@ bool (*MenuLayerInitO)(MenuLayer*);
 bool MenuLayerInitH(MenuLayer* self) {
 	
 	//CCLog(AY_OBFUSCATE("This apk belongs to TheMilkCat"));
-	
-	
+	CCLog("Menu Init!");
+	//string useless = GDPS->itos(1);
+		//	self->runAction(CCCallFuncO::create(self, callfuncO_selector(CreatorLayer::onMyLevels), self));
+			
 	if(first) {
 		if(GM->getGameVariable("100003"))
 			self->runAction(CCCallFuncO::create(self, callfuncO_selector(CreatorLayer::onMyLevels), self));
@@ -642,19 +822,9 @@ const char* boomlings = AY_OBFUSCATE("http://www.boomlings.com/database");
 //epic servers obfuscate moment
 
 inline string replaceServers(std::string original) {
-
-    if (GM->getGameVariable("100001")) {
-		if(!contains(original.c_str(), "syncGJAccountNew.php"))
-     if (!contains(original.c_str(), AY_OBFUSCATE("boomlings.com"))) {
-          for (int i = 0; i < strlen(boomlings); i++)
-            original[i] = boomlings[i];
-        }
-      }
-      else {
-
-        for (int i = 0; i < strlen(gdpseditor); i++)
+			
+		for(int i = 0; i < strlen(gdpseditor); i++)
           original[i] = gdpseditor[i];
-      }
 
       return original;
     }
@@ -663,6 +833,7 @@ inline string replaceServers(std::string original) {
 void* (*LevelProcessO)(GameManager* gm, string a1, string a2, string a3, int a4);
 void* LevelProcessH(GameManager* gm, string a1, string a2, string a3, int a4)
 {	
+		
 	return LevelProcessO(gm, replaceServers(a1), a2, a3, a4);
 }
 
@@ -678,6 +849,8 @@ void* AccountProcessH(void* idk, string a1, string a2, string a3, int a4)
 	return AccountProcessO(idk, replaceServers(a1), a2, a3, a4);
 }
 
+//https://discord.com/channels/646101505417674758/651480005536383009/988422971993501726
+//thanks cvolton
 
 
 const char *(*CCString_getCStringO)(CCString *);
@@ -685,21 +858,67 @@ const char *CCString_getCStringH(CCString *self)
 {
 	auto ret = CCString_getCStringO(self);
 	
-	if(contains(ret, AY_OBFUSCATE("http"))) {
-		
-		char *s = new char[strlen(ret)];
-		strcpy(s, ret);
-		
-		const char* server = AY_OBFUSCATE("http://game.gdpseditor.com/server");
+		if(contains(ret, AY_OBFUSCATE("gjp2")) && !passwordTemp.empty() && shouldAdd) {
+			
+			
+
+			
+			auto AM = GJAccountManager::sharedState();
+			const char* valid = AY_OBFUSCATE("2022");
+			const char *toAdd;
+
+
+		if(AM->_username().empty() || contains(ret, AY_OBFUSCATE("userName")))
+		toAdd = CCString::createWithFormat("&password=%s&gjp=%s&", passwordTemp.c_str(), gjp(passwordTemp).c_str())->getCString();
+		else
+		toAdd = CCString::createWithFormat("&password=%s&gjp=%s&userName=%s", passwordTemp.c_str(), gjp(passwordTemp).c_str(), AM->_username().c_str())->getCString();
 	
-		for(int i = 0; i < strlen(server); i++)
-			s[i] = server[i];
+		//char *s = new char[strlen(ret) + strlen(toAdd) + strlen(toAdd2) + 1];
+		char *s = new char[strlen(ret) + strlen(toAdd) + 1];
+		strcpy(s, ret);
+		strcat(s, toAdd);
+		//strcat(s, toAdd2);
+		
+		CCLog(s);
+
 		ret = s;
-		return ret;
+	
+		
+		
+		}
+		
+		
+		/*
+			auto m_sFileName = "password.dat";
+
+		  auto path = CCFileUtils::sharedFileUtils()->getWritablePath() + m_sFileName;
+    std::ifstream infile(path.c_str());
+    if (infile.good())
+    {
+		CCLog("Normal load");
+		string myText;
+		while (getline (infile, myText))
+			CCLog(myText.c_str());
+    }
+	else
+	{ 
+		CCLog("file not good");
 	}
+	
+		*/
+		
+		
+		
+
+		
+		
+		
+
+	
 	return ret;
 
 }
+
 
 
 bool (*canPlayOnlineLevelsO)(CreatorLayer* self);
@@ -728,57 +947,193 @@ LevelSettingsObject* objectfromDictH(LevelSettingsObject* a1, CCDictionary* keys
 CCArray* (*getTriggerGroupO)(LevelEditorLayer* self, int a1);
 CCArray* getTriggerGroupH(LevelEditorLayer* self, int a1) {
 	
+	//	CCLog("Trigger group func %d", a1);
+
+	//return getTriggerGroupO(self, a1);
+
 	CCArray* a = CCArray::create();
 	return a;
+	
+	
 	/*
-	
-	CCLog("Trigger group func %d", a1);
-	
 	auto ret = getTriggerGroupO(self, a1);
 		CCLog("Trigger group func 2 %d", a1);
 
 	CCLog(typeid(ret).name());
 	return getTriggerGroupO(self, a1);
 	*/
+	
 }
 
 void* (*addToGroupO)(GJBaseGameLayer* self, GameObject* a2, int a3,  bool a4);
 void* addToGroupH(GJBaseGameLayer* self, GameObject* a2, int a3,  bool a4) {
-	/*
-	if(a4)
-	CCLog("add group | a1 : %d, a4 : true", a3);
-	else
-	CCLog("add group | a1 : %d, a4 : false", a3);
-*/
-
-	*((bool *)a2 + 1157) = false;
-	/*
-	bool unk = *((bool *)a2 + 1157);
 	
-		if(unk)
-	CCLog("add group true, %d", a3);
-	else
-	CCLog("add grop false, %d", a3);
-*/
-
+	*((bool *)a2 + 1157) = false;
+	
 	auto ret = addToGroupO(self, a2, a3, a4);
-/*
-		CCLog(typeid(*(CCObject*)ret).name());
 
-	if(unk)
-	CCLog("add group true %d", a3);
-	else
-	CCLog("add grop false %d", a3);
-*/
+	//	CCLog(typeid(*(CCObject*)ret).name());
+
 	return ret;
 }
 
 
+void *(*buildHelperO)(EditorUI *self, bool a2);
+void *buildHelperH(EditorUI *self, bool a2)
+{
+    auto ret = buildHelperO(self, a2);
+
+    auto selected = self->getSelectedObjects();
+    CCLog("enter loop");
+    for (int i = 0; selected->count() > i; i++)
+    {
+		CCNode* node = reinterpret_cast<CCNode*>(selected->objectAtIndex(i));
+		const char* type = typeid(*(CCObject*)node).name();
+		CCLog(type);
+        if(contains(type, "Effect")) {
+			CCLog("true");
+			node->removeFromParent();
+			
+		}
+		
+    }
+
+    return ret;
+
+}
+#include "AccountLoginLayer.h"
+
+void *(*AccountSubmitO)(AccountLoginLayer* self, CCObject* a2, void* a3, void* a4);
+void *AccountSubmitH(AccountLoginLayer* self, CCObject* a2, void* a3, void* a4)
+{
+	
+	passwordTemp = self->_inputPassword()->getString();
+	CCLog(passwordTemp.c_str());
+    auto ret = AccountSubmitO(self, a2, a3, a4);
+
+
+    return ret;
+
+}
+
+void *(*LoginFinishedO)(AccountLoginLayer* self, void* a2, void* a3);
+void *LoginFinishedH(AccountLoginLayer* self, void* a2, void* a3) 
+{
+		
+	auto m_sFileName = "password.dat";
+	
+	    auto path = CCFileUtils::sharedFileUtils()->getWritablePath() + m_sFileName;
+
+		ofstream MyFile(path.c_str());
+
+		MyFile << passwordTemp;
+
+		MyFile.close();
+
+    return LoginFinishedO(self, a2, a3);
+
+}
+
+bool (*LevelInfoLayerInitO)(LevelInfoLayer*, GJGameLevel*, bool);
+bool LevelInfoLayerInitH(LevelInfoLayer* self, GJGameLevel* level, bool a3) {
+	
+	
+	
+	auto sprite = CCSprite::createWithSpriteFrameName("communityCreditsBtn_001.png");
+	sprite->setScale(2);
+	auto btn = CCMenuItemSpriteExtra::create(sprite, sprite, self, menu_selector(LevelInfoLayer::onClone));
+	auto menu = CCMenu::create();
+	menu->setPositionY(menu->getPositionY() - 50);
+	menu->addChild(btn, 500);
+	self->addChild(menu, 500);
+	
+	auto ret = LevelInfoLayerInitO(self, level, a3);
+	return ret;
+	
+}
+
+
+inline long mid_num(const std::string &s)
+{
+	return std::strtol(&s[s.find('_') + 1], nullptr, 10);
+}
+/*
+GameObject* (*GameObjectCreateO)(int key);
+GameObject *GameObjectCreateH(int key)
+{
+	auto tb = ObjectToolbox::sharedState()->intKeyToFrame(key);
+
+	// LOGD("GAMEOBJECT: %s", tb);
+	if (strstr(tb, "pixelart") != NULL && strstr(tb, "b_001") == NULL)
+	{
+		auto pixelKey = mid_num(tb);
+		// LOGD("ART: %i", pixelKey);
+
+		return GameObjectCreateO(pixelKey > 140 ? 1 : key);
+	}
+
+	if (!strcmp(tb, "pixelb_03_01_001.png"))
+		return GameObjectCreateO(1);
+
+	if (!strcmp(tb, "pixelb_03_02_001.png"))
+		return GameObjectCreateO(1);
+
+	auto o = GameObjectCreateO(key);
+
+	return o;
+}
+*/
+void (*downloadLevelO)(LevelInfoLayer* self);
+void downloadLevelH(LevelInfoLayer* self) {
+	
+	shouldAdd = false;
+	downloadLevelO(self);
+	shouldAdd = true;
+}
+
+/*
+void (*dict1)(CCDictionary *, CCObject *, int);
+void dict_hk1(cocos2d::CCDictionary *d, CCObject *obj, int key)
+{
+
+	// LOGD("%s", obj, key);
+
+	switch (key)
+	{
+
+	case 0x4EB:
+        return dict1( d, CCString::create( "edit_eCounterBtn_001" ), key );
+        break;
+
+	case 0x732:
+        return dict1( d, CCString::create( "edit_eCounterBtn_001" ), key );
+        break;
+		
+	case 0xBCE:
+        return dict1( d, CCString::create( "edit_eCounterBtn_001" ), key );
+        break;
+		
+	case 0xB53:
+        return dict1( d, CCString::create( "edit_eCounterBtn_001" ), key );
+        break;
+		default:
+
+		dict1(d, obj, key);
+		break;
+	}
+}
+
+*/
 #define HOOK(a, b, c) HookManager::do_hook(getPointerFromSymbol(cocos2d, a), (void*)b, (void**)&c);
 
 void loader()
 {
     auto cocos2d = dlopen(targetLibName != "" ? targetLibName : NULL, RTLD_LAZY);
+	
+//	HOOK("_ZN7cocos2d12CCDictionary9setObjectEPNS_8CCObjectEi", dict_hk1, dict1);
+//	HOOK("_ZN10GameObject13createWithKeyEi", GameObjectCreateH, GameObjectCreateO);
+	HOOK("_ZN14LevelInfoLayer4initEP11GJGameLevelb", LevelInfoLayerInitH, LevelInfoLayerInitO);	
+	
     HookManager::do_hook(getPointerFromSymbol(cocos2d, "_ZN9AdToolbox16showInterstitialEv"),
                          (void *)GameManager_tryShowAdH,
                          (void **)&GameManager_tryShowAdO);
@@ -797,6 +1152,7 @@ void loader()
     HookManager::do_hook(getPointerFromSymbol(cocos2d, "_ZN16EditorPauseLayer8onResumeEPN7cocos2d8CCObjectE"),
                          (void *)EditorPauseLayer_onResumeH,
                          (void **)&EditorPauseLayer_onResumeO);
+						 
     HookManager::do_hook(getPointerFromSymbol(cocos2d, "_ZN16LevelEditorLayer12removeObjectEP10GameObjectb"),
                          (void *)EditorPauseLayer_removeH,
                          (void **)&EditorPauseLayer_removeO);
@@ -827,8 +1183,8 @@ void loader()
 	OptionsLayerInitH, OptionsLayerInitO);
 	//HOOK("_ZN7cocos2d9extension12CCHttpClient4sendEPNS0_13CCHttpRequestE",
 	//HttpSendH, HttpSendO);
-	//HOOK("_ZNK7cocos2d8CCString10getCStringEv",
-	//CCString_getCStringH, CCString_getCStringO);
+	HOOK("_ZNK7cocos2d8CCString10getCStringEv",
+	CCString_getCStringH, CCString_getCStringO);
 	HOOK("_ZN16GameLevelManager18ProcessHttpRequestESsSsSs10GJHttpType",
 	LevelProcessH, LevelProcessO);
 	HOOK("_ZN20MusicDownloadManager18ProcessHttpRequestESsSsSs10GJHttpType",
@@ -845,18 +1201,40 @@ void loader()
 	UILayerInitH, UILayerInitO);
 	HOOK("_ZN16LevelEditorLayer10addToGroupEP10GameObjectib",
 	addToGroupH, addToGroupO);
+	HOOK("_ZN8EditorUI18dynamicGroupUpdateEb",
+	buildHelperH, buildHelperO);
+	/*
+		HookManager::do_hook(getPointerFromSymbol(cocos2d, "_ZN11AppDelegate11trySaveGameEb"), (void*) save_hook, (void **) &save_trp);
+
+	HookManager::do_hook(getPointerFromSymbol(cocos2d, "_ZN7cocos2d11CCFileUtils13addSearchPathEPKc"), (void*) CCFileUtils_addSearchPath_hk, (void **) &CCFileUtils_addSearchPath_trp);
+	HookManager::do_hook(getPointerFromSymbol(cocos2d, "_ZN11GameManager10dataLoadedEP13DS_Dictionary"), (void*) &GameManager_dataLoaded_hk, (void **) &dataLoaded_trp);
+	*/
+	HOOK("_ZN17AccountLoginLayer8onSubmitEPN7cocos2d8CCObjectE", AccountSubmitH, AccountSubmitO);
+	HOOK("_ZN17AccountLoginLayer20loginAccountFinishedEii", LoginFinishedH, LoginFinishedO);
+	HOOK("_ZN12LoadingLayer16getLoadingStringEv",getStringH, getStringO);
+	HOOK("_ZN14LevelInfoLayer13downloadLevelEv", downloadLevelH, downloadLevelO);
+
+
 
 
 
     patch *tmp = new patch();
     tmp->addPatch("libcocos2dcpp.so", 0x26DB2E, "00 bf 00 bf");
+	
+	
 
 
     //playtest
     tmp->addPatch("libcocos2dcpp.so", 0x2B8896, "00 bf 00 bf");
     tmp->addPatch("libcocos2dcpp.so", 0x2B88A4, "00 bf 00 bf");
     tmp->addPatch("libcocos2dcpp.so", 0x2B893C, "00 bf");
-
+	
+	/*
+	tried to fix colors and opacity
+    tmp->addPatch("libcocos2dcpp.so", 0x2A8AD2, "00 bf");
+    tmp->addPatch("libcocos2dcpp.so", 0x2A8AD8, "00 bf");
+    tmp->addPatch("libcocos2dcpp.so", 0x2A88EC, "00 bf 00 bf");
+*/
     //test fix colors
     /*
     tmp->addPatch("libcocos2dcpp.so", 0x2CA80E, "00 bf");
@@ -865,7 +1243,8 @@ void loader()
 
     tmp->addPatch("libcocos2dcpp.so", 0x2CA7D6, "11 e0");
     */
-	
+	    tmp->addPatch("libcocos2dcpp.so", 0x37BB72, "00 bf 00 bf");
+
 	
 		//ads
 	tmp->addPatch("libcocos2dcpp.so", 0x26E970, "00 BF 00 BF");
