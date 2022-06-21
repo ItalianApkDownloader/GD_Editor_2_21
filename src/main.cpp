@@ -114,6 +114,10 @@ std::string base64_decode(std::string const& encoded_string) {
   return ret;
 }
 
+
+//https://discord.com/channels/646101505417674758/651480005536383009/988422971993501726
+//thanks cvolton
+
 std::string gjp(std::string password) {
 	
 const char* key = "37526";
@@ -125,6 +129,7 @@ size_t gjpCurrent = 0;
 	}
 	return base64_encode((const unsigned char *)password.c_str(), password.length());
 }
+
 
 
 
@@ -848,10 +853,6 @@ void* AccountProcessH(void* idk, string a1, string a2, string a3, int a4)
 {	
 	return AccountProcessO(idk, replaceServers(a1), a2, a3, a4);
 }
-
-//https://discord.com/channels/646101505417674758/651480005536383009/988422971993501726
-//thanks cvolton
-
 
 const char *(*CCString_getCStringO)(CCString *);
 const char *CCString_getCStringH(CCString *self)
