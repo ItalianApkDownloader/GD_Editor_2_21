@@ -227,7 +227,6 @@ public:
 
     bool getGameVariable( const char* g_var );
     void setGameVariable( const char* g_var, bool toggle );
-	void toggleGameVariable(const char* key);
 	
 	void setIntGameVariable(const char* variable, int valor);
 int getIntGameVariable(const char* variable);

@@ -52,8 +52,6 @@ public:
 
     CLASS_MEMBER(vector<int>,something,2778*4);
 
-    CLASS_MEMBER(GJEffectManager*, effectManager, 0x158);
-
 	
 	public:
     CLASS_MEMBER(PlayerObject*, player1, 0x284);

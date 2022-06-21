@@ -98,12 +98,17 @@ bool editor_callback( LevelEditorLayer* p, GJGameLevel* level )
     if ( !dynamic_cast< GJBaseGameLayer* >( p )->init( ) )
         return false;
 
+
+
+
+
+
+
     auto gm = GameManager::sharedState( );
     *((bool *)gm + 442) = true;
     p->ignoreDamage_ = gm->getGameVariable( "0009");
     p->unk_bool_01 = gm->getGameVariable( "0001");
-    //p->unk_bool_02 = gm->getGameVariable( "0044");
-    p->unk_bool_02 = false; // shit crashes on orbs and shid ye
+    p->unk_bool_02 = gm->getGameVariable( "0044");
     p->unk_bool_03 = gm->getGameVariable( "0045");
     p->unk_bool_04 = gm->getGameVariable( "0038");
     p->unk_bool_06 = gm->getGameVariable( "0043");
@@ -173,15 +178,6 @@ bool editor_callback( LevelEditorLayer* p, GJGameLevel* level )
     p->arr_2821 = CCArray::create();
     p->arr_2821->retain();
 
-    //auto stickyGroupsArr = *((CCArray**)p + 0x460);
-    //stickyGroupsArr = CCArray::create();
-    //stickyGroupsArr->retain();
-
-    // dicts
-    auto stickyGroupsDict = *((CCDictionary**)p + 0x45C);
-    stickyGroupsDict = CCDictionary::create();
-    stickyGroupsDict->retain();
-
 
     *((bool *)p + 316) = *((bool *)level + 393);
 
@@ -213,6 +209,7 @@ bool editor_callback( LevelEditorLayer* p, GJGameLevel* level )
         p->vector_2881[ i ] = 0;
         p->_something()[i] = 0;
     }
+
 
     p->obb2d2_ = OBB2D::create( CCPoint( 1, 1 ), 1.0, 1.0, 0.0 );
     p->obb2d2_->retain( );
@@ -275,20 +272,21 @@ bool editor_callback( LevelEditorLayer* p, GJGameLevel* level )
 
 
     p->editorUI_->updateSlider();
-    p->createGroundLayer(true, true);
+    p->createGroundLayer(true,true);
     p->gridLayer_->updateTimeMarkers();
     p->createBackground(0);
     p->createBackground(1);
     p->editorUI_->updateSlider( );
 
     p->resetGroupCounters(false);
-    //p->sortStickyGroups();
+    p->sortStickyGroups();
     p->updateEditorMode();
-    //p->schedule( schedule_selector( LevelEditorLayer::updateVisibility ));
+    p->schedule( schedule_selector( LevelEditorLayer::updateVisibility ));
     p->schedule( schedule_selector( LevelEditorLayer::updateEditor ));
 
     //fix to the glitched background with updateEditor
     p->editorUI_->onStopPlaytest(nullptr);
+
 
     return true;
 }
@@ -372,28 +370,11 @@ if(!GM->getGameVariable("100004")) {
                 auto sect = reinterpret_cast<CCArray*>(section);
 
                 if (sect) {
-                    p->updateObjectColors(sect); //BRUH!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
                     if (sect->count() > 0) {
                         for (int k = 0; k < sect->count(); k++) {
                             GameObject *obj = dynamic_cast<GameObject *>(sect->objectAtIndex(k));
                             auto objectPos = obj->getPosition();
                             if(rect.containsPoint(objectPos)){
-                                
-                                ////////////////////////////////////
-                                // COLORS!!!!!!!!!!!!!!!!!!!!!!!!
-                                //if(p->_isPreviewMode()) {
-                                    /*auto mainColorIndex = obj->getMainColorMode();
-                                    auto sprColor = obj->getMainColor();
-                                    sprColor->_opacity() = 0.4;
-
-                                    auto color = p->_effectManager()->activeColorForIndex(mainColorIndex);
-
-                                    obj->updateMainColor(color);*/
-                                //}
-
-                                ////////////////////////////////////
-
                                 if(!obj->getParent()){
                                     p->gameLayer_->addChild(obj);
                                 }
@@ -429,7 +410,7 @@ void EditorPauseLayer_onResumeH(EditorPauseLayer* p,CCObject* a1){
     auto gm = GameManager::sharedState();
     *((bool *)p + 770) = gm->getGameVariable( "0009");
     *((bool *)p + 11600) = gm->getGameVariable( "0001");
-    //*((bool *)p + 11601) = gm->getGameVariable( "0044");
+    *((bool *)p + 11601) = gm->getGameVariable( "0044");
     *((bool *)p + 11602) = gm->getGameVariable( "0045");
     *((bool *)p + 11603) = gm->getGameVariable( "0038");
     *((bool *)p + 11605) = gm->getGameVariable( "0043");
@@ -589,7 +570,7 @@ bool first = true;
 bool (*MenuLayerInitO)(MenuLayer*);
 bool MenuLayerInitH(MenuLayer* self) {
 	
-	CCLog(AY_OBFUSCATE("This apk belongs to _-Tr1NgleBoss-_#9825"));
+	//CCLog(AY_OBFUSCATE("This apk belongs to TheMilkCat"));
 	
 	
 	if(first) {
@@ -792,6 +773,7 @@ void* addToGroupH(GJBaseGameLayer* self, GameObject* a2, int a3,  bool a4) {
 	return ret;
 }
 
+
 #define HOOK(a, b, c) HookManager::do_hook(getPointerFromSymbol(cocos2d, a), (void*)b, (void**)&c);
 
 void loader()
@@ -874,9 +856,6 @@ void loader()
     tmp->addPatch("libcocos2dcpp.so", 0x2B8896, "00 bf 00 bf");
     tmp->addPatch("libcocos2dcpp.so", 0x2B88A4, "00 bf 00 bf");
     tmp->addPatch("libcocos2dcpp.so", 0x2B893C, "00 bf");
-
-    // funny
-    tmp->addPatch("libcocos2dcpp.so", 0x37BB72, "00 bf 00 bf");
 
     //test fix colors
     /*

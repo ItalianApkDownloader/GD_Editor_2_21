@@ -5,11 +5,7 @@
 #include "GDAPI_Macros.h"
 
 struct GJColorSprite;
-
-class GJSpriteColor {
-public:
-    CLASS_MEMBER(float, opacity, 0x100);
-};
+struct GJSpriteColor;
 
 
 class GameObject : public cocos2d::CCSprite // CCSpritePlus
@@ -300,11 +296,4 @@ public:
     virtual void __unknown14( );
 
     virtual void setStartPos( cocos2d::CCPoint p ); // 0x29C
-
-    // colors
-    GJSpriteColor* getMainColor();
-    int getMainColorMode();
-
-    void updateMainColor(cocos2d::_ccColor3B const& color);
-    void updateSecondaryColor(cocos2d::_ccColor3B const& color);
 };
