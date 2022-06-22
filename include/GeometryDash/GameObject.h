@@ -307,9 +307,4 @@ public:
 
     void updateMainColor(cocos2d::_ccColor3B const& color);
     void updateSecondaryColor(cocos2d::_ccColor3B const& color);
-
-    bool hasSecondaryColor();
-
-    void addMainSpriteToParent(bool);
-    void addColorSpriteToParent(bool);
 };

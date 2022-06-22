@@ -41,5 +41,5 @@ public:
     virtual void registerWithTouchDispatcher(void);
     virtual void keyBackClicked(void);
     virtual void keyDown(cocos2d::enumKeyCodes);
-    void show(void);
+    virtual void show(void);
 };

@@ -79,10 +79,9 @@ public:
     std::vector<unsigned char> vector_2878;    //2878
     vector<float> vector_2881;   //2881
 
-    CLASS_MEMBER(CCDictionary*, stickyGroupsDict, 0x45C);
 
     CLASS_MEMBER(bool, isPreviewMode, 0x2C5E);
-    CLASS_MEMBER(CCArray*, crashArray1, 0x2D18);
+
 
 public:
     LevelEditorLayer();
