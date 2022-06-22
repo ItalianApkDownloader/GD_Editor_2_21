@@ -523,13 +523,13 @@ if(!GM->getGameVariable("100004")) {
 							//	obj->updateMainColor({255,0,0});
                             }
                             // GOOFY AHH :trollskullirl:
-                            /*else{
+                            else{
                                 if(obj->isVisible()){
                                     obj->setVisible(false);
                                     obj->retain();
-                                    p->gameLayer_->removeChild(obj);
+                                    obj->removeFromParentAndCleanup(false);
                                 }
-                            }*/
+                            }
 
                         }
                     }
