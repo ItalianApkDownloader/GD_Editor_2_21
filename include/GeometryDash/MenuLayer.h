@@ -7,8 +7,8 @@
 class MenuLayer : public cocos2d::CCLayer 
 {
 public:
-    CLASS_MEMBER(CCLabelBMFont*, playerUsernameLabel, 0x138);
-    CLASS_MEMBER(CCMenuItemSpriteExtra*, profileBtn, 0x13C);
+    CLASS_MEMBER(CCLabelBMFont*, playerUsernameLabel, 0x148);
+    CLASS_MEMBER(CCMenuItemSpriteExtra*, profileBtn, 0x14C);
 
 public:
     MenuLayer();

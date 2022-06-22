@@ -516,39 +516,21 @@ if(!GM->getGameVariable("100004")) {
                             GameObject *obj = dynamic_cast<GameObject *>(sect->objectAtIndex(k));
                             auto objectPos = obj->getPosition();
                             if(rect.containsPoint(objectPos)){
-								/*
-								  ////////////////////////////////////
-                                // COLORS!!!!!!!!!!!!!!!!!!!!!!!!
-                                if(p->_isPreviewMode()) {
-                                    auto mainColorIndex = obj->getMainColorMode();
-                                    auto sprColor = obj->getMainColor();
-                                    sprColor->_opacity() = 0.4;
-                                    auto color = p->_effectManager()->activeColorForIndex(mainColorIndex);
-                                    obj->updateMainColor(color);
-                                }
-								*/
-								
-								
-								
-								
-
-                                ////////////////////////////////////
-
-								
-								
-								
-                                obj->addMainSpriteToParent(false);
+								obj->addMainSpriteToParent(false);
                                 if(obj->hasSecondaryColor()) obj->addColorSpriteToParent(true);
 								
                                 obj->setVisible(true);
 							//	obj->updateMainColor({255,0,0});
-                            }else{
+                            }
+                            // GOOFY AHH :trollskullirl:
+                            /*else{
                                 if(obj->isVisible()){
                                     obj->setVisible(false);
                                     obj->retain();
                                     p->gameLayer_->removeChild(obj);
                                 }
-                            }
+                            }*/
+
                         }
                     }
                 }
@@ -747,7 +729,7 @@ const char* getStringH(LoadingLayer* self) {
 	}
 	
 	GM->setGameVariable("0122", false);
-	return "Italian APK Downloader\nCatto\niAndy_HD3\nTr1NgleBoss";
+	return "Italian APK Downloader\nCatto_\niAndy_HD3\nTr1NgleBoss";
 }
 	
 	
@@ -791,7 +773,7 @@ bool MenuLayerInitH(MenuLayer* self) {
 		
 
 	auto dir = CCDirector::sharedDirector();
-	auto old_menu = CCMenu::create();
+	/*auto old_menu = CCMenu::create();
 	auto oldSprite = cocos2d::CCSprite::createWithSpriteFrameName("GJ_profileButton_001.png");
 	auto old_btn = CCMenuItemSpriteExtra::create(
 		oldSprite,
@@ -811,10 +793,10 @@ bool MenuLayerInitH(MenuLayer* self) {
 	menu->setPositionY(menu->getPositionY() - 50);
 	menu->addChild(btn, 500);
 	self->addChild(menu, 500);
-	*/
 	
 	
-	self->addChild(old_menu, 900);
+	
+	self->addChild(old_menu, 900);*/
 	
 return MenuLayerInitO(self);
 
@@ -1111,6 +1093,38 @@ void dict_hk1(cocos2d::CCDictionary *d, CCObject *obj, int key)
 }
 
 */
+
+// moving funny loading text
+bool (*LoadingLayer_initO)(LoadingLayer*, bool);
+bool LoadingLayer_initH(LoadingLayer* self, bool fromReload) {
+    if(!LoadingLayer_initO(self, fromReload)) return false;
+
+    auto text = *reinterpret_cast<CCNode**>(reinterpret_cast<uintptr_t>(self) + 0x140);
+    text->setPositionY(text->getPositionY() - 10);
+    
+    return true;
+}
+
+// fix funky profile button
+void (*MenuLayer_updateUserProfileButtonO)(MenuLayer*);
+void MenuLayer_updateUserProfileButtonH(MenuLayer* self) {
+    auto accountManager = GJAccountManager::sharedState();
+
+    int accountID1 = *reinterpret_cast<int*>(reinterpret_cast<uintptr_t>(accountManager) + 0x10C);
+    int accountID2 = *reinterpret_cast<int*>(reinterpret_cast<uintptr_t>(accountManager) + 0x110);
+
+    bool loggedIn = (accountID1 - accountID2) > 0;
+
+    self->_playerUsernameLabel()->setVisible(loggedIn);
+    self->_profileBtn()->setVisible(loggedIn);
+
+    if(loggedIn) {
+        // ---------- MOTHERFUCKER WHY DOES THIS CRASH THE OFFSET IS RIGHT AND EVERYTHING
+        //self->_playerUsernameLabel()->setString(accountManager->_username().c_str());
+        //self->_playerUsernameLabel()->limitLabelWidth(70, .7, 0);
+    }
+}
+
 #define HOOK(a, b, c) HookManager::do_hook(getPointerFromSymbol(cocos2d, a), (void*)b, (void**)&c);
 
 void loader()
@@ -1120,6 +1134,9 @@ void loader()
 //	HOOK("_ZN7cocos2d12CCDictionary9setObjectEPNS_8CCObjectEi", dict_hk1, dict1);
 	HOOK("_ZN10GameObject13createWithKeyEi", GameObjectCreateH, GameObjectCreateO);
 //	HOOK("_ZN14LevelInfoLayer4initEP11GJGameLevelb", LevelInfoLayerInitH, LevelInfoLayerInitO);	
+    HOOK("_ZN12LoadingLayer4initEb", LoadingLayer_initH, LoadingLayer_initO);
+    HOOK("_ZN9MenuLayer23updateUserProfileButtonEv", MenuLayer_updateUserProfileButtonH, MenuLayer_updateUserProfileButtonO);
+
     HookManager::do_hook(getPointerFromSymbol(cocos2d, "_ZN9AdToolbox16showInterstitialEv"),
                          (void *)GameManager_tryShowAdH,
                          (void **)&GameManager_tryShowAdO);
@@ -1206,9 +1223,6 @@ void loader()
 
     patch *tmp = new patch();
     tmp->addPatch("libcocos2dcpp.so", 0x26DB2E, "00 bf 00 bf");
-	
-	
-
 
     //playtest
     tmp->addPatch("libcocos2dcpp.so", 0x2B8896, "00 bf 00 bf");

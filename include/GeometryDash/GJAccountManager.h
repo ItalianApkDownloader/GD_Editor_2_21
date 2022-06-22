@@ -38,7 +38,7 @@ public:
     CLASS_MEMBER(std::string, password, 0x11C);
     CLASS_MEMBER(std::string, password2, 0x118);
     CLASS_MEMBER(int, somethingelse, 0x43);
-    CLASS_MEMBER(std::string, username, 0x108);
+    CLASS_MEMBER(std::string, username, 264);
     CLASS_MEMBER(std::string, password5, 0x140);
 
     bool isLoggedIn() { return this->_accountIDRand() - this->_accountIDSeed() > 0; }
