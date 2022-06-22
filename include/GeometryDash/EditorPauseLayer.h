@@ -11,6 +11,9 @@ public:
     bool inEditor_; // 0x1AC
     uint8_t _pad1AB[ 0xb ]; // 0x1AC
     LevelEditorLayer* editor_; // 0x1B8
+	
+	public:
+    CLASS_MEMBER(LevelEditorLayer*, editorLayer, 0x1C4);
 
 public:
     EditorPauseLayer();

@@ -81,6 +81,8 @@ public:
 
 
     CLASS_MEMBER(bool, isPreviewMode, 0x2C5E);
+	CLASS_MEMBER(CCArray*, crashArray1, 0x2D18);
+    CLASS_MEMBER(CCDictionary*, stickyGroupsDict, 0x45C);
 
 
 public:

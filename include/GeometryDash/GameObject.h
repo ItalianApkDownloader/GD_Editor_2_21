@@ -298,6 +298,7 @@ public:
     virtual void __unknown12( );
     virtual void __unknown13( );
     virtual void __unknown14( );
+	
 
     virtual void setStartPos( cocos2d::CCPoint p ); // 0x29C
 
@@ -307,4 +308,7 @@ public:
 
     void updateMainColor(cocos2d::_ccColor3B const& color);
     void updateSecondaryColor(cocos2d::_ccColor3B const& color);
+	void addMainSpriteToParent(bool);
+	bool hasSecondaryColor();
+    void addColorSpriteToParent(bool);
 };
