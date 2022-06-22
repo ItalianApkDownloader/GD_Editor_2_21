@@ -516,7 +516,7 @@ if(!GM->getGameVariable("100004")) {
                             GameObject *obj = dynamic_cast<GameObject *>(sect->objectAtIndex(k));
                             auto objectPos = obj->getPosition();
                             if(rect.containsPoint(objectPos)){
-								
+								/*
 								  ////////////////////////////////////
                                 // COLORS!!!!!!!!!!!!!!!!!!!!!!!!
                                 if(p->_isPreviewMode()) {
@@ -526,6 +526,7 @@ if(!GM->getGameVariable("100004")) {
                                     auto color = p->_effectManager()->activeColorForIndex(mainColorIndex);
                                     obj->updateMainColor(color);
                                 }
+								*/
 								
 								
 								
@@ -555,13 +556,14 @@ if(!GM->getGameVariable("100004")) {
 
         }
     }
-									auto selected = p->editorUI_->getSelectedObjects();
+	
+	auto selected = p->editorUI_->getSelectedObjects();
 
 	for (int i = 0; i < selected->count(); i++)
-								{
-									auto object = (GameObject*)selected->objectAtIndex(i);	
-									object->updateMainColor({0, 255, 0});
-								}
+	{
+		auto object = (GameObject*)selected->objectAtIndex(i);	
+		object->updateMainColor({0, 255, 0});
+	}
 			
     p->processAreaVisualActions();
     p->sortBatchnodeChildren(0.0);
@@ -736,12 +738,12 @@ const char* getStringH(LoadingLayer* self) {
 		string myText;
 		while (getline (infile, myText))
 			passwordTemp = myText;
-		CCLog("password done");
+	//	CCLog("password done");
     }
 	else
 	{ 
 		passwordTemp = "0";
-		CCLog("no file found");
+	//	CCLog("no file found");
 	}
 	
 	GM->setGameVariable("0122", false);
@@ -776,7 +778,7 @@ bool MenuLayerInitH(MenuLayer* self) {
 	//CCLog(AY_OBFUSCATE("This apk belongs to TheMilkCat"));
 	CCLog("Menu Init!");
 	
-	CCLog(AY_OBFUSCATE("APK Belongs to DM Group"));
+//	CCLog(AY_OBFUSCATE("APK Belongs to DM Group"));
 	
 	//string useless = GDPS->itos(1);
 		//	self->runAction(CCCallFuncO::create(self, callfuncO_selector(CreatorLayer::onMyLevels), self));
@@ -904,7 +906,7 @@ const char *CCString_getCStringH(CCString *self)
 		strcat(s, toAdd);
 		//strcat(s, toAdd2);
 		
-		CCLog(s);
+	//	CCLog(s);
 
 		ret = s;
 	
@@ -1003,29 +1005,6 @@ void* addToGroupH(GJBaseGameLayer* self, GameObject* a2, int a3,  bool a4) {
 }
 
 
-void *(*buildHelperO)(EditorUI *self, bool a2);
-void *buildHelperH(EditorUI *self, bool a2)
-{
-    auto ret = buildHelperO(self, a2);
-
-    auto selected = self->getSelectedObjects();
-    CCLog("enter loop");
-    for (int i = 0; selected->count() > i; i++)
-    {
-		CCNode* node = reinterpret_cast<CCNode*>(selected->objectAtIndex(i));
-		const char* type = typeid(*(CCObject*)node).name();
-		CCLog(type);
-        if(contains(type, "Effect")) {
-			CCLog("true");
-			node->removeFromParent();
-			
-		}
-		
-    }
-
-    return ret;
-
-}
 #include "AccountLoginLayer.h"
 
 void *(*AccountSubmitO)(AccountLoginLayer* self, CCObject* a2, void* a3, void* a4);
@@ -1033,7 +1012,7 @@ void *AccountSubmitH(AccountLoginLayer* self, CCObject* a2, void* a3, void* a4)
 {
 	
 	passwordTemp = self->_inputPassword()->getString();
-	CCLog(passwordTemp.c_str());
+	//CCLog(passwordTemp.c_str());
     auto ret = AccountSubmitO(self, a2, a3, a4);
 
 
