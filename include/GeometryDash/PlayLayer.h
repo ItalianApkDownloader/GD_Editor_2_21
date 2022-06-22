@@ -12,8 +12,9 @@ public:
     GJGameLevel* level; // 0x668
 	
 public:
+    CLASS_MEMBER(GJGameLevel*, level, 0x138);
 
-	    CLASS_MEMBER(bool, practiceMode, 0x675);
+	CLASS_MEMBER(bool, practiceMode, 0x675);
 
 public:
     PlayLayer();

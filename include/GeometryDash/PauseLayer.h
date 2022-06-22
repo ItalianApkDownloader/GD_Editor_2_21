@@ -19,6 +19,8 @@ public:
     void createToggleButton( std::string label, cocos2d::SEL_MenuHandler SEL, bool toggle, cocos2d::CCMenu* menu, cocos2d::CCPoint position );
     void goEdit( );
 
+    void goEditFix();
+
     void musicSliderChanged( cocos2d::CCObject* ref );
     void onAutoCheckpoints( cocos2d::CCObject* ref );
     void onAutoRetry( cocos2d::CCObject* ref );

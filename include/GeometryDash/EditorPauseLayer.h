@@ -13,6 +13,9 @@ public:
     LevelEditorLayer* editor_; // 0x1B8
 
 public:
+    CLASS_MEMBER(LevelEditorLayer*, editorLayer, 0x1C4);
+
+public:
     EditorPauseLayer();
     virtual ~EditorPauseLayer();
 

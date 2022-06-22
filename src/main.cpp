@@ -191,6 +191,10 @@ public:
     void onCLick(){
         LOGD("ENTER! onClick!");
 
+        this->closeTextInputs();
+        *reinterpret_cast<int*>(reinterpret_cast<uintptr_t>(GameManager::sharedState()) + 0x1BC) = 3;
+        this->verifyLevelName();
+
         auto dir = cocos2d::CCDirector::sharedDirector( );
         auto layer = LevelEditorLayer::create( this->gameLevel_ ,false);
         auto sc = CCScene::create();
@@ -200,7 +204,7 @@ public:
                 0.5,sc
         );
 
-        dir->pushScene( scene );
+        dir->replaceScene( scene );
 
 
     }
@@ -217,11 +221,6 @@ bool editor_callback( LevelEditorLayer* p, GJGameLevel* level )
 {
     if ( !dynamic_cast< GJBaseGameLayer* >( p )->init( ) )
         return false;
-
-
-
-
-
 
     auto gm = GameManager::sharedState( );
     *((bool *)gm + 442) = true;
@@ -297,10 +296,11 @@ bool editor_callback( LevelEditorLayer* p, GJGameLevel* level )
     p->arr_2821 = CCArray::create();
     p->arr_2821->retain();
 	
+    p->_crashArray1() = CCArray::create();
+    p->_crashArray1()->retain();
 	
-	    auto stickyGroupsDict = *((CCDictionary**)p + 0x45C);
-    stickyGroupsDict = CCDictionary::create();
-    stickyGroupsDict->retain();
+	p->_stickyGroupsDict() = CCDictionary::create();
+    p->_stickyGroupsDict()->retain();
 	
 
 
@@ -364,7 +364,7 @@ bool editor_callback( LevelEditorLayer* p, GJGameLevel* level )
 
     p->dCross_ = CCSprite::createWithSpriteFrameName( "d_cross_01_001.png" );
     p->batchNode_->addChild( p->dCross_, 10 );
-    p->dCross_->setColor( ccc3( 255, 255, 255 ) );
+    p->dCross_->setColor( ccc3( 255, 0, 0 ) );
     p->dCross_->setVisible( false );
     p->dCross_->setScale( 0.7 );
 
@@ -404,14 +404,13 @@ bool editor_callback( LevelEditorLayer* p, GJGameLevel* level )
     p->editorUI_->updateSlider( );
 
     p->resetGroupCounters(false);
-	//p->sortStickyGroups();
+	p->sortStickyGroups();
     p->updateEditorMode();
-   // p->schedule( schedule_selector( LevelEditorLayer::updateVisibility ));
+
     p->schedule( schedule_selector( LevelEditorLayer::updateEditor ));
 
     //fix to the glitched background with updateEditor
     p->editorUI_->onStopPlaytest(nullptr);
-
 
     return true;
 }
@@ -501,18 +500,6 @@ if(!GM->getGameVariable("100004")) {
                             GameObject *obj = dynamic_cast<GameObject *>(sect->objectAtIndex(k));
                             auto objectPos = obj->getPosition();
                             if(rect.containsPoint(objectPos)){
-								
-								  ////////////////////////////////////
-                                // COLORS!!!!!!!!!!!!!!!!!!!!!!!!
-                                if(p->_isPreviewMode()) {
-                                    auto mainColorIndex = obj->getMainColorMode();
-                                    auto sprColor = obj->getMainColor();
-                                    sprColor->_opacity() = 0.4;
-                                    auto color = p->_effectManager()->activeColorForIndex(mainColorIndex);
-                                    obj->updateMainColor(color);
-                                }
-								
-								
 								auto selected = p->editorUI_->getSelectedObjects();
 								
 								for (int i = 0; i < selected->count(); i++)
@@ -520,25 +507,18 @@ if(!GM->getGameVariable("100004")) {
 									auto object = (GameObject*)selected->objectAtIndex(i);	
 									object->updateMainColor({0, 255, 0});
 								}
-			
-
-                                ////////////////////////////////////
-
 								
-								
-								
-                                if(!obj->getParent()){
-                                    p->gameLayer_->addChild(obj);
-                                }
-                                obj->setVisible(true);
-							//	obj->updateMainColor({255,0,0});
-                            }else{
+                                obj->addMainSpriteToParent(false);
+                                if(obj->hasSecondaryColor()) obj->addColorSpriteToParent(true);
+                                // UNFINISHED!!!!!!!!!!
+                            }
+                            /*else{
                                 if(obj->isVisible()){
                                     obj->setVisible(false);
                                     obj->retain();
                                     p->gameLayer_->removeChild(obj);
                                 }
-                            }
+                            }*/
                         }
                     }
                 }
@@ -577,6 +557,8 @@ void EditorPauseLayer_onResumeH(EditorPauseLayer* p,CCObject* a1){
     *((bool *)p + 11611) = gm->getGameVariable( "0103");
     *((bool *)p + 11612) = gm->getGameVariable( "0104");
 
+    if(p->_editorLayer()->editorUI_) p->_editorLayer()->editorUI_->toggleStickyControls(gm->getGameVariable("0097"));
+
     p->removeFromParentAndCleanup(true);
     //(*(int (__fastcall **)(EditorPauseLayer *, int))(p + 256))(p, 1);
 }
@@ -599,10 +581,10 @@ void GJBaseGameLayer_addToSectionH(GJBaseGameLayer* self,GameObject* obj){
 
 void (*GJBaseGameLayer_removeObjectFromSectionO)(GJBaseGameLayer* self,GameObject* obj);
 void GJBaseGameLayer_removeObjectFromSectionH(GJBaseGameLayer* self,GameObject* obj){
-		if(obj)
-        GJBaseGameLayer_removeObjectFromSectionO(self,obj);
-		obj->removeFromParent();
-		
+	if(obj) {
+        GJBaseGameLayer_removeObjectFromSectionO(self, obj);
+	    if(*reinterpret_cast<bool*>(reinterpret_cast<uintptr_t>(GameManager::sharedState()) + 442)) obj->removeFromParent();
+    }
 }
 
 bool (*UILayer_ccTouchBeganO)(UILayer* self, CCTouch* touch, CCEvent* event);
@@ -725,7 +707,7 @@ const char* getStringH(LoadingLayer* self) {
 	}
 	
 	GM->setGameVariable("0122", false);
-	return "Italian APK Downloader | Catto | iAndy_HD3";
+	return "Catto_\nItalian APK Downloader\niAndy_HD3";
 }
 	
 	
@@ -1058,14 +1040,17 @@ inline long mid_num(const std::string &s)
 {
 	return std::strtol(&s[s.find('_') + 1], nullptr, 10);
 }
-/*
+
 GameObject* (*GameObjectCreateO)(int key);
 GameObject *GameObjectCreateH(int key)
 {
 	auto tb = ObjectToolbox::sharedState()->intKeyToFrame(key);
 
-	// LOGD("GAMEOBJECT: %s", tb);
-	if (strstr(tb, "pixelart") != NULL && strstr(tb, "b_001") == NULL)
+    // fix missing textures
+    if(std::string(tb).length() < 1) return GameObjectCreateO(1);
+
+	CCLog("GAMEOBJECT CREATED: %s", tb);
+	/*if (strstr(tb, "pixelart") != NULL && strstr(tb, "b_001") == NULL)
 	{
 		auto pixelKey = mid_num(tb);
 		// LOGD("ART: %i", pixelKey);
@@ -1078,12 +1063,10 @@ GameObject *GameObjectCreateH(int key)
 
 	if (!strcmp(tb, "pixelb_03_02_001.png"))
 		return GameObjectCreateO(1);
-
-	auto o = GameObjectCreateO(key);
-
-	return o;
+    */
+	return GameObjectCreateO(key);
 }
-*/
+
 void (*downloadLevelO)(LevelInfoLayer* self);
 void downloadLevelH(LevelInfoLayer* self) {
 	
@@ -1125,6 +1108,41 @@ void dict_hk1(cocos2d::CCDictionary *d, CCObject *obj, int key)
 }
 
 */
+
+void (*PauseLayer_onEditO)(PauseLayer*, CCObject*);
+void PauseLayer_onEditH(PauseLayer* self, CCObject*) {
+    auto gm = GameManager::sharedState();
+
+    gm->_playLayer()->stopAllActions();
+    gm->_playLayer()->unscheduleAllSelectors();
+
+    GameSoundManager::sharedManager()->stopBackgroundMusic();
+
+    gm->_playLayer()->removeAllObjects();
+
+    self->runAction(
+        CCSequence::create(
+            CCDelayTime::create(0),
+            CCCallFunc::create(self, callfunc_selector(PauseLayer::goEditFix)),
+            nullptr
+        )
+    );
+}
+
+void PauseLayer::goEditFix() {
+    auto dir = CCDirector::sharedDirector();
+    
+    auto level = GameManager::sharedState()->_playLayer()->_level();
+
+    auto layer = LevelEditorLayer::create(level, false);
+    auto scene = CCScene::create();
+    scene->addChild(layer);
+
+    dir->replaceScene(
+        CCTransitionFade::create(.5, scene)
+    );
+}
+
 #define HOOK(a, b, c) HookManager::do_hook(getPointerFromSymbol(cocos2d, a), (void*)b, (void**)&c);
 
 void loader()
@@ -1132,8 +1150,9 @@ void loader()
     auto cocos2d = dlopen(targetLibName != "" ? targetLibName : NULL, RTLD_LAZY);
 	
 //	HOOK("_ZN7cocos2d12CCDictionary9setObjectEPNS_8CCObjectEi", dict_hk1, dict1);
-//	HOOK("_ZN10GameObject13createWithKeyEi", GameObjectCreateH, GameObjectCreateO);
+	HOOK("_ZN10GameObject13createWithKeyEi", GameObjectCreateH, GameObjectCreateO);
 	HOOK("_ZN14LevelInfoLayer4initEP11GJGameLevelb", LevelInfoLayerInitH, LevelInfoLayerInitO);	
+    HOOK("_ZN10PauseLayer6onEditEPN7cocos2d8CCObjectE", PauseLayer_onEditH, PauseLayer_onEditO);
 	
     HookManager::do_hook(getPointerFromSymbol(cocos2d, "_ZN9AdToolbox16showInterstitialEv"),
                          (void *)GameManager_tryShowAdH,
@@ -1244,7 +1263,7 @@ void loader()
 
     tmp->addPatch("libcocos2dcpp.so", 0x2CA7D6, "11 e0");
     */
-	    tmp->addPatch("libcocos2dcpp.so", 0x37BB72, "00 bf 00 bf");
+	    //tmp->addPatch("libcocos2dcpp.so", 0x37BB72, "00 bf 00 bf");
 
 	
 		//ads
