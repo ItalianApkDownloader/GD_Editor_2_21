@@ -192,7 +192,7 @@ public:
         LOGD("ENTER! onClick!");
 		if(!GM->getGameVariable("100099")) {
 			
-			FLAlertLayer::create(nullptr, "DISCLAIMER", "This version of the editor is\n<cr>unstable and contains bugs and crashes that can't be fixed.</c>\nYour game will crash or freeze, <cg>save your game and levels often.</c>\n<co>If you don't want an unstable editor wait for official 2.2 and don't complain about it.</c>", "OK", nullptr, 500, false, 300)->show();
+			FLAlertLayer::create(nullptr, "DISCLAIMER", "This version of the editor is\n<cr>unstable and contains bugs and crashes that can't be fixed</c>.\nYour game will crash or freeze, <cg>save your game and levels often</c>.\n<co>If you don't want an unstable editor wait for official 2.2 and don't complain about it</c>.", "OK", nullptr, 500, false, 300)->show();
 			GM->setGameVariable("100099", true);
 		}
 		else {
@@ -1125,6 +1125,11 @@ void MenuLayer_updateUserProfileButtonH(MenuLayer* self) {
     }
 }
 
+void (*MenuLayer_showTOSO)(MenuLayer*);
+void MenuLayer_showTOSH(MenuLayer* self) {
+    *reinterpret_cast<bool*>(reinterpret_cast<uintptr_t>(self) + 316) = false;
+}
+
 #define HOOK(a, b, c) HookManager::do_hook(getPointerFromSymbol(cocos2d, a), (void*)b, (void**)&c);
 
 void loader()
@@ -1136,6 +1141,7 @@ void loader()
 //	HOOK("_ZN14LevelInfoLayer4initEP11GJGameLevelb", LevelInfoLayerInitH, LevelInfoLayerInitO);	
     HOOK("_ZN12LoadingLayer4initEb", LoadingLayer_initH, LoadingLayer_initO);
     HOOK("_ZN9MenuLayer23updateUserProfileButtonEv", MenuLayer_updateUserProfileButtonH, MenuLayer_updateUserProfileButtonO);
+    HOOK("_ZN9MenuLayer7showTOSEv", MenuLayer_showTOSH, MenuLayer_showTOSO);
 
     HookManager::do_hook(getPointerFromSymbol(cocos2d, "_ZN9AdToolbox16showInterstitialEv"),
                          (void *)GameManager_tryShowAdH,
@@ -1263,7 +1269,7 @@ void loader()
 //	tmp->addPatch("libcocos2dcpp.so", 0x2B8828, "00 BF 00 BF");
 	
 	//remove tos popup
-//	tmp->addPatch("libcocos2dcpp.so", 0x26C15C, "00 BF 00 BF");
+	//tmp->addPatch("libcocos2dcpp.so", 0x26C15C, "00 BF 00 BF");
 
 	
     tmp->Modify();
