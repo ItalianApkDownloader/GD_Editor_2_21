@@ -84,6 +84,7 @@ public:
 	CLASS_MEMBER(CCArray*, crashArray1, 0x2D18);
     CLASS_MEMBER(CCDictionary*, stickyGroupsDict, 0x45C);
 
+    CLASS_MEMBER(CCArray*, objectsToUpdate, 0x2BD4);
 
 public:
     LevelEditorLayer();

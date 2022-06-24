@@ -17,6 +17,8 @@
 #include <memory>
 #include <cxxabi.h>
 
+#define MEMBERBYOFFSET(type, class, offset) *reinterpret_cast<type*>(reinterpret_cast<uintptr_t>(class) + offset)
+
 string passwordTemp = "";
 bool shouldAdd = true;
 
@@ -310,13 +312,14 @@ bool editor_callback( LevelEditorLayer* p, GJGameLevel* level )
     p->arr_2821->retain();
 	
 	
-	    p->_crashArray1() = CCArray::create();
+	p->_crashArray1() = CCArray::create();
     p->_crashArray1()->retain();
-	
 	
 	p->_stickyGroupsDict() = CCDictionary::create();
     p->_stickyGroupsDict()->retain();
 
+    p->_objectsToUpdate() = CCArray::create();
+    p->_objectsToUpdate()->retain();
 
     *((bool *)p + 316) = *((bool *)level + 393);
 
@@ -503,14 +506,16 @@ if(!GM->getGameVariable("100004")) {
     int limit = (int)(float)(percentage + 1.0);
     auto sections = p->sections;
 
-    for(int i = startIndex;  i <= limit; i++ ){
+    /*
+        UPDATING OBJECTS
+    */
+    for(int i = startIndex;  i <= limit; i++){
         if(i >= 0 && i < sections->count()){
             auto section = sections->objectAtIndex(i);
             if(section){
                 auto sect = reinterpret_cast<CCArray*>(section);
 
                 if (sect) {
-					p->updateObjectColors(sect); 
                     if (sect->count() > 0) {
                         for (int k = 0; k < sect->count(); k++) {
                             GameObject *obj = dynamic_cast<GameObject *>(sect->objectAtIndex(k));
@@ -518,17 +523,16 @@ if(!GM->getGameVariable("100004")) {
                             if(rect.containsPoint(objectPos)){
 								obj->addMainSpriteToParent(false);
                                 if(obj->hasSecondaryColor()) obj->addColorSpriteToParent(true);
-								
-                                obj->setVisible(true);
-							//	obj->updateMainColor({255,0,0});
+                                obj->activateObject();
+
+                                // isSelected
+                                if(!MEMBERBYOFFSET(bool, obj, 0x405)) {
+                                    p->_objectsToUpdate()->addObject(obj);
+                                }                                
                             }
                             // GOOFY AHH :trollskullirl:
                             else{
-                                if(obj->isVisible()){
-                                    obj->setVisible(false);
-                                    obj->retain();
-                                    obj->removeFromParentAndCleanup(false);
-                                }
+                                obj->deactivateObject(false);
                             }
 
                         }
@@ -538,14 +542,9 @@ if(!GM->getGameVariable("100004")) {
 
         }
     }
-	
-	auto selected = p->editorUI_->getSelectedObjects();
 
-	for (int i = 0; i < selected->count(); i++)
-	{
-		auto object = (GameObject*)selected->objectAtIndex(i);	
-		object->updateMainColor({0, 255, 0});
-	}
+    p->updateObjectColors(p->_objectsToUpdate());
+    p->_objectsToUpdate()->removeAllObjects();
 			
     p->processAreaVisualActions();
     p->sortBatchnodeChildren(0.0);
@@ -563,24 +562,44 @@ void CCSpriteFrameCache_spriteFrameByNameH(CCSpriteFrameCache* self,const char* 
 void (*EditorPauseLayer_onResumeO)(EditorPauseLayer* self,CCObject* a1);
 void EditorPauseLayer_onResumeH(EditorPauseLayer* p,CCObject* a1){
     auto gm = GameManager::sharedState();
-    *((bool *)p + 770) = gm->getGameVariable( "0009");
-    *((bool *)p + 11600) = gm->getGameVariable( "0001");
-  //  *((bool *)p + 11601) = gm->getGameVariable( "0044");
-    *((bool *)p + 11602) = gm->getGameVariable( "0045");
-    *((bool *)p + 11603) = gm->getGameVariable( "0038");
-    *((bool *)p + 11605) = gm->getGameVariable( "0043");
-    *((bool *)p + 11606) = gm->getGameVariable( "0037");
-    *((bool *)p + 11607) = gm->getGameVariable( "0058");
-    *((bool *)p + 11608) = gm->getGameVariable( "0013");
-    *((bool *)p + 11809) = gm->getGameVariable( "0036");
-    *((bool *)p + 11609) = gm->getGameVariable( "0078");
-    *((bool *)p + 11610) = gm->getGameVariable( "0120");
-    *((bool *)p + 11604) = gm->getGameVariable( "0079");
-    *((bool *)p + 11611) = gm->getGameVariable( "0103");
-    *((bool *)p + 11612) = gm->getGameVariable( "0104");
+
+    auto editor = MEMBERBYOFFSET(LevelEditorLayer*, p, 0x1C4);
+
+    MEMBERBYOFFSET(bool, editor, 0x13E) = gm->getGameVariable("0009");
+    MEMBERBYOFFSET(bool, editor, 0x2B8C) = gm->getGameVariable("0001");
+    //MEMBERBYOFFSET(bool, editor, 0x2B8D) = gm->getGameVariable("0044"); // orbs and shit
+    MEMBERBYOFFSET(bool, editor, 0x2B8E) = gm->getGameVariable("0045");
+    MEMBERBYOFFSET(bool, editor, 0x2B8F) = gm->getGameVariable("0038");
+    MEMBERBYOFFSET(bool, editor, 0x2B91) = gm->getGameVariable("0043");
+    MEMBERBYOFFSET(bool, editor, 0x2B92) = gm->getGameVariable("0037");
+    MEMBERBYOFFSET(bool, editor, 0x2B93) = gm->getGameVariable("0058");
+    MEMBERBYOFFSET(bool, editor, 0x2B94) = gm->getGameVariable("0013");
+    MEMBERBYOFFSET(bool, editor, 0x2C5D) = gm->getGameVariable("0036");
+    MEMBERBYOFFSET(bool, editor, 0x2B95) = gm->getGameVariable("0078");
+    MEMBERBYOFFSET(bool, editor, 0x2B96) = gm->getGameVariable("0120");
+    MEMBERBYOFFSET(bool, editor, 0x2B90) = gm->getGameVariable("0079");
+    MEMBERBYOFFSET(bool, editor, 0x2B97) = gm->getGameVariable("0103");
+    MEMBERBYOFFSET(bool, editor, 0x2B98) = gm->getGameVariable("0104");
+
+    if(editor->editorUI_) editor->editorUI_->updateGroupIDLabel();
+
+    /**((bool *)p + 770) = gm->getGameVariable("0009");
+    *((bool *)p + 11600) = gm->getGameVariable("0001");
+    //*((bool *)p + 11601) = gm->getGameVariable( "0044");
+    *((bool *)p + 11602) = gm->getGameVariable("0045");
+    *((bool *)p + 11603) = gm->getGameVariable("0038");
+    *((bool *)p + 11605) = gm->getGameVariable("0043");
+    *((bool *)p + 11606) = gm->getGameVariable("0037");
+    *((bool *)p + 11607) = gm->getGameVariable("0058");
+    *((bool *)p + 11608) = gm->getGameVariable("0013");
+    *((bool *)p + 11809) = gm->getGameVariable("0036");
+    *((bool *)p + 11609) = gm->getGameVariable("0078");
+    *((bool *)p + 11610) = gm->getGameVariable("0120");
+    *((bool *)p + 11604) = gm->getGameVariable("0079");
+    *((bool *)p + 11611) = gm->getGameVariable("0103");
+    *((bool *)p + 11612) = gm->getGameVariable("0104");*/
 
     p->removeFromParentAndCleanup(true);
-    //(*(int (__fastcall **)(EditorPauseLayer *, int))(p + 256))(p, 1);
 }
 
 void (*EditorPauseLayer_removeO)(LevelEditorLayer* self,GameObject *,bool);
@@ -588,10 +607,6 @@ void EditorPauseLayer_removeH(LevelEditorLayer* p,GameObject * obj,bool a1){
     EditorPauseLayer_removeO(p,obj,a1);
     obj->removeFromParent();
 }
-
-
-
-
 
 void (*GJBaseGameLayer_addToSectionO)(GJBaseGameLayer* self,GameObject* obj);
 void GJBaseGameLayer_addToSectionH(GJBaseGameLayer* self,GameObject* obj){
@@ -1168,9 +1183,9 @@ void loader()
     HookManager::do_hook(getPointerFromSymbol(cocos2d, "_ZN15GJBaseGameLayer12addToSectionEP10GameObject"),
                          (void *) GJBaseGameLayer_addToSectionH,
                          (void **)&GJBaseGameLayer_addToSectionO);
-   HookManager::do_hook(getPointerFromSymbol(cocos2d, "_ZN15GJBaseGameLayer23removeObjectFromSectionEP10GameObject"),
-                       (void *) GJBaseGameLayer_removeObjectFromSectionH,
-                         (void **)&GJBaseGameLayer_removeObjectFromSectionO);	 
+    HookManager::do_hook(getPointerFromSymbol(cocos2d, "_ZN15GJBaseGameLayer23removeObjectFromSectionEP10GameObject"),
+                        (void *) GJBaseGameLayer_removeObjectFromSectionH,
+                          (void **)&GJBaseGameLayer_removeObjectFromSectionO);	 
     HookManager::do_hook(getPointerFromSymbol(cocos2d, "_ZN7UILayer12ccTouchBeganEPN7cocos2d7CCTouchEPNS0_7CCEventE"),
                          (void *)UILayer_ccTouchBeganH,
                          (void **)&UILayer_ccTouchBeganO);

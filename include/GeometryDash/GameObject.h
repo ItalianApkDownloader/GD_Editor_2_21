@@ -8,7 +8,7 @@ struct GJColorSprite;
 
 class GJSpriteColor {
 public:
-    CLASS_MEMBER(float, opacity, 0x100);
+    CLASS_MEMBER(float, opacity, 0x10C);
 };
 
 
@@ -252,19 +252,6 @@ public:
     uint32_t dword48C;
 
 public:
-    CLASS_MEMBER(bool, dontFadeToggled, 0x374);
-    CLASS_MEMBER(bool, dontEnterToggled, 0x373);
-    CLASS_MEMBER(bool, hideEffectsToggled, 0x375);
-    CLASS_MEMBER(bool, groupParentToggled, 0x3E2);
-    CLASS_MEMBER(bool, highDetailToggled, 0x458);
-
-    CLASS_MEMBER(bool, untouchableToggled, 0x42B);
-    CLASS_MEMBER(bool, passableToggled, 0x475);
-    CLASS_MEMBER(bool, hideToggled, 0x476);
-    CLASS_MEMBER(bool, nonStickToggled, 0x477);
-    CLASS_MEMBER(bool, iceBlockToggled, 0x478);
-
-public:
     GameObject( );
     virtual ~GameObject();
 
@@ -304,11 +291,20 @@ public:
 
     // colors
     GJSpriteColor* getMainColor();
+    GJSpriteColor* getSecondaryColor();
     int getMainColorMode();
+
+    void updateMainColor();
 
     void updateMainColor(cocos2d::_ccColor3B const& color);
     void updateSecondaryColor(cocos2d::_ccColor3B const& color);
 	void addMainSpriteToParent(bool);
 	bool hasSecondaryColor();
     void addColorSpriteToParent(bool);
+
+    void setOpacity(unsigned char opacity);
+    void updateMainOpacity();
+
+    void activateObject();
+    void deactivateObject(bool);
 };
