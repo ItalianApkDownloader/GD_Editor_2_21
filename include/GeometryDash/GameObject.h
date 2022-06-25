@@ -303,6 +303,7 @@ public:
     void addColorSpriteToParent(bool);
 
     void setOpacity(unsigned char opacity);
+	void setVisible(bool);
     void updateMainOpacity();
 
     void activateObject();

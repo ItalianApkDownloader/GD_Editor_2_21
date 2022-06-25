@@ -18,6 +18,7 @@
 #include <cxxabi.h>
 
 #define MEMBERBYOFFSET(type, class, offset) *reinterpret_cast<type*>(reinterpret_cast<uintptr_t>(class) + offset)
+#define MBO MEMBERBYOFFSET
 
 string passwordTemp = "";
 bool shouldAdd = true;
@@ -192,13 +193,14 @@ class events : public EditLevelLayer {
 public:
     void onCLick(){
         LOGD("ENTER! onClick!");
+		goto a;
 		if(!GM->getGameVariable("100099")) {
 			
 			FLAlertLayer::create(nullptr, "DISCLAIMER", "This version of the editor is\n<cr>unstable and contains bugs and crashes that can't be fixed</c>.\nYour game will crash or freeze, <cg>save your game and levels often</c>.\n<co>If you don't want an unstable editor wait for official 2.2 and don't complain about it</c>.", "OK", nullptr, 500, false, 300)->show();
 			GM->setGameVariable("100099", true);
 		}
 		else {
-			
+			a:
 		this->closeTextInputs();
         *reinterpret_cast<int*>(reinterpret_cast<uintptr_t>(GameManager::sharedState()) + 0x1BC) = 3;
         this->verifyLevelName();
@@ -469,13 +471,29 @@ bool setUpLevelInfo_hk(EditLevelLayer *ptr, GJGameLevel *level)
     return ret;
 };
 
-
+float (*opacityForModeO)(GameObject* self, int a2, bool a3);
+float opacityForModeH(GameObject* self, int a2, bool a3 ){
+	
+//	return 200.0; this mf works in play layer but not in editor
+	
+	return opacityForModeO(self, a2, a3);
+}
 
 void (*GameManager_tryShowAdO)();
 void GameManager_tryShowAdH(){
 
 }
 bool test = false;
+
+void* (*GameObjectSetOpacityO)(GameObject* self, unsigned char opacity);
+void* GameObjectSetOpacityH(GameObject* self, unsigned char opacity){
+	
+
+	CCLog("GameObjectSetOpacityH");
+	
+	return GameObjectSetOpacityO(self, opacity);
+
+}
 
 void (*LevelEditorLayer_updateVisibilityO)(LevelEditorLayer*,float);
 void LevelEditorLayer_updateVisibilityH(LevelEditorLayer* p,float a1){
@@ -524,6 +542,7 @@ if(!GM->getGameVariable("100004")) {
 								obj->addMainSpriteToParent(false);
                                 if(obj->hasSecondaryColor()) obj->addColorSpriteToParent(true);
                                 obj->activateObject();
+								GameObjectSetOpacityH(obj, 70);
 
                                 // isSelected
                                 if(!MEMBERBYOFFSET(bool, obj, 0x405)) {
@@ -955,7 +974,7 @@ bool UILayerInitH(UILayer* self){
 	
 	return UILayerInitO(self);
 }
-
+/*
 LevelSettingsObject* (*objectfromDictO)(LevelSettingsObject*, CCDictionary* keys);
 LevelSettingsObject* objectfromDictH(LevelSettingsObject* a1, CCDictionary* keys) {
 	
@@ -967,7 +986,7 @@ LevelSettingsObject* objectfromDictH(LevelSettingsObject* a1, CCDictionary* keys
 	auto ret = objectfromDictO(a1, keys);
 	return ret;
 }
-
+*/
 CCArray* (*getTriggerGroupO)(LevelEditorLayer* self, int a1);
 CCArray* getTriggerGroupH(LevelEditorLayer* self, int a1) {
 	
@@ -1151,6 +1170,8 @@ void loader()
 {
     auto cocos2d = dlopen(targetLibName != "" ? targetLibName : NULL, RTLD_LAZY);
 	
+	HOOK("_ZN10GameObject10setOpacityEh", GameObjectSetOpacityH, GameObjectSetOpacityO);
+//	HOOK("_ZN10GameObject17opacityModForModeEib", opacityForModeH, opacityForModeO);
 //	HOOK("_ZN7cocos2d12CCDictionary9setObjectEPNS_8CCObjectEi", dict_hk1, dict1);
 	HOOK("_ZN10GameObject13createWithKeyEi", GameObjectCreateH, GameObjectCreateO);
 //	HOOK("_ZN14LevelInfoLayer4initEP11GJGameLevelb", LevelInfoLayerInitH, LevelInfoLayerInitO);	
@@ -1217,8 +1238,8 @@ void loader()
 	AccountProcessH, AccountProcessO);
 	HOOK("_ZN12CreatorLayer19canPlayOnlineLevelsEv",
 	canPlayOnlineLevelsH, canPlayOnlineLevelsO);
-	HOOK("_ZN19LevelSettingsObject14objectFromDictEPN7cocos2d12CCDictionaryE",
-	objectfromDictH, objectfromDictO);
+//	HOOK("_ZN19LevelSettingsObject14objectFromDictEPN7cocos2d12CCDictionaryE",
+//	objectfromDictH, objectfromDictO);
 	HOOK("_ZN16LevelEditorLayer15getTriggerGroupEi",
 	getTriggerGroupH, getTriggerGroupO);
 	HOOK("_ZN7UILayer4initEv",
