@@ -255,7 +255,7 @@ bool editor_callback( LevelEditorLayer* p, GJGameLevel* level )
     p->unk_bool_10 = gm->getGameVariable( "0078");
     p->unk_bool_11 = gm->getGameVariable( "0120");
     p->unk_bool_05 = gm->getGameVariable( "0079");
-    p->unk_bool_12 = gm->getGameVariable( "0103");
+    p->unk_bool_12 = true; //layer locking
     p->unk_bool_13 = gm->getGameVariable( "0104");
 
     p->setObjectCount( 0 );
@@ -652,7 +652,7 @@ void EditorPauseLayer_onResumeH(EditorPauseLayer* p,CCObject* a1){
     MEMBERBYOFFSET(bool, editor, 0x2B95) = gm->getGameVariable("0078");
     MEMBERBYOFFSET(bool, editor, 0x2B96) = gm->getGameVariable("0120");
     MEMBERBYOFFSET(bool, editor, 0x2B90) = gm->getGameVariable("0079");
-    MEMBERBYOFFSET(bool, editor, 0x2B97) = gm->getGameVariable("0103");
+    MEMBERBYOFFSET(bool, editor, 0x2B97) = true; //layer locking
     MEMBERBYOFFSET(bool, editor, 0x2B98) = gm->getGameVariable("0104");
 
     if(editor->editorUI_) editor->editorUI_->updateGroupIDLabel();
