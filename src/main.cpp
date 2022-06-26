@@ -596,7 +596,7 @@ void LevelEditorLayer_updateVisibilityH(LevelEditorLayer* p,float a1){
 								int l1 = MBO(int, obj, 0x450);
 								int l2 = MBO(int, obj, 0x454);
 								
-								bool shouldBeVisible = (currentLayer == l1 || currentLayer == l2 || currentLayer == -1);
+								bool shouldBeVisible = (currentLayer == l1 || (currentLayer == l2 && l2 != 0) || currentLayer == -1);
 								
 								GameObjectSetOpacityH(obj, shouldBeVisible ? 255 : 70);
 								
