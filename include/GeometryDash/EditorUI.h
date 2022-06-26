@@ -31,5 +31,10 @@ public:
     void toggleStickyControls( bool toggle );
     void updateZoom(float);
     CCArray* getSelectedObjects();
+	int editorLayerForArray(CCArray*, bool);
+	void onGroupUp(CCObject*);
+	void onGroupDown(CCObject*);
+	void onLockLayer(CCObject*);
+	void onGoToBaseLayer(CCObject*);	
 	void replaceGroupID(GameObject* go, int old, int newgroup);
 };

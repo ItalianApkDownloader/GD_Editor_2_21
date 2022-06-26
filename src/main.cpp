@@ -224,9 +224,10 @@ public:
 
 void createArrayAndAssign(LevelEditorLayer* p,int offset){
     auto array = CCArray::create();
-    *((int *)p + offset) = reinterpret_cast<int>(array);
+    *((int *)p + offset) = reinterpret_cast<uintptr_t>(array);
     array->retain();
 }
+
 
 bool (*editor_callback_trp)( LevelEditorLayer* p, GJGameLevel* level );
 bool editor_callback( LevelEditorLayer* p, GJGameLevel* level )
@@ -436,6 +437,7 @@ bool editor_callback( LevelEditorLayer* p, GJGameLevel* level )
 }
 
 
+
 bool (*setUpLevelInfo)(EditLevelLayer *, GJGameLevel *);
 bool setUpLevelInfo_hk(EditLevelLayer *ptr, GJGameLevel *level)
 {
@@ -489,19 +491,61 @@ void* (*GameObjectSetOpacityO)(GameObject* self, unsigned char opacity);
 void* GameObjectSetOpacityH(GameObject* self, unsigned char opacity){
 	
 
-	CCLog("GameObjectSetOpacityH");
+	//CCLog("GameObjectSetOpacityH");
 	
 	return GameObjectSetOpacityO(self, opacity);
 
 }
+void (*UnlockAllLayersO)(EditorPauseLayer* self, CCObject* a2);
+void UnlockAllLayersH(EditorPauseLayer* self, CCObject* a2){
+	/*
+	auto editor = self->_editorLayer();
+	auto ui = editor->editorUI_;
 
+	int original = editor->_currentLayer();
+	
+	CCLog("original: %d", original);
+	auto fl = FLAlertLayer::create(nullptr, "wrong layer", "Go to layer 0 and press the button again", "OK", nullptr, 200, false, 150);
+	
+	if(original != 0) {
+	fl->show();
+	CCLog("original != 0");
+	} else {
+
+	
+
+	
+	for(int i = 0; i < 1000; i++) {
+		CCLog("class member : %d", editor->_currentLayer());
+	
+	editor->_currentLayer()++;
+
+	if(editor->isLayerLocked(editor->_currentLayer()))
+		editor->toggleLockActiveLayer();
+	}
+	CCLog("finish loop");
+	editor->_currentLayer() = original;
+	CCLog("reseting");
+	}
+	*/
+	
+}
 void (*LevelEditorLayer_updateVisibilityO)(LevelEditorLayer*,float);
 void LevelEditorLayer_updateVisibilityH(LevelEditorLayer* p,float a1){
 
+	//int a = MBO(int, p, 0x2CBC);
+	//CCLog("layertest: %d", a);
 	
-    //((PlayLayer*)p)->updateVisibility(a1);
+	//((PlayLayer*)p)->updateVisibility(a1);
 	
-if(!GM->getGameVariable("100004")) {
+	int cl = MBO(int, p, 0x2C1C);
+
+	if(p->isLayerLocked(cl)) {
+		p->toggleLockActiveLayer();
+		p->editorUI_->updateGroupIDLabel();
+	}
+	
+
 
     auto node = *((CCNode **)p + 284);
     auto position = node->getPosition();
@@ -532,19 +576,31 @@ if(!GM->getGameVariable("100004")) {
             auto section = sections->objectAtIndex(i);
             if(section){
                 auto sect = reinterpret_cast<CCArray*>(section);
+				
+
 
                 if (sect) {
                     if (sect->count() > 0) {
                         for (int k = 0; k < sect->count(); k++) {
                             GameObject *obj = dynamic_cast<GameObject *>(sect->objectAtIndex(k));
+							
+
+							
                             auto objectPos = obj->getPosition();
                             if(rect.containsPoint(objectPos)){
 								obj->addMainSpriteToParent(false);
                                 if(obj->hasSecondaryColor()) obj->addColorSpriteToParent(true);
                                 obj->activateObject();
-								GameObjectSetOpacityH(obj, 70);
-
-                                // isSelected
+								
+								int currentLayer = MBO(int, p, 0x2C1C);
+								int l1 = MBO(int, obj, 0x450);
+								int l2 = MBO(int, obj, 0x454);
+								
+								bool shouldBeVisible = (currentLayer == l1 || currentLayer == l2 || currentLayer == -1);
+								
+								GameObjectSetOpacityH(obj, shouldBeVisible ? 255 : 70);
+								
+							
                                 if(!MEMBERBYOFFSET(bool, obj, 0x405)) {
                                     p->_objectsToUpdate()->addObject(obj);
                                 }                                
@@ -567,7 +623,6 @@ if(!GM->getGameVariable("100004")) {
 			
     p->processAreaVisualActions();
     p->sortBatchnodeChildren(0.0);
-}
 }
 
 void (*CCSpriteFrameCache_spriteFrameByNameO)(CCSpriteFrameCache* self,const char* a1);
@@ -763,6 +818,7 @@ const char* getStringH(LoadingLayer* self) {
 	}
 	
 	GM->setGameVariable("0122", false);
+	CCLog("Loading Init");
 	return "Italian APK Downloader\nCatto_\niAndy_HD3\nTr1NgleBoss";
 }
 	
@@ -1164,17 +1220,31 @@ void MenuLayer_showTOSH(MenuLayer* self) {
     *reinterpret_cast<bool*>(reinterpret_cast<uintptr_t>(self) + 316) = false;
 }
 
+
+void (*EditorUIonLockLayersO)(EditorUI* self, CCObject* a1);
+void EditorUIonLockLayersH(EditorUI* self, CCObject* a1){
+	
+	CCLog("Lock layers");
+	
+		return EditorUIonLockLayersO(self, a1);
+}
+	
+
 #define HOOK(a, b, c) HookManager::do_hook(getPointerFromSymbol(cocos2d, a), (void*)b, (void**)&c);
 
 void loader()
 {
     auto cocos2d = dlopen(targetLibName != "" ? targetLibName : NULL, RTLD_LAZY);
 	
+	
+	
+	HOOK("_ZN16EditorPauseLayer17onUnlockAllLayersEPN7cocos2d8CCObjectE", UnlockAllLayersH, UnlockAllLayersO);
+//	HOOK("_ZN8EditorUI11onLockLayerEPN7cocos2d8CCObjectE", EditorUIonLockLayersH, EditorUIonLockLayersO);
 	HOOK("_ZN10GameObject10setOpacityEh", GameObjectSetOpacityH, GameObjectSetOpacityO);
 //	HOOK("_ZN10GameObject17opacityModForModeEib", opacityForModeH, opacityForModeO);
 //	HOOK("_ZN7cocos2d12CCDictionary9setObjectEPNS_8CCObjectEi", dict_hk1, dict1);
-	HOOK("_ZN10GameObject13createWithKeyEi", GameObjectCreateH, GameObjectCreateO);
-//	HOOK("_ZN14LevelInfoLayer4initEP11GJGameLevelb", LevelInfoLayerInitH, LevelInfoLayerInitO);	
+//	HOOK("_ZN10GameObject13createWithKeyEi", GameObjectCreateH, GameObjectCreateO);
+	HOOK("_ZN14LevelInfoLayer4initEP11GJGameLevelb", LevelInfoLayerInitH, LevelInfoLayerInitO);	
     HOOK("_ZN12LoadingLayer4initEb", LoadingLayer_initH, LoadingLayer_initO);
     HOOK("_ZN9MenuLayer23updateUserProfileButtonEv", MenuLayer_updateUserProfileButtonH, MenuLayer_updateUserProfileButtonO);
     HOOK("_ZN9MenuLayer7showTOSEv", MenuLayer_showTOSH, MenuLayer_showTOSO);

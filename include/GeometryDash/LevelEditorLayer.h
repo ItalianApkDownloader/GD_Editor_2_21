@@ -83,6 +83,7 @@ public:
     CLASS_MEMBER(bool, isPreviewMode, 0x2C5E);
 	CLASS_MEMBER(CCArray*, crashArray1, 0x2D18);
     CLASS_MEMBER(CCDictionary*, stickyGroupsDict, 0x45C);
+	CLASS_MEMBER(int, currentLayer, 0x2C1C);
 
     CLASS_MEMBER(CCArray*, objectsToUpdate, 0x2BD4);
 
@@ -100,7 +101,8 @@ public:
     void resetToggledGroups( );
 
     void updateEditorMode( );
-
+	bool isLayerLocked(int);
+	void toggleLockActiveLayer();
 
     void sortBatchnodeChildren(float);
 
