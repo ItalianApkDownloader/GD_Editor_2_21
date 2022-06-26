@@ -1370,6 +1370,9 @@ void loader()
 	
 	//gauntlets (crash after exiting)
 	tmp->addPatch("libcocos2dcpp.so", 0x2E95A8, "00 BF 00 BF");
+
+    // versus button shit
+    tmp->addPatch("libcocos2dcpp.so", 0x2E95D2, "00 BF 00 BF");
 	
 	//shit
 //	tmp->addPatch("libcocos2dcpp.so", 0x2B8828, "00 BF 00 BF");
