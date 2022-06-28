@@ -12,8 +12,9 @@ enum SelectArtType {
 
 class SelectArtLayer : public FLAlertLayer {
 public:
-    CLASS_MEMBER(cocos2d::CCMenu*, bgSelectMenu, 0x1A4);
-    CLASS_MEMBER(cocos2d::CCArray*, someArray, 0x1D8);
+    CLASS_MEMBER(cocos2d::CCMenu*, bgSelectMenu, 0x1B0);
+    CLASS_MEMBER(cocos2d::CCArray*, someArray, 0x1E8);
+	CLASS_MEMBER(int, type, 0x1F8)
 
 public:
     void selectArt(cocos2d::CCObject*);

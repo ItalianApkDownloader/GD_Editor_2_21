@@ -13,7 +13,8 @@ public:
 
 public:
 
-CLASS_MEMBER(LevelEditorLayer*, levelEditor, 0xBD);
+CLASS_MEMBER(LevelEditorLayer*, levelEditor, 0x2F4);
+CLASS_MEMBER(CCMenu*, objectMenu, 0x298);
 
 public:
     EditorUI();

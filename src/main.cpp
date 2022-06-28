@@ -22,6 +22,15 @@
 
 string passwordTemp = "";
 bool shouldAdd = true;
+bool layersfix;
+
+template <typename T>
+std::string itos(T Number)
+{
+	std::ostringstream ss;
+	ss << Number;
+	return ss.str();
+}
 
 static const std::string base64_chars =
              "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
@@ -431,6 +440,8 @@ bool editor_callback( LevelEditorLayer* p, GJGameLevel* level )
 
     //fix to the glitched background with updateEditor
     p->editorUI_->onStopPlaytest(nullptr);
+	layersfix = true;
+	
 
 
     return true;
@@ -539,58 +550,57 @@ void LevelEditorLayer_updateVisibilityH(LevelEditorLayer* p,float a1){
 	//((PlayLayer*)p)->updateVisibility(a1);
 	
 	int cl = MBO(int, p, 0x2C1C);
-
+	
 	if(p->isLayerLocked(cl)) {
 		p->toggleLockActiveLayer();
 		p->editorUI_->updateGroupIDLabel();
 	}
 	
 
-
-    auto node = *((CCNode **)p + 284);
-    auto position = node->getPosition();
-    auto winSize = CCDirector::sharedDirector()->getWinSize();
-    auto scale = node->getScale();
-    position.x = -(position.x * (1 / scale));
-    position.y = -(position.y * (1 / scale));
-
-
-    auto rect = CCRect(
-            position.x,
-            position.y,
-            (float)(winSize.width / scale) + 30.0f,
-            (float)(winSize.height / scale) + 30.0f);
+	auto node = *((CCNode **)p + 284);
+	auto position = node->getPosition();
+	auto winSize = CCDirector::sharedDirector()->getWinSize();
+	auto scale = node->getScale();
+	position.x = -(position.x * (1 / scale));
+	position.y = -(position.y * (1 / scale));
 
 
-    float centerX = rect.origin.x;
-    int startIndex = (int)(float)(floorf(centerX / 100.0) - 1.0);
-    float percentage = (float)(centerX + rect.size.width) / 100.0;
-    int limit = (int)(float)(percentage + 1.0);
-    auto sections = p->sections;
+	auto rect = CCRect(
+	position.x,
+	position.y,
+	(float)(winSize.width / scale) + 30.0f,
+	(float)(winSize.height / scale) + 30.0f);
 
-    /*
-        UPDATING OBJECTS
-    */
-    for(int i = startIndex;  i <= limit; i++){
-        if(i >= 0 && i < sections->count()){
-            auto section = sections->objectAtIndex(i);
-            if(section){
-                auto sect = reinterpret_cast<CCArray*>(section);
+
+	float centerX = rect.origin.x;
+	int startIndex = (int)(float)(floorf(centerX / 100.0) - 1.0);
+	float percentage = (float)(centerX + rect.size.width) / 100.0;
+	int limit = (int)(float)(percentage + 1.0);
+	auto sections = p->sections;
+
+	/*
+		UPDATING OBJECTS
+	*/
+	for(int i = startIndex;  i <= limit; i++){
+		if(i >= 0 && i < sections->count()){
+			auto section = sections->objectAtIndex(i);
+			if(section){
+				auto sect = reinterpret_cast<CCArray*>(section);
 				
 
 
-                if (sect) {
-                    if (sect->count() > 0) {
-                        for (int k = 0; k < sect->count(); k++) {
-                            GameObject *obj = dynamic_cast<GameObject *>(sect->objectAtIndex(k));
+				if (sect) {
+					if (sect->count() > 0) {
+						for (int k = 0; k < sect->count(); k++) {
+							GameObject *obj = dynamic_cast<GameObject *>(sect->objectAtIndex(k));
 							
 
 							
-                            auto objectPos = obj->getPosition();
-                            if(rect.containsPoint(objectPos)){
+							auto objectPos = obj->getPosition();
+							if(rect.containsPoint(objectPos)){
 								obj->addMainSpriteToParent(false);
-                                if(obj->hasSecondaryColor()) obj->addColorSpriteToParent(true);
-                                obj->activateObject();
+								if(obj->hasSecondaryColor()) obj->addColorSpriteToParent(true);
+								obj->activateObject();
 								
 								int currentLayer = MBO(int, p, 0x2C1C);
 								int l1 = MBO(int, obj, 0x450);
@@ -600,37 +610,36 @@ void LevelEditorLayer_updateVisibilityH(LevelEditorLayer* p,float a1){
 								
 								GameObjectSetOpacityH(obj, shouldBeVisible ? 255 : 70);
 								
-							
-                                if(!MEMBERBYOFFSET(bool, obj, 0x405)) {
-                                    p->_objectsToUpdate()->addObject(obj);
-                                }                                
-                            }
-                            // GOOFY AHH :trollskullirl:
-                            else{
-                                obj->deactivateObject(false);
-                            }
+								
+								if(!MEMBERBYOFFSET(bool, obj, 0x405)) {
+									p->_objectsToUpdate()->addObject(obj);
+								}                                
+							}
+							// GOOFY AHH :trollskullirl:
+							else{
+								obj->deactivateObject(false);
+							}
 
-                        }
-                    }
-                }
-            }
+						}
+					}
+				}
+			}
 
-        }
-    }
+		}
+	}
 
-    p->updateObjectColors(p->_objectsToUpdate());
-    p->_objectsToUpdate()->removeAllObjects();
-			
-    p->processAreaVisualActions();
-    p->sortBatchnodeChildren(0.0);
-}
-
+	p->updateObjectColors(p->_objectsToUpdate());
+	p->_objectsToUpdate()->removeAllObjects();
+	
+	p->processAreaVisualActions();
+	p->sortBatchnodeChildren(0.0);
+}
 void (*CCSpriteFrameCache_spriteFrameByNameO)(CCSpriteFrameCache* self,const char* a1);
 void CCSpriteFrameCache_spriteFrameByNameH(CCSpriteFrameCache* self,const char* a1){
-    auto v2 = a1;
-    if(strstr(v2,"pixelart") || strstr(v2, "pixelb"))
-        v2 = "d_spikes_01_001.png";
-    return CCSpriteFrameCache_spriteFrameByNameO(self,v2);
+ //   auto v2 = a1;
+  //  if(strstr(v2,"pixelart") || strstr(v2, "pixelb"))
+   //     v2 = "d_spikes_01_001.png";
+    return CCSpriteFrameCache_spriteFrameByNameO(self,a1);
 }
 
 void (*EditorPauseLayer_onResumeO)(EditorPauseLayer* self,CCObject* a1);
@@ -773,27 +782,26 @@ void (*OptionsLayerInitO)(OptionsLayer* self);
 void OptionsLayerInitH(OptionsLayer* self) {
 	
 	
-		auto dir = CCDirector::sharedDirector();
-		auto midx = dir->getScreenRight() / 2;
-		auto midy = dir->getScreenTop() / 2;
+	auto dir = CCDirector::sharedDirector();
+	auto midx = dir->getScreenRight() / 2;
+	auto midy = dir->getScreenTop() / 2;
 	auto old_menu = CCMenu::create();
 	auto layer = reinterpret_cast<CCLayer*>(self->getChildren()->objectAtIndex(0));
 
 	auto oldSprite = cocos2d::CCSprite::createWithSpriteFrameName("accountBtn_settings_001.png");
 	auto old_btn = CCMenuItemSpriteExtra::create(
-		oldSprite,
-		oldSprite,
-		self,
-		menu_selector(OptionsLayer::onGDPSSettings));
+	oldSprite,
+	oldSprite,
+	self,
+	menu_selector(OptionsLayer::onGDPSSettings));
+	
 	old_menu->addChild(old_btn, 100);
 	old_btn->setPositionX(midx - 110);
 	old_btn->setPositionY(midy);
 	old_menu->setPosition({0, 0});
 	layer->addChild(old_menu, 100);
 	
-	return OptionsLayerInitO(self);
-}
-
+	return OptionsLayerInitO(self);}
 
 const char* (*getStringO)(LoadingLayer* self);
 const char* getStringH(LoadingLayer* self) {
@@ -834,7 +842,9 @@ void addToggle_hk(MoreOptionsLayer* self, const char * title, const char * code,
          //   addToggle_trp(self, "Robtop Servers", "100001", "Change servers to robtop servers");
          //   addToggle_trp(self, "Force Platformer", "100002", "All levels are platformer mode");
 			addToggle_trp(self, "Instantly open editor\nat startup", "100003", 0);
-			addToggle_trp(self, "Disable editor\nobject visibility", "100004", 0);
+			//addToggle_trp(self, "Disable editor\nobject visibility", "100004", 0);
+			addToggle_trp(self, "Enable pixel blocks\nin the editor", "100005", 0);
+			
             isGDPSSettings = false;
         }
     }
@@ -1098,13 +1108,13 @@ void *LoginFinishedH(AccountLoginLayer* self, void* a2, void* a3)
 		
 	auto m_sFileName = "password.dat";
 	
-	    auto path = CCFileUtils::sharedFileUtils()->getWritablePath() + m_sFileName;
+	auto path = CCFileUtils::sharedFileUtils()->getWritablePath() + m_sFileName;
 
-		ofstream MyFile(path.c_str());
+	ofstream MyFile(path.c_str());
 
-		MyFile << passwordTemp;
+	MyFile << passwordTemp;
 
-		MyFile.close();
+	MyFile.close();
 
     return LoginFinishedO(self, a2, a3);
 
@@ -1137,11 +1147,98 @@ inline long mid_num(const std::string &s)
 GameObject* (*GameObjectCreateO)(int key);
 GameObject *GameObjectCreateH(int key)
 {
+
 	auto tb = ObjectToolbox::sharedState()->intKeyToFrame(key);
 	
-	return strlen(tb) < 1 ? GameObjectCreateO(1) : GameObjectCreateO(key);
+//	CCLog("name: %s | key: %d", tb, key);
+	
+		if(key == 2013)
+	return GameObjectCreateO(1);
+	
+	if(contains(tb, "pixelb"))
+	return GameObjectCreateO(1);
+
+	if(contains(tb, "pixel")) {
+	
+		if(contains(tb, "b_"))
+		return GameObjectCreateO(1);
+
+		auto pixelKey = mid_num(tb);
+
+		return GameObjectCreateO(pixelKey > 140 ? 1 : key);
+	}
+	
+	return GameObjectCreateO(key);
 
 }
+
+	
+const char* (*keyToFrameO)(ObjectToolbox* self, int key);
+const char* keyToFrameH(ObjectToolbox* self, int key) {
+	
+	auto ret = keyToFrameO(self, key);
+	if(contains(ret, "Icon"))
+	CCLog("name: %s | key: %d", ret, key);
+	
+	if(key >= 2925) {
+		
+		switch(key) {
+
+			
+			
+		case 2925:
+			return "edit_eCamModeBtn_001.png";
+			break;
+			
+		case 2999:
+			return "edit_eSetupMGBtn_001.png";
+			break;
+
+		case 3016:
+			return "edit_eAdvFollowBtn_001.png";
+			break;
+
+		case 3024:
+			return "edit_eAreaStopBtn_001.png";
+			break;
+
+		case 3020:
+			return "edit_eFadeEnterBtn_001.png";
+			break;
+
+		case 2066:
+			return "edit_eGravityBtn_001.png";
+			break;
+			
+		case 3017:
+			return "edit_eMoveEnterBtn_001.png";
+			break;
+
+		case 3018:
+			return "edit_eRotateEnterBtn_001.png";
+			break;
+
+		case 3019:
+			return "edit_eScaleEnterBtn_001.png";
+			break;
+
+		case 3021:
+			return "edit_eTintEnterBtn_001.png";
+			break;
+
+		case 3022:
+			return "edit_eTeleportBtn_001.png";
+			break;
+			
+		case 3023:
+			return "edit_eStopEnterBtn_001.png";
+			break;
+
+		default:
+			return keyToFrameO(self, key);
+		}
+	}}
+
 void (*downloadLevelO)(LevelInfoLayer* self);
 void downloadLevelH(LevelInfoLayer* self) {
 	
@@ -1149,40 +1246,6 @@ void downloadLevelH(LevelInfoLayer* self) {
 	downloadLevelO(self);
 	shouldAdd = true;
 }
-
-/*
-void (*dict1)(CCDictionary *, CCObject *, int);
-void dict_hk1(cocos2d::CCDictionary *d, CCObject *obj, int key)
-{
-
-	// LOGD("%s", obj, key);
-
-	switch (key)
-	{
-
-	case 0x4EB:
-        return dict1( d, CCString::create( "edit_eCounterBtn_001" ), key );
-        break;
-
-	case 0x732:
-        return dict1( d, CCString::create( "edit_eCounterBtn_001" ), key );
-        break;
-		
-	case 0xBCE:
-        return dict1( d, CCString::create( "edit_eCounterBtn_001" ), key );
-        break;
-		
-	case 0xB53:
-        return dict1( d, CCString::create( "edit_eCounterBtn_001" ), key );
-        break;
-		default:
-
-		dict1(d, obj, key);
-		break;
-	}
-}
-
-*/
 
 // moving funny loading text
 bool (*LoadingLayer_initO)(LoadingLayer*, bool);
@@ -1220,6 +1283,27 @@ void MenuLayer_showTOSH(MenuLayer* self) {
     *reinterpret_cast<bool*>(reinterpret_cast<uintptr_t>(self) + 316) = false;
 }
 
+void* (*EditorUI_SelectObjectsO)(EditorUI* self, CCArray* objects, bool a3);
+void* EditorUI_SelectObjectsH(EditorUI* self, CCArray* objects, bool a3) {
+	
+
+   	int cl = MBO(int, self->_levelEditor(), 0x2C1C);
+	if(cl != -1) {
+
+		for(int i = 0; i < objects->count(); i++) {
+			auto obj = (GameObject*)objects->objectAtIndex(i);
+			int l1 = MBO(int, obj, 0x450);
+			int l2 = MBO(int, obj, 0x454);
+			if(cl != l1 && l2 == 0) {
+				CCLog("object %d removed from array", i);
+				objects->removeObject(obj, false);
+			}
+		}
+	}
+   
+   return EditorUI_SelectObjectsO(self, objects, a3);
+}
+
 
 void (*EditorUIonLockLayersO)(EditorUI* self, CCObject* a1);
 void EditorUIonLockLayersH(EditorUI* self, CCObject* a1){
@@ -1230,20 +1314,142 @@ void EditorUIonLockLayersH(EditorUI* self, CCObject* a1){
 }
 	
 
-#define HOOK(a, b, c) HookManager::do_hook(getPointerFromSymbol(cocos2d, a), (void*)b, (void**)&c);
+
+bool (*EditorUI_InitO)(EditorUI* self, LevelEditorLayer* editor);
+bool EditorUI_InitH(EditorUI* self, LevelEditorLayer* editor) {
+	
+	if(!EditorUI_InitO(self, editor))
+		return false;
+	
+	
+	if(!GM->getGameVariable("100005")) {
+		
+		auto menu = self->_objectMenu();
+		auto btns = menu->getChildren();
+		
+		auto pixelblocksBtn = (CCMenuItemSpriteExtra*)btns->objectAtIndex(8);
+		btns->removeObject(pixelblocksBtn, false);
+		menu->alignItemsHorizontallyWithPadding(-2);
+	}
+	
+	return true;
+
+	
+}
+
+int (*onToggleTrampoline)(void *pthis, const char *val);
+void hook_onToggle(void *pthis, const char *val) {
+
+	int v = atoi(val);
+
+	onToggleTrampoline(pthis, val);
+
+	if (v > 100000)
+	{
+		if(v == 100005 && GM->getGameVariable("100005")) {
+			FLAlertLayer::create(nullptr, "DISCLAIMER", "<cg>Pixel blocks</c> are <cr>not official</c> and for that reason levels containing these blocks <cr>will not look good in the official 2.2.</c>\n     <co>(textures will change)</c> <cr>Don't use pixel blocks if you want your level to be playable in 2.2.</c>", "OK", nullptr, 500, false, 300)->show();
+		}
+	}
+}
+
+
+bool (*SelectArtLayer_initO)(SelectArtLayer *, SelectArtType);
+bool SelectArtLayer_initH(SelectArtLayer *self, SelectArtType type)
+{
+	if (!SelectArtLayer_initO(self, type))
+		return false;
+	
+	auto bgSelect = self->_bgSelectMenu();
+	bgSelect->getChildren()->removeAllObjects();
+	
+	auto bgArray = self->_someArray();
+	bgArray->removeAllObjects();
+	
+	auto label = CCSprite::createWithSpriteFrameName("bgIcon_03_001.png");
+	auto test = CCMenuItemSpriteExtra::create(label, label, self, menu_selector(SelectArtLayer::selectArt));
+	bgArray->addObject(test);
+	bgSelect->addChild(test);
+	
+	auto label2 = CCLabelBMFont::create("Reverse", "bigFont.fnt");
+	auto test2 = CCMenuItemSpriteExtra::create(label, label, self, menu_selector(SelectArtLayer::selectArt));
+	test2->setPositionY(test2->GPY() + 30);
+	bgArray->addObject(test2);
+	bgSelect->addChild(test2);
+	
+	
+/*
+	int maxTextures = 25; // not sure if this is right but even if its too much it won't crash
+
+	if (type == SelectArtType::ground)
+		maxTextures = 17;
+
+	auto spriteCache = CCSpriteFrameCache::sharedSpriteFrameCache();
+
+	for (int i = 0; i < maxTextures; i++)
+	{
+		auto bgBtn = (CCMenuItemSpriteExtra *)self->_bgSelectMenu()->getChildren()->objectAtIndex(i);
+		
+		if (bgBtn != nullptr)
+		{
+			const char *frameSprStr;
+
+			if (type == SelectArtType::ground)
+				frameSprStr = "gIcon_%02d_001.png";
+			else
+				frameSprStr = "bgIcon_%02d_001.png";
+
+			auto frameStr = CCString::createWithFormat(frameSprStr, i + 1)->getCString();
+
+			auto frameSpr = spriteCache->spriteFrameByName(frameStr);
+
+			if (frameSpr != nullptr)
+			{
+				
+			}
+		}
+	}
+
+
+	if (type == SelectArtType::background)
+	{
+		auto okBtn = (CCMenuItemSpriteExtra *)self->_bgSelectMenu()->getChildren()->objectAtIndex(self->_bgSelectMenu()->getChildrenCount() - 1);
+
+		okBtn->setPositionX(80);
+		okBtn->setPositionY(okBtn->getPositionY() + 5);
+	}
+*/
+	return true;
+}
+
+
+#include "AccountRegisterLayer.h"
+bool (*AccountRegisterLayer_InitO)(AccountRegisterLayer*);
+bool AccountRegisterLayer_InitH(AccountRegisterLayer*) {
+	
+	cocos2d::CCApplication::sharedApplication()->openURL("http://game.gdpseditor.com/server/tools/account/registerAccount.php");
+	
+	
+}
+
 
 void loader()
 {
+	
+	#define HOOK(a, b, c) HookManager::do_hook(getPointerFromSymbol(cocos2d, a), (void*)b, (void**)&c);
     auto cocos2d = dlopen(targetLibName != "" ? targetLibName : NULL, RTLD_LAZY);
 	
-	
-	
+	HOOK("_ZN20AccountRegisterLayer4initEv", AccountRegisterLayer_InitH, AccountRegisterLayer_InitO);
+	//HOOK("_ZN14SelectArtLayer4initE13SelectArtType", SelectArtLayer_initH, SelectArtLayer_initO)
+	HOOK("_ZN11GameManager18toggleGameVariableEPKc", hook_onToggle, onToggleTrampoline);
+	HOOK("_ZN13ObjectToolbox13intKeyToFrameEi", keyToFrameH, keyToFrameO);
+	HOOK("_ZN8EditorUI4initEP16LevelEditorLayer", EditorUI_InitH, EditorUI_InitO);
+	HOOK("_ZN8EditorUI13selectObjectsEPN7cocos2d7CCArrayEb", EditorUI_SelectObjectsH, EditorUI_SelectObjectsO);
 	HOOK("_ZN16EditorPauseLayer17onUnlockAllLayersEPN7cocos2d8CCObjectE", UnlockAllLayersH, UnlockAllLayersO);
 //	HOOK("_ZN8EditorUI11onLockLayerEPN7cocos2d8CCObjectE", EditorUIonLockLayersH, EditorUIonLockLayersO);
 	HOOK("_ZN10GameObject10setOpacityEh", GameObjectSetOpacityH, GameObjectSetOpacityO);
 //	HOOK("_ZN10GameObject17opacityModForModeEib", opacityForModeH, opacityForModeO);
 //	HOOK("_ZN7cocos2d12CCDictionary9setObjectEPNS_8CCObjectEi", dict_hk1, dict1);
-//	HOOK("_ZN10GameObject13createWithKeyEi", GameObjectCreateH, GameObjectCreateO);
+	HOOK("_ZN10GameObject13createWithKeyEi", GameObjectCreateH, GameObjectCreateO);
 	HOOK("_ZN14LevelInfoLayer4initEP11GJGameLevelb", LevelInfoLayerInitH, LevelInfoLayerInitO);	
     HOOK("_ZN12LoadingLayer4initEb", LoadingLayer_initH, LoadingLayer_initO);
     HOOK("_ZN9MenuLayer23updateUserProfileButtonEv", MenuLayer_updateUserProfileButtonH, MenuLayer_updateUserProfileButtonO);
@@ -1335,11 +1541,15 @@ void loader()
 
     patch *tmp = new patch();
     tmp->addPatch("libcocos2dcpp.so", 0x26DB2E, "00 bf 00 bf");
+	
 
     //playtest
     tmp->addPatch("libcocos2dcpp.so", 0x2B8896, "00 bf 00 bf");
     tmp->addPatch("libcocos2dcpp.so", 0x2B88A4, "00 bf 00 bf");
     tmp->addPatch("libcocos2dcpp.so", 0x2B893C, "00 bf");
+	
+	//gradient bypass
+    tmp->addPatch("libcocos2dcpp.so", 0x385134, "FF");
 	
 	/*
 	tried to fix colors and opacity

@@ -250,7 +250,13 @@ public:
     uint32_t dword484;
     uint32_t dword488;
     uint32_t dword48C;
+	
+public:
 
+	CLASS_MEMBER(int, l1, 0x450);
+	CLASS_MEMBER(int, l2, 0x454);
+	
+	
 public:
     GameObject( );
     virtual ~GameObject();
