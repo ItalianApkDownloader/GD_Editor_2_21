@@ -1,8 +1,8 @@
 #pragma once
 #include "GDAPI_Macros.h"
+#include "GameObject.h"
 
-
-class EffectGameObject
+class EffectGameObject : public GameObject
 {
 public:
 

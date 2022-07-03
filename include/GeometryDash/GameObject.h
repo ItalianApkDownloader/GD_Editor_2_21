@@ -255,6 +255,7 @@ public:
 
 	CLASS_MEMBER(int, l1, 0x450);
 	CLASS_MEMBER(int, l2, 0x454);
+	CLASS_MEMBER(int, objectID, 0x3A0);
 	
 	
 public:

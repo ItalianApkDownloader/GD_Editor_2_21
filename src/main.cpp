@@ -23,6 +23,12 @@
 string passwordTemp = "";
 bool shouldAdd = true;
 bool layersfix;
+bool colorPopup = true;
+
+
+
+
+
 
 template <typename T>
 std::string itos(T Number)
@@ -163,10 +169,95 @@ std::string get_name_for_node(cocos2d::CCObject* node)
 }
 
 
+void logNames(CCArray* objects) {
+	
+	for(int i = 0; i < objects->count(); i++) {
+		auto node = (CCNode*)objects->objectAtIndex(i);
+		auto name = get_name_for_node(node);
+		CCLog("i: %d | %s", i, name.c_str());
+		
+		if(node->getChildrenCount() > 0) {
+			
+			auto objects2 = node->getChildren();
+			
+			for(int j = 0; j < node->getChildrenCount(); j++) {
+				
+			auto node2 = (CCNode*)objects2->objectAtIndex(i);
+			auto name2 = get_name_for_node(node2);
+			CCLog("inside of %s | j: %d | %s", name.c_str(), j, name2.c_str());
+			
+			}
+		}
+		
+	}
+		CCLog("Finished");
+
+}
+
+
 void *getPointerFromSymbol(void *handle, const char *symbol)
 {
     return reinterpret_cast<void *>(dlsym(handle, symbol));
 }
+
+
+
+
+#include "CCMenuItemToggler.h"
+void createToggleButton(const char *text, CCPoint position, float boxScale, float labelScale, CCObject *baseclass, cocos2d::SEL_MenuHandler callback, CCMenu *menu, bool toggled, bool enabled)
+{
+    auto onSpr = CCSprite::createWithSpriteFrameName("GJ_checkOn_001.png");
+    auto offSpr = CCSprite::createWithSpriteFrameName("GJ_checkOff_001.png");
+
+    onSpr->setScale(boxScale);
+    offSpr->setScale(boxScale);
+
+    auto toggle = CCMenuItemToggler::create(
+        onSpr,
+        offSpr,
+        baseclass,
+        callback);
+    toggle->setSizeMult(1.5);
+    toggle->toggle(!toggled);
+
+    auto label = CCLabelBMFont::create(text, "bigFont.fnt");
+    label->limitLabelWidth(80, labelScale, 0);
+    label->setAlignment(cocos2d::CCTextAlignment::kCCTextAlignmentLeft);
+
+    toggle->setPosition(position);
+    label->setPosition(toggle->getPositionX() + 17.5 + label->getScaledContentSize().width / 2, toggle->getPositionY());
+
+    menu->addChild(toggle);
+    menu->addChild(label);
+
+}
+
+
+void createLabels(CCNode* base, CCPoint pos, bool logNames) {
+	
+	CCArray* objects = base->getChildren();
+	int count = objects->count();
+	auto menu = CCMenu::create();
+	
+	menu->setPosition(pos);
+	base->addChild(menu, 100);
+	
+	for(int i = 0 ; i < count; i++) {
+	
+	auto node = (CCNode*)objects->objectAtIndex(i);
+	if(logNames) {
+		const char* name = get_name_for_node(node).c_str();
+		CCLog("i: %d: | name: %s", i, name);
+	}
+	
+	auto label = CCLabelBMFont::create(itos(i).c_str(), "bigFont.fnt");
+	label->setPosition(node->getPosition());
+	label->setScale(.65);
+	menu->addChild(label);
+		
+	}
+}
+
 
 bool (*EditLevelLayer_initO)(EditLevelLayer* self,GJGameLevel * level);
 bool EditLevelLayer_initH(EditLevelLayer* ptr,GJGameLevel * level){
@@ -196,6 +287,16 @@ bool EditLevelLayer_initH(EditLevelLayer* ptr,GJGameLevel * level){
     btn2->setScale(.7);
     myButton2->setPosition(CCLEFT - 255, editBtn->getPositionY() - 10);
     menu->addChild(myButton2, 1000);
+	
+	
+	//createLabels(ptr, {0,0}, true);
+	
+	
+	
+	
+	
+	
+	
     return ret;
 }
 class events : public EditLevelLayer {
@@ -480,6 +581,9 @@ bool setUpLevelInfo_hk(EditLevelLayer *ptr, GJGameLevel *level)
     btn2->setScale(.7);
     myButton2->setPosition(CCLEFT - 255, editBtn->getPositionY() - 10);
     menu->addChild(myButton2, 1000);
+	
+//		createLabels(ptr->_btnMenu(), {0,0}, true);
+
 
     return ret;
 };
@@ -507,41 +611,42 @@ void* GameObjectSetOpacityH(GameObject* self, unsigned char opacity){
 	return GameObjectSetOpacityO(self, opacity);
 
 }
+bool onit = false;
+
 void (*UnlockAllLayersO)(EditorPauseLayer* self, CCObject* a2);
 void UnlockAllLayersH(EditorPauseLayer* self, CCObject* a2){
-	/*
+	
 	auto editor = self->_editorLayer();
 	auto ui = editor->editorUI_;
 
-	int original = editor->_currentLayer();
-	
-	CCLog("original: %d", original);
-	auto fl = FLAlertLayer::create(nullptr, "wrong layer", "Go to layer 0 and press the button again", "OK", nullptr, 200, false, 150);
-	
-	if(original != 0) {
-	fl->show();
-	CCLog("original != 0");
-	} else {
-
-	
-
-	
+	onit = true;
 	for(int i = 0; i < 1000; i++) {
 		CCLog("class member : %d", editor->_currentLayer());
-	
-	editor->_currentLayer()++;
+		
+		editor->_currentLayer()++;
 
-	if(editor->isLayerLocked(editor->_currentLayer()))
+		if(editor->isLayerLocked(editor->_currentLayer()))
 		editor->toggleLockActiveLayer();
 	}
+	
 	CCLog("finish loop");
-	editor->_currentLayer() = original;
+	editor->_currentLayer() = 0xFFFFFFFF;
 	CCLog("reseting");
-	}
-	*/
+	onit = false;
 	
 }
-void (*LevelEditorLayer_updateVisibilityO)(LevelEditorLayer*,float);
+void* (*stuffO)(int a1, int a2);
+void* stuffH(int a1, int a2){
+//	CCLog("bbbb");
+	return stuffO(a1, a2);
+}
+	
+	
+void (*updateGroupIDLabelO)(EditorUI* self, int layer);
+void updateGroupIDLabelH(EditorUI* self, int layer) {
+
+}
+void (*LevelEditorLayer_updateVisibilityO)(LevelEditorLayer*,float);
 void LevelEditorLayer_updateVisibilityH(LevelEditorLayer* p,float a1){
 
 	//int a = MBO(int, p, 0x2CBC);
@@ -556,6 +661,17 @@ void LevelEditorLayer_updateVisibilityH(LevelEditorLayer* p,float a1){
 		p->editorUI_->updateGroupIDLabel();
 	}
 	
+	
+//Uncomment this to see the wierdest bug you've ever seen
+//****************************************************
+/*
+	if(p->isLayerLocked(3))	
+	CCLog("Current Layer: %d | Layer 3 : LOCKED", cl);
+	else
+	CCLog("Current Layer: %d | Layer 3 : UNLOCKED", cl);
+*/
+//****************************************************
+
 
 	auto node = *((CCNode **)p + 284);
 	auto position = node->getPosition();
@@ -601,14 +717,15 @@ void LevelEditorLayer_updateVisibilityH(LevelEditorLayer* p,float a1){
 								obj->addMainSpriteToParent(false);
 								if(obj->hasSecondaryColor()) obj->addColorSpriteToParent(true);
 								obj->activateObject();
+	
+									int currentLayer = MBO(int, p, 0x2C1C);
+									int l1 = MBO(int, obj, 0x450);
+									int l2 = MBO(int, obj, 0x454);
 								
-								int currentLayer = MBO(int, p, 0x2C1C);
-								int l1 = MBO(int, obj, 0x450);
-								int l2 = MBO(int, obj, 0x454);
 								
-								bool shouldBeVisible = (currentLayer == l1 || (currentLayer == l2 && l2 != 0) || currentLayer == -1);
-								
-								GameObjectSetOpacityH(obj, shouldBeVisible ? 255 : 70);
+									bool shouldBeVisible = (currentLayer == l1 || (currentLayer == l2 && l2 != 0) || currentLayer == -1);
+			
+									GameObjectSetOpacityH(obj, shouldBeVisible ? 255 : 70);
 								
 								
 								if(!MEMBERBYOFFSET(bool, obj, 0x405)) {
@@ -633,6 +750,8 @@ void LevelEditorLayer_updateVisibilityH(LevelEditorLayer* p,float a1){
 	
 	p->processAreaVisualActions();
 	p->sortBatchnodeChildren(0.0);
+	
+
 }
 void (*CCSpriteFrameCache_spriteFrameByNameO)(CCSpriteFrameCache* self,const char* a1);
 void CCSpriteFrameCache_spriteFrameByNameH(CCSpriteFrameCache* self,const char* a1){
@@ -856,6 +975,7 @@ void addToggle_hk(MoreOptionsLayer* self, const char * title, const char * code,
 bool first = true;
 bool (*MenuLayerInitO)(MenuLayer*);
 bool MenuLayerInitH(MenuLayer* self) {
+	
 	
 	//CCLog(AY_OBFUSCATE("This apk belongs to TheMilkCat"));
 	CCLog("Menu Init!");
@@ -1149,11 +1269,15 @@ GameObject *GameObjectCreateH(int key)
 {
 
 	auto tb = ObjectToolbox::sharedState()->intKeyToFrame(key);
+	CCLog("name: %s | key: %d", tb, key);
 	
-//	CCLog("name: %s | key: %d", tb, key);
-	
-		if(key == 2013)
-	return GameObjectCreateO(1);
+	switch(key) {
+		
+		case 2013:
+		case 2223:
+		return GameObjectCreateO(1);
+		
+	}
 	
 	if(contains(tb, "pixelb"))
 	return GameObjectCreateO(1);
@@ -1176,15 +1300,17 @@ GameObject *GameObjectCreateH(int key)
 const char* (*keyToFrameO)(ObjectToolbox* self, int key);
 const char* keyToFrameH(ObjectToolbox* self, int key) {
 	
-	auto ret = keyToFrameO(self, key);
-	if(contains(ret, "Icon"))
-	CCLog("name: %s | key: %d", ret, key);
+//	auto ret = keyToFrameO(self, key);
+//	CCLog("%d | | %s", key, ret);
 	
 	if(key >= 2925) {
 		
 		switch(key) {
 
-			
+		case 1933:
+		
+		return "portal_18_front_001.png";
+		break;
 			
 		case 2925:
 			return "edit_eCamModeBtn_001.png";
@@ -1238,6 +1364,41 @@ const char* keyToFrameH(ObjectToolbox* self, int key) {
 			return keyToFrameO(self, key);
 		}
 	}}
+//7DA3E7
+
+
+
+void* (*PlayLayer_addObjectO)(PlayLayer* self, GameObject* obj);
+void* PlayLayer_addObjectH(PlayLayer* self, GameObject* obj) {
+	
+	
+	int id = obj->_objectID();
+//	CCLog("Object ID: %d", id);
+	
+	if(id == 1331) {
+		
+		patch *s = new patch();
+		string spider = "70 6F 72 74 61 6C 5F 31 37 5F 62 61 63 6B 5F 30 30 31 2E 70 6E 67";
+		s->addPatch("libcocos2dcpp.so", 0x7DA3E7, spider);
+		s->Modify();
+	}
+	
+	
+	if(id == 1933) {
+		
+		patch *p = new patch();
+		string swing = "70 6F 72 74 61 6C 5F 31 38 5F 62 61 63 6B 5F 30 30 31 2E 70 6E 67";
+		p->addPatch("libcocos2dcpp.so", 0x7DA3E7, swing);
+		p->Modify();
+		
+	}
+	
+	return PlayLayer_addObjectO(self, obj);
+
+	
+}
+	
+	
 
 void (*downloadLevelO)(LevelInfoLayer* self);
 void downloadLevelH(LevelInfoLayer* self) {
@@ -1289,16 +1450,21 @@ void* EditorUI_SelectObjectsH(EditorUI* self, CCArray* objects, bool a3) {
 
    	int cl = MBO(int, self->_levelEditor(), 0x2C1C);
 	if(cl != -1) {
-
-		for(int i = 0; i < objects->count(); i++) {
+		int count = objects->count();
+		auto toDelete = CCArray::create();
+		
+		for(int i = 0; i < count; i++) {
+		//	CCLog("loop: %d", i);
 			auto obj = (GameObject*)objects->objectAtIndex(i);
 			int l1 = MBO(int, obj, 0x450);
 			int l2 = MBO(int, obj, 0x454);
+		//	CCLog("CL: %d | L1: %d | L2: %d", cl, l1, l2);
 			if(cl != l1 && l2 == 0) {
-				CCLog("object %d removed from array", i);
-				objects->removeObject(obj, false);
+				toDelete->addObject(obj);
+			//	CCLog("object %d removed from array", i);
 			}
 		}
+		objects->removeObjectsInArray(toDelete);
 	}
    
    return EditorUI_SelectObjectsO(self, objects, a3);
@@ -1430,6 +1596,530 @@ bool AccountRegisterLayer_InitH(AccountRegisterLayer*) {
 	
 	
 }
+#include "SetupTriggerPopup.h"
+#include "SetupPickupTriggerPopup.h"
+
+bool (*SetupPickupTriggerO)(SetupPickupTriggerPopup *, EffectGameObject *, cocos2d::CCArray *, float, float);
+bool SetupPickupTriggerH(SetupPickupTriggerPopup *self, EffectGameObject *object, cocos2d::CCArray *objects, float a, float b)
+{
+	auto ret = SetupPickupTriggerO(self, object, objects, a, b);
+//pickup
+	
+	EffectGameObject* obj = MBO(EffectGameObject*, self, 0x1F4);
+	bool overrideCount = MBO(bool, obj, 0x5C5);
+	CCMenu* menu = self->_menu();
+	
+
+	auto multitrigger = (CCMenuItemToggler*)menu->getChildren()->objectAtIndex(9);
+	
+		createToggleButton("Override\nCount",
+		{55, 0},
+		.7,
+		0.5,
+		self,
+		menu_selector(SetupPickupTriggerPopup::onOverrideCount),
+		menu, overrideCount, true);
+		
+		
+
+		
+		multitrigger->setPositionY(multitrigger->getPositionY() + 36);
+		multitrigger->setPositionX(multitrigger->getPositionX() - 23);
+		
+		auto layer2 = (CCLayer*)self->getChildren()->objectAtIndex(0);
+		auto label = (CCLabelBMFont*)layer2->getChildren()->objectAtIndex(9);
+		
+		label->setPositionY(label->getPositionY() + 36);
+		label->setPositionX(label->getPositionX() - 23);
+		
+		//createLabels(layer2, {0,0}, true);
+	//	createLabels(menu, {0,0}, true);
+
+
+	return ret;
+
+}
+
+
+int lastTriggerObjectID = 0;
+
+
+bool (*SetupTriggerPopupO)(SetupTriggerPopup *, EffectGameObject *, cocos2d::CCArray *, float, float);
+bool SetupTriggerPopupH(SetupTriggerPopup *self, EffectGameObject *object, cocos2d::CCArray *objects, float x, float y)
+{
+	auto ret = SetupTriggerPopupO(self, object, objects, x, y);
+	
+	if(objects == nullptr) 
+	return ret;
+
+	if(objects->count() > 1)
+	return ret;
+	
+	if(colorPopup) {
+		int id = object->_objectID();
+		lastTriggerObjectID = id;
+	}
+	
+	return ret;
+
+}
+
+#include "SetupAreaMoveTriggerPopup.h"
+#include "InfoAlertButton.h"
+
+	
+	
+
+#include "ColorSelectPopup.h"
+
+void* (*ColorSelectPopupInitO)(ColorSelectPopup *, EffectGameObject *, cocos2d::CCArray *, ColorAction*);
+void* ColorSelectPopupInitH(ColorSelectPopup *self, EffectGameObject *object, cocos2d::CCArray *objects, ColorAction* a4)
+{
+	colorPopup = false;
+	auto ret = ColorSelectPopupInitO(self, object, objects, a4);
+	colorPopup = true;
+	return ret;
+}
+
+	
+
+void* (*PlayLayer_UpdateVisibilityO)(PlayLayer* self, float dt);
+void* PlayLayer_UpdateVisibilityH(PlayLayer* self, float dt) {
+	
+	CCLog("playlayerUpdateVisibility");
+	
+	return PlayLayer_UpdateVisibilityO(self, dt);
+}
+	
+int particleObjID = 0;
+
+CCParticleSystemQuad* (*GameObject_createAndAddParticleO)(GameObject* self, int idk, char const* idk2, int idk3, int someEnum);
+CCParticleSystemQuad* GameObject_createAndAddParticleH(GameObject* self, int idk, char const* plist, int idk3, int someEnum) {
+	
+//	CCLog("int a1: %d | effect: %s", idk, idk2,);
+	particleObjID = self->_objectID();
+
+
+	return GameObject_createAndAddParticleO(self, idk, plist, idk3, someEnum);
+	
+}
+
+CCParticleSystemQuad* (*GJBaseGameLayer_createAndAddParticleO)(GJBaseGameLayer* self, int idk, char const* idk2, int idk3, int someEnum);
+CCParticleSystemQuad* GJBaseGameLayer_createAndAddParticleH(GJBaseGameLayer* self, int idk, char const* idk2, int idk3, int someEnum) {
+	//		CCLog("int a1: %d | effect: %s", idk, idk2);
+
+	CCParticleSystemQuad* ret = GJBaseGameLayer_createAndAddParticleO(self, idk, idk2, idk3, someEnum);
+	
+	auto a = ret->getStartColor();
+	CCLog("R: %3.f | G: %3.f | B: %3.f | A: %3.f", a.r, a.g, a.b, a.a);
+
+	if(particleObjID == 1933) {
+		ccColor4F c = {255, 255, 0, 1};
+		//MOTHERFUCKER WHY DOESNT START END COLOR WORK
+		ret->setStartColor(c);
+		ret->setStartColorVar(c);
+		ret->setEndColor(c);
+		ret->setEndColorVar(c);
+		
+		CCLog("IFFFF | R: %3.f | G: %3.f | B: %3.f | A: %3.f", a.r, a.g, a.b, a.a);
+
+	}
+
+	return ret;
+	
+}
+	
+		string areaArrows = "<cg>Arrows pointing outwards means the effect is applied when the center id approaches the target id.</c>\n\
+<cp>Arrows pointing inwards will apply the area effect on the target id. Center id will  remove the area effect when it approacves the target id.</c>\n\
+<cl>Line means the area effect will ignore y/x depending on how the line is placed.</c>\n\
+<cy>EffectID: gives the area effect an id which can be stopped or changed by an animate area trigger.</c>";
+
+
+
+bool (*infoButton)(string, string, float);
+bool infoButton_hk(string title, string desc, float a3)
+{
+
+	auto ret = infoButton(title, desc, a3);
+
+	if(GM->_inEditor() && colorPopup) {
+		
+
+
+	switch(lastTriggerObjectID) {
+		
+			case 901: //move
+			desc += "\n- <cp>x/y modifier 4 locks to the camera if lock to camera is enabled</c>";
+			return infoButton(title, desc, a3);
+			break;
+			
+			case 1346: //rotate 
+			desc += "\n- <cp>Follow p follows the players icon rotation. Some modes don't work with this.</c>";
+			return infoButton(title, desc, a3);
+			break;
+			
+			case 2067: //scale
+			desc += "\n- <cp>Scaling a singular object uses  the objects rotated x/y instead of grid x/y.</c>";
+			return infoButton(title, desc, a3);
+			break;
+			
+			case 1585: //aninamte
+			desc += "\n- <cp>Can also animate particle effects and animated object.</c>";
+			return infoButton(title, desc, a3);
+			break;
+			
+			case 2062: //camera edge
+			return infoButton("Camera Edge Trigger", "Stops the camera on a target ID.\n\
+			Direction is based on the players directions.\n\
+			Target id 0 unlocks camera egdes.\n\
+			This only works when having a direction selected", a3);
+			break;
+			
+			case 1914: // static camera
+			return infoButton("Static Camera", "Locks the camera to a specific object.\nOnly X and Y will will lock the camera to only scroll horizontally and vertically respectfully.\nExit Static moves the camera back to the player. This does not require a group.\nfollow ignores move time. Set move time to 0 to avoid the camera to instantly jump to the target.", a3);
+			break;
+			
+			case 1817: //pickup trigger
+			return infoButton("Pickup Trigger", "Adds or subtracts a value from a counter.\nOverwrite count sets the value of the counter to that of the pickup trigger.", a3);
+			break;
+			
+			case 1814: //follow player Y
+			return infoButton("Follow Player Y", "makes objects follow the Y position of the player\nOffset controls how much higher or lower the object should follow. \nDelay controls how much time passes until the object goes to the player Y position.\nMax Speed controls how fast the object should follow the players Y position\nSpeed multiplies the Max Speed.", a3);
+			break;
+			
+			case 1916: //camera offset
+			return infoButton("Camera Offset", "Offsets the camera by X or Y.\nThe movement will be based on the original camera position, not the current one. This means offsetting the camera twice won't double the offset", a3);	
+			break;
+			
+			case 2016: //camera guide
+			return infoButton("Camera Guide", "Shows the position of the camera if the player was to spawn on the exact position of the Guide Trigger.\n<cg>The green line shows the entire visible area.</c>\n<cy>The yellow lines show where objects start to fade in and out.</c>", a3);
+			break;
+			
+			case 1934: //song trigger
+			return infoButton(title, "<cy>Sets the time of the song in ms.</c>\n<cr>This means 1000ms = 1 second</c>", a3);
+			break;
+			
+			case 1935: //timewarp
+			return infoButton("Timewarp", "Changes the speed of the game like a speedhack", a3);
+			break;
+			
+			case 1811: //instant count
+			return infoButton("Instant Count", "Only checks for the number count of an item ID channel one time instead of continuously checking until being stopped. Equals checks for if the item ID count is the exact same as the set number, smaller and larger check for if the number is smaller or larger.", a3);
+			break;
+			
+			case 2925: //camera mode
+			return infoButton("Camera Mode", "Enabled free mode for gamemodes with locked camera.\n\
+			Padding determines when the camera moves with the player on y.\n\
+			Easing eases the camera. (Who could've expected that!)", a3);
+			break;
+			
+			case 2999: //Middle Ground Trigger
+			return infoButton("Middle Ground Trigger", "It moves the middle ground on Y.", a3);
+			break;
+			
+			case 2899: //options trigger
+			return infoButton("Options Trigger", "Changes how the game behaves and what it should render.", a3);
+			break;
+			
+			case 2903: //gradient trigger
+			desc += "\n<cg>Uses base and detail color. Does not work with hsv.</c>\n\
+<cb>You can choose on what layer the gradient should be.</c>\n\
+<co>Rotating the gradient trigger also rotates the gradient.</c>\n\
+<cp>Vertex mode uses math instead of textures to create the gradient. U D L R (BL BR TL TR in vertex mode) places the egdes of the gradient on center ids.</c>\n\
+<cr>Change the ID if you use more gradients.\n\
+The maximum amount of ids is 255.</c>";
+			return infoButton("Gradient Trigger", desc, a3);
+			break;
+			
+
+			case 3006: //Area Move 
+			{
+			
+			
+						string areaBase = "<cg>Length: 30 = 1 gridspace.</c>\n\
+<cy>Offset: offsets the area effect</c>";
+
+		string areaExtra = "\n<co>Easing/ease out: determines the shape of the dropoff of the area effect</c>\n\
+		<cr>OffsetY: Offset of the area effect in the Y axis.</c>\n\
+		<cp>ModFront/Back: modifier for easing.</c>\n\
+		<cl>Deadzone: the range at which the area effect is completly applied from the egde of the area effect to the center.</c>";
+
+			
+			
+
+		
+			return infoButton("Area Move Trigger", areaBase + areaExtra, a3);
+			break;
+			}
+			
+			case 3007: { //rotate
+			
+			
+						string aR1 = "<cg>Length: 30 = 1 gridspace.</c>\n\
+<cy>Offset: offsets the area effect</c> ";
+
+		string aR2 = "\n<co>Easing/ease out: determines the shape of the dropoff of the area effect</c>\n\
+		<cr>OffsetY: Offset of the area effect in the Y axis.</c>\n\
+		<cp>ModFront/Back: modifier for easing. </c>\n\
+		<cl>Deadzone: the range at which the area effect is completly applied from the egde of the area effect to the center.</c>";
+
+		
+			
+
+			string aR3 = "\n<cg>Rotation: the amount of degrees the objects will spin. Ignores locked rotation objects but also doesnt change the hitbox.</c>";
+						
+			string des1 = aR1 + aR2 + aR3;
+
+			return infoButton("Area Rotate Trigger", des1, a3);
+			
+			break;
+			}
+			
+			case 3008: {
+				
+				
+						string aR1 = "<cg>Length: 30 = 1 gridspace.</c>\n\
+<cy>Offset: offsets the area effect</c> ";
+
+		string aR2 = "\n<co>Easing/ease out: determines the shape of the dropoff of the area effect</c>\n\
+		<cr>OffsetY: Offset of the area effect in the Y axis.</c>\n\
+		<cp>ModFront/Back: modifier for easing. </c>\n\
+		<cl>Deadzone: the range at which the area effect is completly applied from the egde of the area effect to the center.</c>";
+
+		
+			
+
+			string aR3 = "\n<cg>Scalex/y: Scales objects by their relative x/y unless a p group is used.</c>";
+								string des1 = aR1 + aR2 + aR3;
+	
+			return infoButton("Area Scale Trigger", des1, a3);
+	
+			}
+			break;
+			
+						case 3009: {
+				
+				
+						string aR1 = "<cg>Length: 30 = 1 gridspace.</c>\n\
+<cy>Offset: offsets the area effect</c>";
+
+			string aR2 = "\n<cr>OffsetY: Offset of the area effect in the Y axis.</c>\n\
+		<cp>ModFront/Back: modifier for easing. </c>\n\
+		<cl>Deadzone: the range at which the area effect is completly applied from the egde of the area effect to the center.</c>";
+
+			string aR3 = "\n<co>Opacity: the opacity the object should be set to.</c>";
+								string des1 = aR1 + aR2 + aR3;
+	
+			return infoButton("Area Fade Trigger", des1, a3);
+	
+			}
+			break;
+			
+									case 3010: {
+				
+				
+						string aR1 = "<cg>Length: 30 = 1 gridspace.</c>\n\
+<cy>Offset: offsets the area effect</c> ";
+
+		string aR2 = "\n<cr>OffsetY: Offset of the area effect in the Y axis.</c>\n\
+		<cp>ModFront/Back: modifier for easing. </c>\n\
+		<cl>Deadzone: the range at which the area effect is completly applied from the egde of the area effect to the center.</c>";
+
+			string aR3 = "\n<co>Color channel: to what colors the objects should change</c>\n\
+				<cr>%: the intensity of the effect.</c>\n\
+			<cg>Hsv: uses hsv instead of a color channel.</c>";
+			
+								string des1 = aR1 + aR2 + aR3;
+	
+			return infoButton("Area Tint Trigger", des1, a3);
+	
+			}
+			break;
+			
+			case 3011: //All Area Triggers
+			case 3012:
+			case 3013:
+			case 3014:
+			case 3015:
+			return infoButton("Area Anim Trigger", "<cg>Animates an area effect.</c>\n\
+<cj>Leave NA to not change that value</c>\n\
+<co>Duration: the amount of time it takes to apply the effect.</c>\n\
+<cy>Use EID: Use Effect ID</c>", a3);
+			break;
+			
+	
+			
+		
+		
+	}
+	
+	}
+	
+	return ret;
+}
+	
+
+
+bool (*SetupAreaMoveTriggerPopupO)(SetupAreaMoveTriggerPopup *, EffectGameObject *, cocos2d::CCArray *);
+bool SetupAreaMoveTriggerPopuH(SetupAreaMoveTriggerPopup *self, EffectGameObject *object, cocos2d::CCArray *objects)
+{
+	auto ret = SetupAreaMoveTriggerPopupO(self, object, objects);
+	
+	colorPopup = false;
+	
+	auto layer2 = (CCLayer*)self->getChildren()->objectAtIndex(0);
+	auto menu = (CCMenu*)layer2->getChildren()->objectAtIndex(1);
+	auto reference = (CCMenuItemSpriteExtra*)menu->getChildren()->objectAtIndex(36);
+	auto reference2 = (CCMenuItemSpriteExtra*)menu->getChildren()->objectAtIndex(1);
+	
+	string movedist = "<cg>Movedist: how far the objects move.</c>\n\
+<cy>MoveAngle: In what direction the objects move.</c>\n\
+<cl>Relative: move direction is determined by the center.</c>\n\
+<cp>XY mode: uses grid XY to move objects.</c>";
+
+	
+	auto btn = InfoAlertButton::create("Effect Options", areaArrows, 1);
+	btn->setPositionX(CCLEFT - 190);
+	btn->setPositionY(reference->getPositionY());
+	
+		auto btn2 = InfoAlertButton::create("Area Move Trigger", movedist, 1);
+		btn2->setPositionY(reference2->getPositionY());
+		btn2->setPositionX(reference2->getPositionX() + 35);
+	
+	auto array = CCArray::create();
+	array->addObject(btn);
+	self->addObjectsToPage(array, 1);
+	
+	btn->setVisible(reference->isVisible());
+	
+	menu->addChild(btn);
+	menu->addChild(btn2);
+
+	colorPopup = true;
+	
+	return ret;
+	
+}
+
+
+
+bool (*SetupAreaRotateTriggerPopupO)(SetupAreaRotateTriggerPopup *, EffectGameObject *, cocos2d::CCArray *);
+bool SetupAreaRotateTriggerPopupH(SetupAreaRotateTriggerPopup *self, EffectGameObject *object, cocos2d::CCArray *objects)
+{
+	auto ret = SetupAreaRotateTriggerPopupO(self, object, objects);
+	
+	colorPopup = false;
+	
+	auto layer2 = (CCLayer*)self->getChildren()->objectAtIndex(0);
+	auto menu = (CCMenu*)layer2->getChildren()->objectAtIndex(1);
+	auto reference = (CCMenuItemSpriteExtra*)menu->getChildren()->objectAtIndex(36);
+	
+	auto btn = InfoAlertButton::create("Effect Options", areaArrows, 1);
+	btn->setPositionX(CCLEFT - 190);
+	btn->setPositionY(reference->getPositionY());
+	
+	
+		auto array = CCArray::create();
+	array->addObject(btn);
+	self->addObjectsToPage(array, 1);
+	
+	btn->setVisible(reference->isVisible());
+	menu->addChild(btn);
+
+	colorPopup = true;
+	
+	return ret;
+	
+}
+
+
+
+bool (*SetupAreaTransformTriggerPopupO)(SetupAreaTransformTriggerPopup *, EffectGameObject *, cocos2d::CCArray *);
+bool SetupAreaTransformTriggerPopupH(SetupAreaTransformTriggerPopup *self, EffectGameObject *object, cocos2d::CCArray *objects)
+{
+	auto ret = SetupAreaTransformTriggerPopupO(self, object, objects);
+	
+	colorPopup = false;
+	
+	auto layer2 = (CCLayer*)self->getChildren()->objectAtIndex(0);
+	auto menu = (CCMenu*)layer2->getChildren()->objectAtIndex(1);
+	auto reference = (CCMenuItemSpriteExtra*)menu->getChildren()->objectAtIndex(36);
+	
+	auto btn = InfoAlertButton::create("Effect Options", areaArrows, 1);
+	btn->setPositionX(CCLEFT - 190);
+	btn->setPositionY(reference->getPositionY());
+	
+	
+		auto array = CCArray::create();
+	array->addObject(btn);
+	self->addObjectsToPage(array, 1);
+	
+	btn->setVisible(reference->isVisible());
+	menu->addChild(btn);
+
+	colorPopup = true;
+	
+	return ret;
+	
+}
+
+bool (*SetupAreaFadeTriggerPopupO)(SetupAreaFadeTriggerPopup *, EffectGameObject *, cocos2d::CCArray *);
+bool SetupAreaFadeTriggerPopupH(SetupAreaFadeTriggerPopup *self, EffectGameObject *object, cocos2d::CCArray *objects)
+{
+	auto ret = SetupAreaFadeTriggerPopupO(self, object, objects);
+	
+	colorPopup = false;
+	
+	auto layer2 = (CCLayer*)self->getChildren()->objectAtIndex(0);
+	auto menu = (CCMenu*)layer2->getChildren()->objectAtIndex(1);
+	auto reference = (CCMenuItemSpriteExtra*)menu->getChildren()->objectAtIndex(36);
+	
+	auto btn = InfoAlertButton::create("Effect Options", areaArrows, 1);
+	btn->setPositionX(CCLEFT - 190);
+	btn->setPositionY(reference->getPositionY());
+	
+	
+		auto array = CCArray::create();
+	array->addObject(btn);
+	self->addObjectsToPage(array, 1);
+	
+	btn->setVisible(reference->isVisible());
+	menu->addChild(btn);
+
+	colorPopup = true;
+	
+	return ret;
+	
+}
+
+bool (*SetupAreaTintTriggerPopupO)(SetupAreaTintTriggerPopup *, EffectGameObject *, cocos2d::CCArray *);
+bool SetupAreaTintTriggerPopupH(SetupAreaTintTriggerPopup *self, EffectGameObject *object, cocos2d::CCArray *objects)
+{
+	auto ret = SetupAreaTintTriggerPopupO(self, object, objects);
+	
+	colorPopup = false;
+	
+	auto layer2 = (CCLayer*)self->getChildren()->objectAtIndex(0);
+	auto menu = (CCMenu*)layer2->getChildren()->objectAtIndex(1);
+	auto reference = (CCMenuItemSpriteExtra*)menu->getChildren()->objectAtIndex(36);
+	
+	auto btn = InfoAlertButton::create("Effect Options", areaArrows, 1);
+	btn->setPositionX(CCLEFT - 190);
+	btn->setPositionY(reference->getPositionY());
+	
+	
+		auto array = CCArray::create();
+	array->addObject(btn);
+	self->addObjectsToPage(array, 1);
+	
+	btn->setVisible(reference->isVisible());
+	menu->addChild(btn);
+
+	colorPopup = true;
+	
+	return ret;
+	
+}
 
 
 void loader()
@@ -1438,6 +2128,23 @@ void loader()
 	#define HOOK(a, b, c) HookManager::do_hook(getPointerFromSymbol(cocos2d, a), (void*)b, (void**)&c);
     auto cocos2d = dlopen(targetLibName != "" ? targetLibName : NULL, RTLD_LAZY);
 	
+	
+	HOOK("_ZN25SetupAreaTintTriggerPopup4initEP17EnterEffectObjectPN7cocos2d7CCArrayE", SetupAreaTintTriggerPopupH, SetupAreaTintTriggerPopupO);
+	HOOK("_ZN25SetupAreaFadeTriggerPopup4initEP17EnterEffectObjectPN7cocos2d7CCArrayE", SetupAreaFadeTriggerPopupH, SetupAreaFadeTriggerPopupO);
+	HOOK("_ZN30SetupAreaTransformTriggerPopup4initEP17EnterEffectObjectPN7cocos2d7CCArrayE", SetupAreaTransformTriggerPopupH, SetupAreaTransformTriggerPopupO);
+	HOOK("_ZN27SetupAreaRotateTriggerPopup4initEP17EnterEffectObjectPN7cocos2d7CCArrayE", SetupAreaRotateTriggerPopupH, SetupAreaRotateTriggerPopupO);
+	HOOK("_ZN25SetupAreaMoveTriggerPopup4initEP17EnterEffectObjectPN7cocos2d7CCArrayE", SetupAreaMoveTriggerPopuH, SetupAreaMoveTriggerPopupO);
+	HOOK("_ZN16ColorSelectPopup4initEP16EffectGameObjectPN7cocos2d7CCArrayEP11ColorAction", ColorSelectPopupInitH, ColorSelectPopupInitO);
+	HookManager::do_hook(getPointerFromSymbol(cocos2d, "_ZN15InfoAlertButton6createESsSsf"), (void *)infoButton_hk, (void **)&infoButton);
+	HOOK("_ZN15GJBaseGameLayer14createParticleEiPKciN7cocos2d15tCCPositionTypeE", GJBaseGameLayer_createAndAddParticleH, GJBaseGameLayer_createAndAddParticleO);
+	HOOK("_ZN10GameObject20createAndAddParticleEiPKciN7cocos2d15tCCPositionTypeE", GameObject_createAndAddParticleH, GameObject_createAndAddParticleO);
+	HOOK("_ZN9PlayLayer9addObjectEP10GameObject", PlayLayer_addObjectH, PlayLayer_addObjectO);
+//	HOOK("_ZN10GameObject15createWithFrameEPKc", GameObject_createWithFrameH, GameObject_createWithFrameO);
+//	HOOK("_ZN9PlayLayer16updateVisibilityEf", PlayLayer_UpdateVisibilityH, PlayLayer_UpdateVisibilityO)
+	HOOK("_ZN17SetupTriggerPopup4initEP16EffectGameObjectPN7cocos2d7CCArrayEff", SetupTriggerPopupH, SetupTriggerPopupO );
+	HOOK("_ZN23SetupPickupTriggerPopup4initEP16EffectGameObjectPN7cocos2d7CCArrayE", SetupPickupTriggerH, SetupPickupTriggerO);
+	//HOOK("_ZN8EditorUI18updateGroupIDLabelEv", updateGroupIDLabelH, updateGroupIDLabelO)
+	//HOOK("_ZNSt14_Bit_referenceaSEb",stuffH, stuffO)
 	HOOK("_ZN20AccountRegisterLayer4initEv", AccountRegisterLayer_InitH, AccountRegisterLayer_InitO);
 	//HOOK("_ZN14SelectArtLayer4initE13SelectArtType", SelectArtLayer_initH, SelectArtLayer_initO)
 	HOOK("_ZN11GameManager18toggleGameVariableEPKc", hook_onToggle, onToggleTrampoline);
@@ -1565,7 +2272,10 @@ void loader()
 
     tmp->addPatch("libcocos2dcpp.so", 0x2CA7D6, "11 e0");
     */
-	    tmp->addPatch("libcocos2dcpp.so", 0x37BB72, "00 bf 00 bf");
+	tmp->addPatch("libcocos2dcpp.so", 0x37BB72, "00 bf 00 bf");
+	
+	//testing editor shit
+	//tmp->addPatch("libcocos2dcpp.so", 0x2C2D84, "00 bf 00 bf");
 
 	
 		//ads
