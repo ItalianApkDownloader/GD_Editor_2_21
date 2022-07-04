@@ -303,14 +303,14 @@ class events : public EditLevelLayer {
 public:
     void onCLick(){
         LOGD("ENTER! onClick!");
-		goto a;
+		/*
 		if(!GM->getGameVariable("100099")) {
 			
 			FLAlertLayer::create(nullptr, "DISCLAIMER", "This version of the editor is\n<cr>unstable and contains bugs and crashes that can't be fixed</c>.\nYour game will crash or freeze, <cg>save your game and levels often</c>.\n<co>If you don't want an unstable editor wait for official 2.2 and don't complain about it</c>.", "OK", nullptr, 500, false, 300)->show();
 			GM->setGameVariable("100099", true);
 		}
 		else {
-			a:
+			*/
 		this->closeTextInputs();
         *reinterpret_cast<int*>(reinterpret_cast<uintptr_t>(GameManager::sharedState()) + 0x1BC) = 3;
         this->verifyLevelName();
@@ -326,7 +326,7 @@ public:
         );
 
         dir->replaceScene( scene );
-		}
+	//	}
 		
 
     }
@@ -588,13 +588,7 @@ bool setUpLevelInfo_hk(EditLevelLayer *ptr, GJGameLevel *level)
     return ret;
 };
 
-float (*opacityForModeO)(GameObject* self, int a2, bool a3);
-float opacityForModeH(GameObject* self, int a2, bool a3 ){
-	
-//	return 200.0; this mf works in play layer but not in editor
-	
-	return opacityForModeO(self, a2, a3);
-}
+
 
 void (*GameManager_tryShowAdO)();
 void GameManager_tryShowAdH(){
@@ -635,17 +629,7 @@ void UnlockAllLayersH(EditorPauseLayer* self, CCObject* a2){
 	onit = false;
 	
 }
-void* (*stuffO)(int a1, int a2);
-void* stuffH(int a1, int a2){
-//	CCLog("bbbb");
-	return stuffO(a1, a2);
-}
-	
-	
-void (*updateGroupIDLabelO)(EditorUI* self, int layer);
-void updateGroupIDLabelH(EditorUI* self, int layer) {
 
-}
 void (*LevelEditorLayer_updateVisibilityO)(LevelEditorLayer*,float);
 void LevelEditorLayer_updateVisibilityH(LevelEditorLayer* p,float a1){
 
@@ -963,6 +947,7 @@ void addToggle_hk(MoreOptionsLayer* self, const char * title, const char * code,
 			addToggle_trp(self, "Instantly open editor\nat startup", "100003", 0);
 			//addToggle_trp(self, "Disable editor\nobject visibility", "100004", 0);
 			addToggle_trp(self, "Enable pixel blocks\nin the editor", "100005", 0);
+			addToggle_trp(self, "Disable Playtest", "100006", 0);
 			
             isGDPSSettings = false;
         }
@@ -1269,8 +1254,8 @@ GameObject *GameObjectCreateH(int key)
 {
 
 	auto tb = ObjectToolbox::sharedState()->intKeyToFrame(key);
-	CCLog("name: %s | key: %d", tb, key);
-	
+//	CCLog("name: %s | key: %d", tb, key);
+	/*
 	switch(key) {
 		
 		case 2013:
@@ -1278,18 +1263,18 @@ GameObject *GameObjectCreateH(int key)
 		return GameObjectCreateO(1);
 		
 	}
-	
+	*/
 	if(contains(tb, "pixelb"))
-	return GameObjectCreateO(1);
+	return GameObjectCreateO(2142);
 
 	if(contains(tb, "pixel")) {
 	
 		if(contains(tb, "b_"))
-		return GameObjectCreateO(1);
+		return GameObjectCreateO(2142);
 
 		auto pixelKey = mid_num(tb);
 
-		return GameObjectCreateO(pixelKey > 140 ? 1 : key);
+		return GameObjectCreateO(pixelKey > 140 ? 2142 : key);
 	}
 	
 	return GameObjectCreateO(key);
@@ -1471,14 +1456,7 @@ void* EditorUI_SelectObjectsH(EditorUI* self, CCArray* objects, bool a3) {
 }
 
 
-void (*EditorUIonLockLayersO)(EditorUI* self, CCObject* a1);
-void EditorUIonLockLayersH(EditorUI* self, CCObject* a1){
-	
-	CCLog("Lock layers");
-	
-		return EditorUIonLockLayersO(self, a1);
-}
-	
+
 
 
 bool (*EditorUI_InitO)(EditorUI* self, LevelEditorLayer* editor);
@@ -1683,52 +1661,8 @@ void* ColorSelectPopupInitH(ColorSelectPopup *self, EffectGameObject *object, co
 
 	
 
-void* (*PlayLayer_UpdateVisibilityO)(PlayLayer* self, float dt);
-void* PlayLayer_UpdateVisibilityH(PlayLayer* self, float dt) {
-	
-	CCLog("playlayerUpdateVisibility");
-	
-	return PlayLayer_UpdateVisibilityO(self, dt);
-}
-	
-int particleObjID = 0;
-
-CCParticleSystemQuad* (*GameObject_createAndAddParticleO)(GameObject* self, int idk, char const* idk2, int idk3, int someEnum);
-CCParticleSystemQuad* GameObject_createAndAddParticleH(GameObject* self, int idk, char const* plist, int idk3, int someEnum) {
-	
-//	CCLog("int a1: %d | effect: %s", idk, idk2,);
-	particleObjID = self->_objectID();
 
 
-	return GameObject_createAndAddParticleO(self, idk, plist, idk3, someEnum);
-	
-}
-
-CCParticleSystemQuad* (*GJBaseGameLayer_createAndAddParticleO)(GJBaseGameLayer* self, int idk, char const* idk2, int idk3, int someEnum);
-CCParticleSystemQuad* GJBaseGameLayer_createAndAddParticleH(GJBaseGameLayer* self, int idk, char const* idk2, int idk3, int someEnum) {
-	//		CCLog("int a1: %d | effect: %s", idk, idk2);
-
-	CCParticleSystemQuad* ret = GJBaseGameLayer_createAndAddParticleO(self, idk, idk2, idk3, someEnum);
-	
-	auto a = ret->getStartColor();
-	CCLog("R: %3.f | G: %3.f | B: %3.f | A: %3.f", a.r, a.g, a.b, a.a);
-
-	if(particleObjID == 1933) {
-		ccColor4F c = {255, 255, 0, 1};
-		//MOTHERFUCKER WHY DOESNT START END COLOR WORK
-		ret->setStartColor(c);
-		ret->setStartColorVar(c);
-		ret->setEndColor(c);
-		ret->setEndColorVar(c);
-		
-		CCLog("IFFFF | R: %3.f | G: %3.f | B: %3.f | A: %3.f", a.r, a.g, a.b, a.a);
-
-	}
-
-	return ret;
-	
-}
-	
 		string areaArrows = "<cg>Arrows pointing outwards means the effect is applied when the center id approaches the target id.</c>\n\
 <cp>Arrows pointing inwards will apply the area effect on the target id. Center id will  remove the area effect when it approacves the target id.</c>\n\
 <cl>Line means the area effect will ignore y/x depending on how the line is placed.</c>\n\
@@ -2122,6 +2056,23 @@ bool SetupAreaTintTriggerPopupH(SetupAreaTintTriggerPopup *self, EffectGameObjec
 }
 
 
+
+void (*CreateParticlePopup_onPasteSettingsO)(SetupTriggerPopup* self, CCObject* a2);
+void CreateParticlePopup_onPasteSettingsH(SetupTriggerPopup* self, CCObject* a2){
+
+}
+
+void (*EditorUI_onPlaytestO)(EditorUI* self, CCObject* a2);
+void EditorUI_onPlaytestH(EditorUI* self, CCObject* a2){
+	
+	if(!GM->getGameVariable("100006"))
+		return EditorUI_onPlaytestO(self, a2);
+
+}
+
+
+
+
 void loader()
 {
 	
@@ -2129,22 +2080,20 @@ void loader()
     auto cocos2d = dlopen(targetLibName != "" ? targetLibName : NULL, RTLD_LAZY);
 	
 	
+
+	HOOK("_ZN8EditorUI10onPlaytestEPN7cocos2d8CCObjectE", EditorUI_onPlaytestH, EditorUI_onPlaytestO);
+	HOOK("_ZN19CreateParticlePopup14onCopySettingsEPN7cocos2d8CCObjectE", CreateParticlePopup_onPasteSettingsH, CreateParticlePopup_onPasteSettingsO);
+	HOOK("_ZN19CreateParticlePopup15onPasteSettingsEPN7cocos2d8CCObjectE", CreateParticlePopup_onPasteSettingsH, CreateParticlePopup_onPasteSettingsO);
 	HOOK("_ZN25SetupAreaTintTriggerPopup4initEP17EnterEffectObjectPN7cocos2d7CCArrayE", SetupAreaTintTriggerPopupH, SetupAreaTintTriggerPopupO);
 	HOOK("_ZN25SetupAreaFadeTriggerPopup4initEP17EnterEffectObjectPN7cocos2d7CCArrayE", SetupAreaFadeTriggerPopupH, SetupAreaFadeTriggerPopupO);
 	HOOK("_ZN30SetupAreaTransformTriggerPopup4initEP17EnterEffectObjectPN7cocos2d7CCArrayE", SetupAreaTransformTriggerPopupH, SetupAreaTransformTriggerPopupO);
 	HOOK("_ZN27SetupAreaRotateTriggerPopup4initEP17EnterEffectObjectPN7cocos2d7CCArrayE", SetupAreaRotateTriggerPopupH, SetupAreaRotateTriggerPopupO);
 	HOOK("_ZN25SetupAreaMoveTriggerPopup4initEP17EnterEffectObjectPN7cocos2d7CCArrayE", SetupAreaMoveTriggerPopuH, SetupAreaMoveTriggerPopupO);
 	HOOK("_ZN16ColorSelectPopup4initEP16EffectGameObjectPN7cocos2d7CCArrayEP11ColorAction", ColorSelectPopupInitH, ColorSelectPopupInitO);
-	HookManager::do_hook(getPointerFromSymbol(cocos2d, "_ZN15InfoAlertButton6createESsSsf"), (void *)infoButton_hk, (void **)&infoButton);
-	HOOK("_ZN15GJBaseGameLayer14createParticleEiPKciN7cocos2d15tCCPositionTypeE", GJBaseGameLayer_createAndAddParticleH, GJBaseGameLayer_createAndAddParticleO);
-	HOOK("_ZN10GameObject20createAndAddParticleEiPKciN7cocos2d15tCCPositionTypeE", GameObject_createAndAddParticleH, GameObject_createAndAddParticleO);
+	HOOK("_ZN15InfoAlertButton6createESsSsf", infoButton_hk, infoButton);
 	HOOK("_ZN9PlayLayer9addObjectEP10GameObject", PlayLayer_addObjectH, PlayLayer_addObjectO);
-//	HOOK("_ZN10GameObject15createWithFrameEPKc", GameObject_createWithFrameH, GameObject_createWithFrameO);
-//	HOOK("_ZN9PlayLayer16updateVisibilityEf", PlayLayer_UpdateVisibilityH, PlayLayer_UpdateVisibilityO)
 	HOOK("_ZN17SetupTriggerPopup4initEP16EffectGameObjectPN7cocos2d7CCArrayEff", SetupTriggerPopupH, SetupTriggerPopupO );
 	HOOK("_ZN23SetupPickupTriggerPopup4initEP16EffectGameObjectPN7cocos2d7CCArrayE", SetupPickupTriggerH, SetupPickupTriggerO);
-	//HOOK("_ZN8EditorUI18updateGroupIDLabelEv", updateGroupIDLabelH, updateGroupIDLabelO)
-	//HOOK("_ZNSt14_Bit_referenceaSEb",stuffH, stuffO)
 	HOOK("_ZN20AccountRegisterLayer4initEv", AccountRegisterLayer_InitH, AccountRegisterLayer_InitO);
 	//HOOK("_ZN14SelectArtLayer4initE13SelectArtType", SelectArtLayer_initH, SelectArtLayer_initO)
 	HOOK("_ZN11GameManager18toggleGameVariableEPKc", hook_onToggle, onToggleTrampoline);
@@ -2152,10 +2101,7 @@ void loader()
 	HOOK("_ZN8EditorUI4initEP16LevelEditorLayer", EditorUI_InitH, EditorUI_InitO);
 	HOOK("_ZN8EditorUI13selectObjectsEPN7cocos2d7CCArrayEb", EditorUI_SelectObjectsH, EditorUI_SelectObjectsO);
 	HOOK("_ZN16EditorPauseLayer17onUnlockAllLayersEPN7cocos2d8CCObjectE", UnlockAllLayersH, UnlockAllLayersO);
-//	HOOK("_ZN8EditorUI11onLockLayerEPN7cocos2d8CCObjectE", EditorUIonLockLayersH, EditorUIonLockLayersO);
 	HOOK("_ZN10GameObject10setOpacityEh", GameObjectSetOpacityH, GameObjectSetOpacityO);
-//	HOOK("_ZN10GameObject17opacityModForModeEib", opacityForModeH, opacityForModeO);
-//	HOOK("_ZN7cocos2d12CCDictionary9setObjectEPNS_8CCObjectEi", dict_hk1, dict1);
 	HOOK("_ZN10GameObject13createWithKeyEi", GameObjectCreateH, GameObjectCreateO);
 	HOOK("_ZN14LevelInfoLayer4initEP11GJGameLevelb", LevelInfoLayerInitH, LevelInfoLayerInitO);	
     HOOK("_ZN12LoadingLayer4initEb", LoadingLayer_initH, LoadingLayer_initO);
@@ -2209,8 +2155,6 @@ void loader()
 	addToggle_hk, addToggle_trp);
 	HOOK("_ZN12OptionsLayer11customSetupEv",
 	OptionsLayerInitH, OptionsLayerInitO);
-	//HOOK("_ZN7cocos2d9extension12CCHttpClient4sendEPNS0_13CCHttpRequestE",
-	//HttpSendH, HttpSendO);
 	HOOK("_ZNK7cocos2d8CCString10getCStringEv",
 	CCString_getCStringH, CCString_getCStringO);
 	HOOK("_ZN16GameLevelManager18ProcessHttpRequestESsSsSs10GJHttpType",
@@ -2221,16 +2165,12 @@ void loader()
 	AccountProcessH, AccountProcessO);
 	HOOK("_ZN12CreatorLayer19canPlayOnlineLevelsEv",
 	canPlayOnlineLevelsH, canPlayOnlineLevelsO);
-//	HOOK("_ZN19LevelSettingsObject14objectFromDictEPN7cocos2d12CCDictionaryE",
-//	objectfromDictH, objectfromDictO);
 	HOOK("_ZN16LevelEditorLayer15getTriggerGroupEi",
 	getTriggerGroupH, getTriggerGroupO);
 	HOOK("_ZN7UILayer4initEv",
 	UILayerInitH, UILayerInitO);
 	HOOK("_ZN16LevelEditorLayer10addToGroupEP10GameObjectib",
 	addToGroupH, addToGroupO);
-//	HOOK("_ZN8EditorUI18dynamicGroupUpdateEb",
-//	buildHelperH, buildHelperO);
 	/*
 		HookManager::do_hook(getPointerFromSymbol(cocos2d, "_ZN11AppDelegate11trySaveGameEb"), (void*) save_hook, (void **) &save_trp);
 
