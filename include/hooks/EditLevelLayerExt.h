@@ -1,22 +1,17 @@
 
-class EditLevelLayerExt : public EditLevelLayer{
+#include <gd.h>
+#include "cocos2d.h"
+#include "EditLevelLayer.h"
+
+class EditLevelLayerExt : public EditLevelLayer {
+	
     public:
 
-
-
-
-
-        static inline bool (*onBack_trp)(EditLevelLayer*,CCObject * sender);
-        void onBack_hk(CCObject * sender);
-
-        static inline bool (*onEdit_trp)(EditLevelLayer*,CCObject * sender);
-        void onEdit_hk(CCObject * sender);
-
-
-
-
-
-
-
+        static inline bool (*initO)(EditLevelLayer*, GJGameLevel* level);
+        bool initH(GJGameLevel* level);
+		
+		void onClick(CCObject* sender);
+		
+		static void ApplyHooks();
 
 };

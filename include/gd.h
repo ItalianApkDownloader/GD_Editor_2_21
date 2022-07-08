@@ -4,7 +4,7 @@
 
 #include <cocos2d.h>
 
-//#include "GJUserScore.h"
+#include "GJUserScore.h"
 #include "EffectGameObject.h"
 #include "SetupCameraRotatePopup.h"
 #include "Slider.h"
@@ -16,7 +16,7 @@
 #include "MoreOptionsLayer.h"
 #include "OBB2D.h"
 #include "GameToolbox.h"
-//#include "GJGameLevel.h"
+#include "GJGameLevel.h"
 #include "GameLevelManager.h"
 #include "PlayerObject.h"
 #include "PlayLayer.h"
@@ -50,4 +50,5 @@
 #include "ProfilePage.h"
 #include "SelectArtLayer.h" 
 #include "WorldSelectLayer.h"
+#include "CCMenuItemToggler.h"
 #endif

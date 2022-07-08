@@ -18,6 +18,72 @@
 
 
 
+class MenuLayerExt : public MenuLayer {
+public:
+
+FLAlertLayer* alert;
+
+
+
+public:
+		
+void onRequestCompleted(cocos2d::extension::CCHttpClient *sender, cocos2d::extension::CCHttpResponse *response);
+	
+ 
+
+
+		
+	
+    void onDownload(CCObject* sender);
+    void onJoinDiscord(CCObject* sender);
+	void onUpdate(float dt) {
+		//add all this extern shit to a class or something
+		extern float timer;
+		timer = timer + dt;
+		
+		std::ostringstream os;
+		os << timer;
+	string a = os.str();
+
+	extern CCLabelBMFont* timerLabel;
+		timerLabel->setString(a.c_str());
+	};
+
+
+    void onProgressChanged(CCObject *sender);
+
+
+	void showUpdateAlert(string version, string weight, string date, string changelog);
+    void onBlaze(CCObject* sender);
+	void onPopupTest(CCObject* sender);
+	virtual void FLAlert_Clicked(FLAlertLayer* alert, bool btn2);
+	
+    static inline bool (*init_trp)(MenuLayer * self);
+    bool init_hk();
+	
+	static inline void (*onJoinDiscordO)(MenuLayer* self, CCObject* sender);
+	static void onJoinDiscordH(CCObject* sender);
+	
+	
+	static inline void (*updateUserProfileButtonO)(MenuLayer*);
+	void updateUserProfileButtonH();
+	
+	static inline void (*MenuLayer_showTOSO)(MenuLayer*);
+	void MenuLayer_showTOSH() {
+    *reinterpret_cast<bool*>(reinterpret_cast<uintptr_t>(this) + 316) = false;
+}
+	
+	
+	
+	static void ApplyHooks();
+	
+	
+	
+	
+
+
+};
+
 
 
 class SliderThumb {
@@ -209,50 +275,6 @@ namespace cocos2d{
 
 
 
-class MenuLayerExt : public MenuLayer {
-public:
-
-FLAlertLayer* alert;
-
-
-
-public:
-		
-void onRequestCompleted(cocos2d::extension::CCHttpClient *sender, cocos2d::extension::CCHttpResponse *response);
-	
- 
-
-
-		
-	
-    void onDownload(CCObject* sender);
-    void onJoinDiscord(CCObject* sender);
-	void onUpdate(float dt) {
-		//add all this extern shit to a class or something
-		extern float timer;
-		timer = timer + dt;
-		
-		std::ostringstream os;
-		os << timer;
-	string a = os.str();
-
-	extern CCLabelBMFont* timerLabel;
-		timerLabel->setString(a.c_str());
-	};
-
-
-    void onProgressChanged(CCObject *sender);
-
-
-	void showUpdateAlert(string version, string weight, string date, string changelog);
-    void onBlaze(CCObject* sender);
-	void onPopupTest(CCObject* sender);
-	virtual void FLAlert_Clicked(FLAlertLayer* alert, bool btn2);
-	
-    static inline bool (*init_trp)(MenuLayer * self);
-    bool init_hk();
-
-};
 
 
 

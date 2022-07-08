@@ -33,6 +33,13 @@ typedef void *_PVOID;
 
 #define CC_UNUSED_PARAM(unusedparam)		(void)unusedparam
 
+#define MEMBERBYOFFSET(type, class, offset) *reinterpret_cast<type*>(reinterpret_cast<uintptr_t>(class) + offset)
+#define MBO MEMBERBYOFFSET
+#define targetLibName ("libcocos2dcpp.so")
+#define contains(x, y) strstr(x, y) != NULL
+
+
+
 #if defined(GDAPI_WINDOWS)
 #define CC_DEPRECATED_ATTRIBUTE			__declspec(deprecated) 
 #else

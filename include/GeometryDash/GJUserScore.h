@@ -57,6 +57,24 @@ public:
 
 // fixed members
 public:
+
+	CLASS_MEMBER(int, diamonds, 0x11C);
+	CLASS_MEMBER(int, coins, 0x12C);
+	CLASS_MEMBER(int, usercoins, 0x130);
+	CLASS_MEMBER(int, demons, 0x120);
+	CLASS_MEMBER(int, stars, 0x118); 
+	CLASS_MEMBER(int, globalRank, 0x18C);
+	
+	/******************/
+	CLASS_MEMBER(int, modBadgeLevel, 0x188); //3B544C
+	/******************/
+	
+	
+	
+	//didnt test all these
+	
+	
+
     //CLASS_MEMBER(int, modBadgeTexture, 0x17C); //the texture that gets created, not actually the mod badge 
 };
 

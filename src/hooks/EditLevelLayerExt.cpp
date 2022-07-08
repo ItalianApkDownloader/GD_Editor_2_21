@@ -3,66 +3,82 @@
 #include "cocos2d.h"
 #include "EditLevelLayerExt.h"
 #include "patch.h"
+#include "hooking.h"
 
-extern bool inEditor;
-void EditLevelLayerExt::onBack_hk(CCObject *sender)
-{
-        inEditor = false;
-        onBack_trp(this, sender);
 
-        // patch *tmp = new patch();
+void EditLevelLayerExt::onClick(CCObject* sender){
+	// LOGD("ENTER! onClick!");
+	/*
+		if(!GM->getGameVariable("100099")) {
+			
+			FLAlertLayer::create(nullthis, "DISCLAIMER", "This version of the editor is\n<cr>unstable and contains bugs and crashes that can't be fixed</c>.\nYour game will crash or freeze, <cg>save your game and levels often</c>.\n<co>If you don't want an unstable editor wait for official 2.2 and don't complain about it</c>.", "OK", nullthis, 500, false, 300)->show();
+			GM->setGameVariable("100099", true);
+		}
+		else {
+			*/
+	this->closeTextInputs();
+	*reinterpret_cast<int*>(reinterpret_cast<uintptr_t>(GameManager::sharedState()) + 0x1BC) = 3;
+	this->verifyLevelName();
+	
 
-        // tmp->addPatch("libcocos2dcpp.so", 0x44D2AE, "D7 F7 B5 FF"); // crash
-        // tmp->Modify();
+	auto dir = cocos2d::CCDirector::sharedDirector( );
+	auto layer = LevelEditorLayer::create( this->gameLevel_ ,false);
+	auto sc = CCScene::create();
+	sc->addChild(layer);
+
+	auto scene = cocos2d::CCTransitionFade::create(
+	0.5,sc
+	);
+
+	dir->replaceScene( scene );
+	//	}
+	
+
 }
 
-void EditLevelLayerExt::onEdit_hk(CCObject *sender)
-{
-        CCLog("Clicked! onEdit_hk");
+static inline bool (*initO)(EditLevelLayer*, GJGameLevel* level);
+bool EditLevelLayerExt::initH(GJGameLevel* level) {
+	
+	auto ret = initO(this, level);
 
-        // btnMenu_->setVisible(false);
-        /*
-        auto scene = CCTransitionFade::create(
-                0.5,
-                LevelEditorLayer::scene( this->gameLevel_ ) );
+	auto menu = this->_btnMenu();
 
-        dir->pushScene( scene );
-        //GameSoundManager::sharedManager()->playBackgroundMusic( this->gameLevel_->getAudioFileName( ), false, true, false );
+	auto editBtn = (CCMenuItemSpriteExtra *)menu->getChildren()->objectAtIndex(0);
 
-        /*
-        this->closeTextInputs( );
+	auto editBtnCustom = CCMenuItemSpriteExtra::create(
+	CCSprite::createWithSpriteFrameName("GJ_editBtn_001.png"), 
+	nullptr, 
+	this,
+	menu_selector(EditLevelLayerExt::onClick));
+	
+	menu->addChild(editBtnCustom);
+	editBtnCustom->setPosition(editBtn->getPosition());
+	editBtn->removeFromParent();
+	editBtn->cleanup();
 
-        this->isPlaying_ = true;
+	auto btn2 = CCSprite::createWithSpriteFrameName("GJ_optionsBtn_001.png");
+	
+	auto myButton2 = CCMenuItemSpriteExtra::create(
+	btn2,
+	nullptr,
+	this,
+	menu_selector(MenuLayer::onOptions));
+	
+	btn2->setScale(.7);
+	myButton2->setPosition(CCLEFT - 255, editBtn->getPositionY() - 10);
+	menu->addChild(myButton2, 1000);
+	
+	//		createLabels(this->_btnMenu(), {0,0}, true);
 
-        this->verifyLevelName( );
 
-        GameSoundManager::sharedManager()->playBackgroundMusic( this->gameLevel_->getAudioFileName( ), false, true, false );
-
-        auto dir = CCDirector::sharedDirector( );
-        auto scene = CCTransitionFade::create(
-                0.5,
-                LevelEditorLayer::scene( this->gameLevel_ ) );
-
-        dir->pushScene( scene );
-         */
-
-        /*
-        if ( !this->isPlaying_ )
-        {
-            this->closeTextInputs( );
-
-            this->isPlaying_ = true;
-
-            this->verifyLevelName( );
-
-            GameSoundManager::sharedManager()->playBackgroundMusic( this->gameLevel_->getAudioFileName( ), false, true, false );
-
-            auto dir = CCDirector::sharedDirector( );
-            auto scene = CCTransitionFade::create(
-                    0.5,
-                    LevelEditorLayer::scene( this->gameLevel_ ) );
-
-            dir->pushScene( scene );
-        }
-         */
+	return ret;
+	
 }
+
+
+void EditLevelLayerExt::ApplyHooks() {
+	
+	HOOK_STATIC("_ZN14EditLevelLayer4initEP11GJGameLevel", 
+	EditLevelLayerExt::initH, EditLevelLayerExt::initO);
+	
+}

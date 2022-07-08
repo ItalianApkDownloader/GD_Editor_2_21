@@ -16,6 +16,7 @@
 #include "../layers/CreditsLayer.h"
 #include "../layers/ToolsLayer.h"
 #include "../../include/hooks/MenuLayerExt.h"
+#include "hooking.h"
 
 template <class T>
 extern void *getPointer(T value);
@@ -64,7 +65,7 @@ void MenuLayerExt::onRequestCompleted(cocos2d::extension::CCHttpClient *sender, 
 	if (ver > version2)
 	{
 		// FLAlertLayer::create(nullptr, "New update!", "New update!\n<cg>Download</c> the new update in the discord server\n Join using the <co>join discord!</c> button",  "OK", nullptr, 400, false, 300)->show();
-		MenuLayerExt::showUpdateAlert(GDPS->itos(ver), weight, date, changelog);
+	//	MenuLayerExt::showUpdateAlert(GDPS->itos(ver), weight, date, changelog);
 	}
 
 	// I dont think I will use this but it can be funny to troll or something XDD
@@ -172,10 +173,30 @@ void MenuLayerExt::onBlaze(CCObject *sender)
 	app->openURL(url);
 }
 
-void onPopupTest(CCObject *sender)
-{
-	// crash :v
-	advancedOptionsLayer::create()->show();
+static inline void (*onJoinDiscordO)(MenuLayer* self, CCObject* sender);
+void MenuLayerExt::onJoinDiscordH(CCObject* sender){
+	cocos2d::CCApplication::sharedApplication()->openURL("https://discord.gdpseditor.com/");
+}
+
+static inline void (*updateUserProfileButtonO)(MenuLayer*);
+void MenuLayerExt::updateUserProfileButtonH() {
+	
+	 auto accountManager = GJAccountManager::sharedState();
+
+    int accountID1 = *reinterpret_cast<int*>(reinterpret_cast<uintptr_t>(accountManager) + 0x10C);
+    int accountID2 = *reinterpret_cast<int*>(reinterpret_cast<uintptr_t>(accountManager) + 0x110);
+
+    bool loggedIn = (accountID1 - accountID2) > 0;
+
+    this->_playerUsernameLabel()->setVisible(loggedIn);
+    this->_profileBtn()->setVisible(loggedIn);
+
+    if(loggedIn) {
+        // ---------- MOTHERFUCKER WHY DOES THIS CRASH THE OFFSET IS RIGHT AND EVERYTHING
+        //self->_playerUsernameLabel()->setString(accountManager->_username().c_str());
+        //self->_playerUsernameLabel()->limitLabelWidth(70, .7, 0);
+    }
+
 }
 
 static inline bool (*init_trp)(MenuLayer *self);
@@ -183,34 +204,11 @@ bool MenuLayerExt::init_hk()
 {
 
 	auto ret = init_trp(this);
-
-	extern bool addBadges;
-	addBadges = true;
-
+/*
 	auto director = CCDirector::sharedDirector();
 	auto dir = CCDirector::sharedDirector();
 	auto winSize = director->getWinSize();
 	auto gm = GameManager::sharedState();
-
-	/*//auto gradient = CCLayerGradient::create(ccc4(255, 0, 0, 0), ccc4(255, 0, 0, 0));
-	auto gradient = CCLayerGradient::create(ccc4(255, 255, 0, 255), ccc4(0, 0, 255, 255));
-	gradient->setPosition(CCRIGHT / 2, CCTOP / 2);
-	//gradient->initWithColor(ccc4(59, 255, 240, 1), ccc4(241, 0, 255, 1));
-	this->addChild(gradient,10000000000);
-	gradient->init();
-	*/
-
-	/*
-			auto btn = ButtonSprite::create("Support Blaze!",80,10,10,1);
-			auto myButton = CCMenuItemSpriteExtra::create(
-					btn,
-					btn,
-					this,
-					menu_selector(MenuLayerExt::onBlaze)
-			);
-			auto bottomMenu =  CCMenu::create();
-			reinterpret_cast<CCSprite*>(bottomMenu)->setPositionY(90);
-	*/
 
 	auto menu = CCMenu::create();
 	auto createMenu = CCMenu::create();
@@ -278,37 +276,7 @@ bool MenuLayerExt::init_hk()
 
 	this->addChild(menu, 100);
 
-	// auto glview = cocos2d::CCEGLView::sharedOpenGLView();
-	// glview->setDesignResolutionSize(winSize.width + 1000, winSize.height + 100, kResolutionNoBorder);
-	// messing with this is funny
-
-	/*
-		auto children = reinterpret_cast<CCMenu*>(this->getChildren());
-
-			int count = children->getChildrenCount();
-			for(int i = 0; i < count; i++) {
-
-				auto label = CCLabelBMFont::create(GDPS->itos(i).c_str(), "bigFont.fnt");
-
-				auto node = reinterpret_cast<CCNode*>(children->getChildren()->objectAtIndex(i));
-
-				label->setPosition(node->getPosition());
-				this->addChild(label, 1000);
-
-			}
-			*/
-
-	extern CCLabelBMFont *timerLabel;
-	/*
-		//other stuff
-		timerLabel = CCLabelBMFont::create("0", "chatFont.fnt");
-		timerLabel->setScale(2);
-		timerLabel->setPosition(CCMIDX - 30, CCMIDY);
-		this->addChild(timerLabel);
-
-		this->schedule(schedule_selector(MenuLayerExt::onUpdate), 0.01);
-	*/
-
+/*
 	auto m_nPlayerJetpack = gm->getIntGameVariable("7001");
 	gm->m_nPlayerSwing = gm->getIntGameVariable("6969");
 
@@ -323,9 +291,8 @@ bool MenuLayerExt::init_hk()
 	GDPS->setPlayerSwing(gm->m_nPlayerSwing);
 	GDPS->setPlayerJetpack(m_nPlayerJetpack);
 
-	auto numReq = gm->getGameVariable("11000");
 
-	if (numReq)
+	if (gm->getGameVariable("11000"))
 	{
 
 		/*
@@ -342,7 +309,7 @@ bool MenuLayerExt::init_hk()
 				request->release();
 
 				gm->setGameVariable("11000", false);
-				*/
+				
 	}
 	else
 	{
@@ -388,44 +355,23 @@ bool MenuLayerExt::init_hk()
 			this->addChild(CCParticleSmoke::create());
 		}
 	}
-
+*/
 	return ret;
 };
 
-/*
-server adresses
 
-http://ps.fhgdps.com/GDPSEditor22
 
-0x7A8513
-0x7A8941
-0x7A8C21
-0x7A8CB0
-0x7A8D5C
-0x7A8DE7
-0x7A8DE7
-0x7A8DE7
-0x7A8EAA
-0x7A8EE5
-0x7A8F53
-0x7A8FCC
-0x7A9054
-0x7A90BB
-0x7A9107
-0x7A914B
-0x7A918A
-0x7A91D3
-0x7A922C
-0x7A92A4
-0x7A9353
-0x7A93A3
-0x7A93FA
-0x7A94A0
-0x7B7A1D
-0x7B8191
-0x7B8202
-0x7B8278
-0x7B8446
-0x7B8A5D
-0x7B8A99
-*/
+
+void MenuLayerExt::ApplyHooks() {
+	
+	
+	HOOK_STATIC("_ZN9MenuLayer9onDiscordEPN7cocos2d8CCObjectE", 
+	MenuLayerExt::onJoinDiscordH, MenuLayerExt::onJoinDiscordO);
+	
+	HOOK_STATIC("_ZN9MenuLayer23updateUserProfileButtonEv", 
+	MenuLayerExt::updateUserProfileButtonH, MenuLayerExt::updateUserProfileButtonO);
+	
+	HOOK_STATIC("_ZN9MenuLayer7showTOSEv", 
+	MenuLayerExt::MenuLayer_showTOSH, MenuLayerExt::MenuLayer_showTOSO);
+	
+}
