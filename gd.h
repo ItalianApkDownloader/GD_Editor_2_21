@@ -43,4 +43,5 @@
 #include "GJGarageLayer.h"
 #include "GaragePage.h"
 #include "VideoOptionsLayer.h"
+#include "GJOptionsLayer.h"
 #endif

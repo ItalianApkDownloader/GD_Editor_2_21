@@ -69,8 +69,11 @@ public:
     void enableHighCapacityMode( void );
     void resetGroupCounters( bool reset );
     PlayerObject* createPlayer();
+
     void createGroundLayer( int,int);
 	void createBackground(int );
+    void createMiddleground(int );
+
     void updateGroundWidth(bool);
     void sortStickyGroups( );
     GameObject* parentForZLayer( int a1, bool a2, int a3 );

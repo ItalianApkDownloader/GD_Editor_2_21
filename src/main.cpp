@@ -11,12 +11,16 @@
 #include "GDPSManager.h"
 #include "GDPSHelper.h"
 #include "FunctionHelper.h"
+
 #include "hooks/MenuLayerExt.h"
 #include "hooks/EditLevelLayerExt.h"
 #include "hooks/LevelEditorLayerExt.h"
 #include "hooks/EditorPauseLayerExt.h"
+#include "hooks/PauseLayerExt.h"
 
-
+#define FUNCTIONHOOK(returntype, name, ...) \
+returntype (*name##O)(__VA_ARGS__);			\
+returntype name##H(__VA_ARGS__)
 
 string passwordTemp = "";
 bool shouldAdd = true;
@@ -1193,6 +1197,53 @@ void togglePracticeModeH(PlayLayer *self, bool *on)
 	togglePracticeModeO(self, on);
 }
 
+// fix dual crash in playtest
+FUNCTIONHOOK(void, PlayerObject_spawnDualCircle, PlayerObject* self) {
+	if(!MEMBERBYOFFSET(bool, GM, 442)) PlayerObject_spawnDualCircleO(self);
+}
+
+// open editor from pause
+FUNCTIONHOOK(void, PauseLayer_onEdit, PauseLayer* self, CCObject*) {
+	GM->_playLayer()->stopAllActions();
+	GM->_playLayer()->unscheduleAllSelectors();
+	GSM->stopBackgroundMusic();
+
+	GM->_playLayer()->removeAllObjects();
+
+	self->runAction(
+		CCSequence::create(
+			CCDelayTime::create(0),
+			CCCallFunc::create(self, callfunc_selector(PauseLayer::goEditFix)),
+			nullptr
+		)
+	);
+}
+
+void PauseLayer::goEditFix() {
+	auto level = GM->_playLayer()->_level();
+
+	auto layer = LevelEditorLayer::create(level, false);
+	auto scene = CCScene::create();
+	scene->addChild(layer);
+
+	CCDirector::sharedDirector()->replaceScene(
+		CCTransitionFade::create(.5, scene)
+	);
+}
+
+// make platformer dpad visible
+FUNCTIONHOOK(bool, UILayer_init, CCLayer* self) {
+	if(!UILayer_initO(self)) return false;
+
+	if(MEMBERBYOFFSET(bool, self, 0x202)) {
+		auto dpad = MEMBERBYOFFSET(CCSprite*, self, 0x1D4);
+
+		dpad->setVisible(true);
+	}
+
+	return true;
+}
+
 void loader()
 {
 	auto cocos2d = dlopen(targetLibName != "" ? targetLibName : NULL, RTLD_LAZY);
@@ -1202,6 +1253,9 @@ void loader()
 	LevelEditorLayerExt::ApplyHooks();
 	EditorPauseLayerExt::ApplyHooks();
 
+	HOOK("_ZN7UILayer4initEv", UILayer_initH, UILayer_initO);
+	HOOK("_ZN10PauseLayer6onEditEPN7cocos2d8CCObjectE", PauseLayer_onEditH, PauseLayer_onEditO);
+	HOOK("_ZN12PlayerObject15spawnDualCircleEv", PlayerObject_spawnDualCircleH, PlayerObject_spawnDualCircleO);
 	HOOK("_ZN9PlayLayer18togglePracticeModeEb", togglePracticeModeH, togglePracticeModeO);
 	HOOK("_ZN8EditorUI10onPlaytestEPN7cocos2d8CCObjectE", EditorUI_onPlaytestH, EditorUI_onPlaytestO);
 	HOOK("_ZN19CreateParticlePopup14onCopySettingsEPN7cocos2d8CCObjectE", CreateParticlePopup_onPasteSettingsH, CreateParticlePopup_onPasteSettingsO);
@@ -1334,6 +1388,9 @@ void loader()
 
 	//remove tos popup
 	//tmp->addPatch("libcocos2dcpp.so", 0x26C15C, "00 BF 00 BF");
+
+	// make sure playtest background doesn't move
+	tmp->addPatch("libcocos2dcpp.so", 0x2BC360, "01 22");
 
 	tmp->Modify();
 }

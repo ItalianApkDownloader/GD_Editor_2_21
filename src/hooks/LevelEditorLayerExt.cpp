@@ -17,11 +17,6 @@ bool LevelEditorLayerExt::initH(GJGameLevel* level)
 	if ( !dynamic_cast< GJBaseGameLayer* >( this )->init( ) )
 	return false;
 
-
-
-
-
-
 	auto gm = GameManager::sharedState( );
 	*((bool *)gm + 442) = true;
 	this->ignoreDamage_ = gm->getGameVariable( "0009");
@@ -197,24 +192,29 @@ bool LevelEditorLayerExt::initH(GJGameLevel* level)
 	if(this->_level->lastEditorZoom != 0.0)
 	this->gameLayer_->setScale(this->_level->lastEditorZoom);
 
-
-	this->editorUI_->updateSlider();
-	this->createGroundLayer(true,true);
 	this->gridLayer_->updateTimeMarkers();
-	this->createBackground(0);
-	this->createBackground(1);
-	this->editorUI_->updateSlider( );
 
-	this->resetGroupCounters(false);
+	// create ground, middleground and background
+	this->createBackground(MEMBERBYOFFSET(int, this->levelSettings_, 0x11C));
+	this->createMiddleground(MEMBERBYOFFSET(int, this->levelSettings_, 0x128));
+    this->createGroundLayer(
+		MEMBERBYOFFSET(int, this->levelSettings_, 0x120),
+		MEMBERBYOFFSET(int, this->levelSettings_, 0x148)
+	);
+
+    this->editorUI_->updateSlider();
+
+    this->resetGroupCounters(false);
 	this->sortStickyGroups();
-	this->updateEditorMode();
-	// this->schedule( schedule_selector( LevelEditorLayer::updateVisibility ));
-	this->schedule( schedule_selector( LevelEditorLayer::updateEditor ));
+    this->updateEditorMode();
 
-	//fix to the glitched background with updateEditor
-	this->editorUI_->onStopPlaytest(nullptr);
-	
+    this->schedule(schedule_selector(LevelEditorLayer::updateEditor));
 
+    // fix to the glitched background with updateEditor
+    MEMBERBYOFFSET(bool, this, 0x29E9) = true;
+
+	// fix playtest pause
+	MEMBERBYOFFSET(int, this, 0x2C58) = 0;
 
 	return true;
 }
@@ -282,12 +282,16 @@ void LevelEditorLayerExt::updateVisibilityH(float a1){
 								int l1 = MBO(int, obj, 0x450);
 								int l2 = MBO(int, obj, 0x454);
 								
-								
-								bool shouldBeVisible = (currentLayer == l1 || (currentLayer == l2 && l2 != 0) || currentLayer == -1);
-								
 								extern void* GameObjectSetOpacityH(GameObject* self, unsigned char opacity);
-								GameObjectSetOpacityH(obj, shouldBeVisible ? 255 : 70);
-								//for later GameObjectExt::setOpacityH(obj, shouldBeVisible ? 255 : 70);
+
+								// new option "Hide invisible"
+								if(MBO(bool, obj, 0x4AF) && GM->getGameVariable("0121")) {
+									GameObjectSetOpacityH(obj, 0);
+								}
+								else {
+									bool shouldBeVisible = (currentLayer == l1 || (currentLayer == l2 && l2 != 0) || currentLayer == -1);
+									GameObjectSetOpacityH(obj, shouldBeVisible ? 255 : 70);
+								}
 								
 								if(!MEMBERBYOFFSET(bool, obj, 0x405)) {
 									p->_objectsToUpdate()->addObject(obj);
@@ -311,8 +315,6 @@ void LevelEditorLayerExt::updateVisibilityH(float a1){
 	
 	p->processAreaVisualActions();
 	p->sortBatchnodeChildren(0.0);
-	
-
 }
 
 void LevelEditorLayerExt::ApplyHooks() {
