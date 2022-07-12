@@ -96,12 +96,19 @@ public:
 
     CLASS_MEMBER(std::string*, levelString, 0x2C94);
 
-    CLASS_MEMBER(std::vector<GameObject*>, objectsVector, 0x2C9C);
-    CLASS_MEMBER(std::vector<CCArray*>, someArrVector, 0x2CA8);
-
     CLASS_MEMBER(OBB2D*, obb2d, 0x2C58);
 
     CLASS_MEMBER(int*, drawNodes, 0x2C98);
+
+    // arrays
+    CLASS_MEMBER(CCArray*, array1, 0x2C74);
+    CLASS_MEMBER(CCArray*, array2, 0x2C78);
+
+    // vectors
+    CLASS_MEMBER(std::vector<GameObject*>, objectsVector, 0x2C9C);
+    CLASS_MEMBER(std::vector<CCArray*>, someArrVector, 0x2CA8);
+    CLASS_MEMBER(std::vector<unsigned char>, unkVector1, 0x2CDC);
+    CLASS_MEMBER(std::vector<bool>, unkVector2, 0x2D2C);
 
 public:
     LevelEditorLayer();

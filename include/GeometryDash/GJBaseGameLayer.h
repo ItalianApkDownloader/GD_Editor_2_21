@@ -63,6 +63,9 @@ public:
 
     CLASS_MEMBER(CCLayer*, gameLayer, 0x48C);
 
+    CLASS_MEMBER(CCArray*, allObjects, 0x344);
+    CLASS_MEMBER(CCArray*, unkArray1, 0x348);
+
 public:
     GJBaseGameLayer();
     virtual ~GJBaseGameLayer();

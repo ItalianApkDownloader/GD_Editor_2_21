@@ -90,6 +90,18 @@ CCLog("ddd");
 	this->arr_2807->retain();
 	this->arr_2821 = CCArray::create();
 	this->arr_2821->retain();*/
+
+	this->_array1() = CCArray::create();
+	this->_array1()->retain();
+
+	this->_array2() = CCArray::create();
+	this->_array2()->retain();
+
+	this->_allObjects() = CCArray::create();
+	this->_allObjects()->retain();
+
+	this->_unkArray1() = CCArray::create();
+	this->_unkArray1()->retain();
 	
 	CCLog("eee");
 
@@ -109,14 +121,9 @@ CCLog("ddd");
 
 CCLog("8iiiii");
 
-	this->vector_2868.reserve( 9999 );
-	this->vector_2858.reserve( 9999 );
-	this->vector_2878.reserve( 9999 );
-	this->vector_2853.reserve( 9999 );
-	this->vector_2873.reserve( 9999 );
-	this->vector_2881.reserve( 9999 );
-	this->_something().reserve( 9999 );
-	this->_objectsVector().reserve( 9999 );
+	this->_unkVector1().reserve(9999);
+	this->_unkVector2().reserve(9999);
+	this->_objectsVector().reserve(9999);
 
 CCLog("kkk");
 	for ( size_t i = 0; i < 9999; ++i )
@@ -124,6 +131,9 @@ CCLog("kkk");
 		//CCLog("loop: %d", i);
 		//this->objectsVector_[ i ] = nullptr;
 		this->_objectsVector()[i] = nullptr;
+
+		this->_unkVector1()[i] = 0;
+		this->_unkVector2()[i] = false;
 		/*CCLog("loop stage 2");
 
 		this->vector_2853[ i ] = 0;
@@ -235,10 +245,11 @@ CCLog("kkk");
 CCLog("555");
 
     this->_editorUI()->updateSlider();
-
+	CCLog("666");
     this->resetGroupCounters(false);
 	//this->sortStickyGroups();
-    this->updateEditorMode();
+	CCLog("777");
+    //this->updateEditorMode();
 
     //this->schedule(schedule_selector(LevelEditorLayer::updateEditor));
 
