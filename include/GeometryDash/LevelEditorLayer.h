@@ -56,11 +56,11 @@ public:
     PAD(4)
     cocos2d::CCSprite* dCross_;
     PAD(12)
-    EditorUI* editorUI_;
+	EditorUI* editorUI_;
     CCArray* arr_2832;   //2832
     CCArray* arr_2833;   //2833
     PAD(12)
-    DrawGridLayer* gridLayer_;  //2837
+	DrawGridLayer* gridLayer_;  //2837?? correct offset 2C54 (lite editor)
     int* weirdAlloc;            //2838
     PAD(4)
     string * levelString_;  //2840
@@ -79,13 +79,16 @@ public:
     std::vector<unsigned char> vector_2878;    //2878
     vector<float> vector_2881;   //2881
 
-
+/*
     CLASS_MEMBER(bool, isPreviewMode, 0x2C5E);
 	CLASS_MEMBER(CCArray*, crashArray1, 0x2D18);
     CLASS_MEMBER(CCDictionary*, stickyGroupsDict, 0x45C);
 	CLASS_MEMBER(int, currentLayer, 0x2C1C);
 
     CLASS_MEMBER(CCArray*, objectsToUpdate, 0x2BD4);
+	*/
+	
+	CLASS_MEMBER(DrawGridLayer*, gridLayer, 0x2C88);
 
 public:
     LevelEditorLayer();

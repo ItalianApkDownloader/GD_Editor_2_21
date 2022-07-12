@@ -41,9 +41,10 @@ bool EditLevelLayerExt::initH(GJGameLevel* level) {
 	
 	auto ret = initO(this, level);
 
-	auto menu = this->_btnMenu();
+	//auto menu = this->_btnMenu();
+	auto menu = CCMenu::create();
 
-	auto editBtn = (CCMenuItemSpriteExtra *)menu->getChildren()->objectAtIndex(0);
+	//auto editBtn = (CCMenuItemSpriteExtra *)menu->getChildren()->objectAtIndex(0);
 
 	auto editBtnCustom = CCMenuItemSpriteExtra::create(
 	CCSprite::createWithSpriteFrameName("GJ_editBtn_001.png"), 
@@ -52,10 +53,10 @@ bool EditLevelLayerExt::initH(GJGameLevel* level) {
 	menu_selector(EditLevelLayerExt::onClick));
 	
 	menu->addChild(editBtnCustom);
-	editBtnCustom->setPosition(editBtn->getPosition());
-	editBtn->removeFromParent();
-	editBtn->cleanup();
-
+	//editBtnCustom->setPosition(CCLEFT + 25, CCTOP - 100);
+	//editBtn->removeFromParent();
+	//editBtn->cleanup();
+/*
 	auto btn2 = CCSprite::createWithSpriteFrameName("GJ_optionsBtn_001.png");
 	
 	auto myButton2 = CCMenuItemSpriteExtra::create(
@@ -67,6 +68,11 @@ bool EditLevelLayerExt::initH(GJGameLevel* level) {
 	btn2->setScale(.7);
 	myButton2->setPosition(CCLEFT - 255, editBtn->getPositionY() - 10);
 	menu->addChild(myButton2, 1000);
+	
+	
+	*/
+	addChild(menu);
+	
 	
 	//		createLabels(this->_btnMenu(), {0,0}, true);
 
@@ -81,4 +87,4 @@ void EditLevelLayerExt::ApplyHooks() {
 	HOOK_STATIC("_ZN14EditLevelLayer4initEP11GJGameLevel", 
 	EditLevelLayerExt::initH, EditLevelLayerExt::initO);
 	
-}
+}

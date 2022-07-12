@@ -275,7 +275,7 @@ bool MenuLayerExt::init_hk()
 	GameToolbox::alignItemsHorisontally(menu->getChildren(), 5, {CCMIDX, CCBOTTOM + 45}, false);
 
 	this->addChild(menu, 100);
-
+*/
 /*
 	auto m_nPlayerJetpack = gm->getIntGameVariable("7001");
 	gm->m_nPlayerSwing = gm->getIntGameVariable("6969");
@@ -291,11 +291,7 @@ bool MenuLayerExt::init_hk()
 	GDPS->setPlayerSwing(gm->m_nPlayerSwing);
 	GDPS->setPlayerJetpack(m_nPlayerJetpack);
 
-
-	if (gm->getGameVariable("11000"))
-	{
-
-		/*
+*/
 			 cocos2d::extension::CCHttpRequest* request = new (std::nothrow) cocos2d::extension::CCHttpRequest();
 				request->setUrl(AY_OBFUSCATE("http://game.gdpseditor.com/server/game/version2.php"));
 				request->setRequestType(cocos2d::extension::CCHttpRequest::kHttpGet);
@@ -308,54 +304,8 @@ bool MenuLayerExt::init_hk()
 				cocos2d::extension::CCHttpClient::getInstance()->send(request);
 				request->release();
 
-				gm->setGameVariable("11000", false);
 				
-	}
-	else
-	{
 
-		auto particles = gm->getIntGameVariable("11001");
-
-		switch (particles)
-		{
-
-		case 1:
-			this->addChild(CCParticleFire::create());
-			break;
-		case 2:
-			this->addChild(CCParticleFireworks::create());
-			break;
-		case 3:
-			this->addChild(CCParticleSun::create());
-			break;
-		case 4:
-			this->addChild(CCParticleGalaxy::create());
-			break;
-		case 5:
-			this->addChild(CCParticleFlower::create());
-			break;
-		case 6:
-			this->addChild(CCParticleMeteor::create());
-		case 7:
-			this->addChild(CCParticleSpiral::create());
-			break;
-		case 8:
-			this->addChild(CCParticleExplosion::create());
-			break;
-		case 9:
-			this->addChild(CCParticleSmoke::create());
-			break;
-		case 10:
-			this->addChild(CCParticleSnow::create());
-			break;
-		case 11:
-			this->addChild(CCParticleRain::create());
-		case 12:
-			this->addChild(CCParticleSnow::create());
-			this->addChild(CCParticleSmoke::create());
-		}
-	}
-*/
 	return ret;
 };
 
@@ -373,5 +323,8 @@ void MenuLayerExt::ApplyHooks() {
 	
 	HOOK_STATIC("_ZN9MenuLayer7showTOSEv", 
 	MenuLayerExt::MenuLayer_showTOSH, MenuLayerExt::MenuLayer_showTOSO);
+	
+//	HOOK_STATIC("_ZN9MenuLayer4initEv",
+//	MenuLayerExt::init_hk, MenuLayerExt::init_trp);
 	
 }

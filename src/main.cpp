@@ -1248,14 +1248,14 @@ void loader()
 {
 	auto cocos2d = dlopen(targetLibName != "" ? targetLibName : NULL, RTLD_LAZY);
 
-	MenuLayerExt::ApplyHooks();
+	//MenuLayerExt::ApplyHooks();
 	EditLevelLayerExt::ApplyHooks();
 	LevelEditorLayerExt::ApplyHooks();
 	EditorPauseLayerExt::ApplyHooks();
 
 	HOOK("_ZN7UILayer4initEv", UILayer_initH, UILayer_initO);
 	HOOK("_ZN10PauseLayer6onEditEPN7cocos2d8CCObjectE", PauseLayer_onEditH, PauseLayer_onEditO);
-	HOOK("_ZN12PlayerObject15spawnDualCircleEv", PlayerObject_spawnDualCircleH, PlayerObject_spawnDualCircleO);
+/*	HOOK("_ZN12PlayerObject15spawnDualCircleEv", PlayerObject_spawnDualCircleH, PlayerObject_spawnDualCircleO);
 	HOOK("_ZN9PlayLayer18togglePracticeModeEb", togglePracticeModeH, togglePracticeModeO);
 	HOOK("_ZN8EditorUI10onPlaytestEPN7cocos2d8CCObjectE", EditorUI_onPlaytestH, EditorUI_onPlaytestO);
 	HOOK("_ZN19CreateParticlePopup14onCopySettingsEPN7cocos2d8CCObjectE", CreateParticlePopup_onPasteSettingsH, CreateParticlePopup_onPasteSettingsO);
@@ -1273,23 +1273,28 @@ void loader()
 	HOOK("_ZN20AccountRegisterLayer4initEv", AccountRegisterLayer_InitH, AccountRegisterLayer_InitO);
 	//HOOK("_ZN14SelectArtLayer4initE13SelectArtType", SelectArtLayer_initH, SelectArtLayer_initO)
 	HOOK("_ZN11GameManager18toggleGameVariableEPKc", hook_onToggle, onToggleTrampoline);
+	
 	HOOK("_ZN13ObjectToolbox13intKeyToFrameEi", keyToFrameH, keyToFrameO);
 	HOOK("_ZN8EditorUI4initEP16LevelEditorLayer", EditorUI_InitH, EditorUI_InitO);
-	HOOK("_ZN8EditorUI13selectObjectsEPN7cocos2d7CCArrayEb", EditorUI_SelectObjectsH, EditorUI_SelectObjectsO);
-	HOOK("_ZN10GameObject10setOpacityEh", GameObjectSetOpacityH, GameObjectSetOpacityO);
-	HOOK("_ZN10GameObject13createWithKeyEi", GameObjectCreateH, GameObjectCreateO);
+	*/
+//	HOOK("_ZN8EditorUI13selectObjectsEPN7cocos2d7CCArrayEb", EditorUI_SelectObjectsH, EditorUI_SelectObjectsO);
+//	HOOK("_ZN10GameObject10setOpacityEh", GameObjectSetOpacityH, GameObjectSetOpacityO);
+//	HOOK("_ZN10GameObject13createWithKeyEi", GameObjectCreateH, GameObjectCreateO);
 	//HOOK("_ZN14LevelInfoLayer4initEP11GJGameLevelb", LevelInfoLayerInitH, LevelInfoLayerInitO);	
-	HOOK("_ZN12LoadingLayer4initEb", LoadingLayer_initH, LoadingLayer_initO);
+/*	HOOK("_ZN12LoadingLayer4initEb", LoadingLayer_initH, LoadingLayer_initO);
 
 	HookManager::do_hook(HookManager::getPointerFromSymbol(cocos2d, "_ZN9AdToolbox16showInterstitialEv"),
 		(void*) GameManager_tryShowAdH,
 		(void **) &GameManager_tryShowAdO);
+		*/
+		/*
 	HookManager::do_hook(HookManager::getPointerFromSymbol(cocos2d, "_ZN15GJBaseGameLayer12addToSectionEP10GameObject"),
 		(void*) GJBaseGameLayer_addToSectionH,
 		(void **) &GJBaseGameLayer_addToSectionO);
 	HookManager::do_hook(HookManager::getPointerFromSymbol(cocos2d, "_ZN15GJBaseGameLayer23removeObjectFromSectionEP10GameObject"),
 		(void*) GJBaseGameLayer_removeObjectFromSectionH,
 		(void **) &GJBaseGameLayer_removeObjectFromSectionO);
+		*/
 	HookManager::do_hook(HookManager::getPointerFromSymbol(cocos2d, "_ZN7UILayer12ccTouchBeganEPN7cocos2d7CCTouchEPNS0_7CCEventE"),
 		(void*) UILayer_ccTouchBeganH,
 		(void **) &UILayer_ccTouchBeganO);
@@ -1301,6 +1306,7 @@ void loader()
 		spriteCreateH, spriteCreateO);
 	HOOK("_ZN7cocos2d8CCSprite25createWithSpriteFrameNameEPKc",
 		spriteCreateFrameNameH, spriteCreateFrameNameO);
+		/*
 	HOOK("_ZN16GameStatsManager14isItemUnlockedE10UnlockTypei",
 		isIconUnlockedH, isIconUnlockedO);
 	HOOK("_ZN9MenuLayer4initEv",
@@ -1325,18 +1331,19 @@ void loader()
 		UILayerInitH, UILayerInitO);
 	HOOK("_ZN16LevelEditorLayer10addToGroupEP10GameObjectib",
 		addToGroupH, addToGroupO);
+		*/
 		
 	/*
 	HookManager::do_hook(HookManager::getPointerFromSymbol(cocos2d, "_ZN11AppDelegate11trySaveGameEb"), (void*) save_hook, (void **) &save_trp);
 	HookManager::do_hook(HookManager::getPointerFromSymbol(cocos2d, "_ZN7cocos2d11CCFileUtils13addSearchPathEPKc"), (void*) CCFileUtils_addSearchPath_hk, (void **) &CCFileUtils_addSearchPath_trp);
 	HookManager::do_hook(HookManager::getPointerFromSymbol(cocos2d, "_ZN11GameManager10dataLoadedEP13DS_Dictionary"), (void*) &GameManager_dataLoaded_hk, (void **) &dataLoaded_trp);
 	*/
-	
+	/*
 	HOOK("_ZN17AccountLoginLayer8onSubmitEPN7cocos2d8CCObjectE", AccountSubmitH, AccountSubmitO);
 	HOOK("_ZN17AccountLoginLayer20loginAccountFinishedEii", LoginFinishedH, LoginFinishedO);
 	HOOK("_ZN12LoadingLayer16getLoadingStringEv", getStringH, getStringO);
 	HOOK("_ZN14LevelInfoLayer13downloadLevelEv", downloadLevelH, downloadLevelO);
-
+*/
 	patch *tmp = new patch();
 	tmp->addPatch("libcocos2dcpp.so", 0x26DB2E, "00 bf 00 bf");
 
@@ -1347,21 +1354,22 @@ void loader()
 
 	//gradient bypass
 	tmp->addPatch("libcocos2dcpp.so", 0x385134, "FF");
-
-	/*
-	tried to fix colors and opacity
+	
+	
+//	tried to fix colors and opacity
     tmp->addPatch("libcocos2dcpp.so", 0x2A8AD2, "00 bf");
     tmp->addPatch("libcocos2dcpp.so", 0x2A8AD8, "00 bf");
     tmp->addPatch("libcocos2dcpp.so", 0x2A88EC, "00 bf 00 bf");
-*/
+	
+
+
 	//test fix colors
-	/*
 	tmp->addPatch("libcocos2dcpp.so", 0x2CA80E, "00 bf");
 	tmp->addPatch("libcocos2dcpp.so", 0x2CA81A, "00 bf");
 	tmp->addPatch("libcocos2dcpp.so", 0x2CA758, "00 bf");
 
 	tmp->addPatch("libcocos2dcpp.so", 0x2CA7D6, "11 e0");
-	*/
+	
 	tmp->addPatch("libcocos2dcpp.so", 0x37BB72, "00 bf 00 bf");
 
 	//testing editor shit
@@ -1392,7 +1400,8 @@ void loader()
 	// make sure playtest background doesn't move
 	tmp->addPatch("libcocos2dcpp.so", 0x2BC360, "01 22");
 
-	tmp->Modify();
+	//tmp->Modify();
+	
 }
 
 JNIEXPORT jint JNI_OnLoad(JavaVM *vm, void *reserved)
