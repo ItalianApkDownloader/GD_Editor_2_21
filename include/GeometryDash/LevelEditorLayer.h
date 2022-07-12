@@ -101,6 +101,7 @@ public:
     CLASS_MEMBER(int*, drawNodes, 0x2C98);
 
     // arrays
+    CLASS_MEMBER(CCArray*, array3, 0x2BFC);
     CLASS_MEMBER(CCArray*, array1, 0x2C74);
     CLASS_MEMBER(CCArray*, array2, 0x2C78);
 

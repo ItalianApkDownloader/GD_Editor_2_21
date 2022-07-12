@@ -460,9 +460,24 @@ inline long mid_num(const std::string &s)
 GameObject * (*GameObjectCreateO)(int key);
 GameObject* GameObjectCreateH(int key)
 {
+	auto tb = ObjectToolbox::sharedState()->intKeyToFrame(key);
 	
+	if(key == 2013) return GameObjectCreateO(1);
+	
+	if(contains(tb, "pixelb"))
+		return GameObjectCreateO(1);
 
-	return GameObjectCreateO(1);
+	if(contains(tb, "pixel")) {
+		
+		//if(contains(tb, "b_"))
+			return GameObjectCreateO(1);
+
+		//auto pixelKey = mid_num(tb);
+//
+		//return GameObjectCreateO(pixelKey > 140 ? 1 : key);
+	}
+
+	return GameObjectCreateO(key);
 }
 
 const char *(*keyToFrameO)(ObjectToolbox *self, int key);
@@ -1228,7 +1243,7 @@ void loader()
 	LevelEditorLayerExt::ApplyHooks();
 	EditorPauseLayerExt::ApplyHooks();
 
-	HOOK("_ZN7UILayer4initEv", UILayer_initH, UILayer_initO);
+	//HOOK("_ZN7UILayer4initEv", UILayer_initH, UILayer_initO);
 	HOOK("_ZN10PauseLayer6onEditEPN7cocos2d8CCObjectE", PauseLayer_onEditH, PauseLayer_onEditO);
 /*	HOOK("_ZN12PlayerObject15spawnDualCircleEv", PlayerObject_spawnDualCircleH, PlayerObject_spawnDualCircleO);
 	HOOK("_ZN9PlayLayer18togglePracticeModeEb", togglePracticeModeH, togglePracticeModeO);

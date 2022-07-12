@@ -26,9 +26,7 @@ void EditLevelLayerExt::onClick(CCObject* sender){
 	auto sc = CCScene::create();
 	sc->addChild(layer);
 
-	auto scene = cocos2d::CCTransitionFade::create(
-	0.5,sc
-	);
+	auto scene = cocos2d::CCTransitionFade::create(0.5, sc);
 
 	dir->replaceScene( scene );
 	//	}

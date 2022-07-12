@@ -3,6 +3,16 @@
 #include "LevelEditorLayerExt.h"
 #include "hooking.h"
 
+#define CreateAndRetainArray(name, class, offset) \
+	auto name = *reinterpret_cast<CCArray**>(reinterpret_cast<uintptr_t>(class) + offset); \
+	name = CCArray::create(); \
+	name->retain();
+
+#define CreateAndRetainDict(name, class, offset) \
+	auto name = *reinterpret_cast<CCDictionary**>(reinterpret_cast<uintptr_t>(class) + offset); \
+	name = CCDictionary::create(); \
+	name->retain();
+
 static inline void (*removeO)(LevelEditorLayer* self,GameObject *,bool);
 void LevelEditorLayerExt::removeH(GameObject * obj,bool a1) {
 	
@@ -42,7 +52,7 @@ bool LevelEditorLayerExt::initH(GJGameLevel* level)
 	this->_gameLevel() = level;
 	this->_gameLevel()->retain();
 
-	gm->playLayer_ = this;
+	MEMBERBYOFFSET(LevelEditorLayer*, gm, 0x16C) = this;
 	this->retain();
 	/*this->arr_03 = CCArray::create();
 	this->arr_03->retain();
@@ -97,18 +107,33 @@ CCLog("ddd");
 	this->_array2() = CCArray::create();
 	this->_array2()->retain();
 
+	this->_array3() = CCArray::create();
+	this->_array3()->retain();
+
 	this->_allObjects() = CCArray::create();
 	this->_allObjects()->retain();
 
 	this->_unkArray1() = CCArray::create();
 	this->_unkArray1()->retain();
-	
-	CCLog("eee");
+
+	CreateAndRetainArray(objArr1, this, 0x2C00);
+	CreateAndRetainArray(objArr2, this, 0x2BF8);
+	CreateAndRetainArray(objArr3, this, 0x2BF0);
+	CreateAndRetainArray(objArr4, this, 0x2BEC);
+	CreateAndRetainArray(objArr5, this, 0x2BE4);
+	CreateAndRetainArray(objArr6, this, 0x2BE8);
+	CreateAndRetainArray(objArr7, this, 0x2C34);
+	CreateAndRetainArray(objArr8, this, 0x2C08);
+	CreateAndRetainArray(objArr9, this, 0x2BE0);
+	CreateAndRetainArray(objArr10, this, 0x354);
+	CreateAndRetainArray(objArr11, this, 0x350);
+
+	CreateAndRetainDict(objDict1, this, 0x46C);
+	CreateAndRetainDict(objDict2, this, 0x43C);
+	CreateAndRetainArray(objDict3, this, 0x2CB4);
 
 	//this->_crashArray1() = CCArray::create();
 	//this->_crashArray1()->retain();
-	
-	CCLog("sssss");
 
 	
 	//this->_stickyGroupsDict() = CCDictionary::create();
@@ -119,13 +144,10 @@ CCLog("ddd");
 
 	//*((bool *)this + 316) = *((bool *)level + 393);
 
-CCLog("8iiiii");
-
 	this->_unkVector1().reserve(9999);
 	this->_unkVector2().reserve(9999);
 	this->_objectsVector().reserve(9999);
 
-CCLog("kkk");
 	for ( size_t i = 0; i < 9999; ++i )
 	{
 		//CCLog("loop: %d", i);
@@ -152,9 +174,6 @@ CCLog("kkk");
 		this->_something()[i] = 0;
 		CCLog("loop stage 9");*/
 	}
-	
-	CCLog("mmmmm");
-
 
 	this->_obb2d() = OBB2D::create( CCPoint( 1, 1 ), 1.0, 1.0, 0.0 );
 	this->_obb2d()->retain( );
@@ -178,12 +197,12 @@ CCLog("kkk");
 	}*/
 
 
-	this->unk_arr_209 = CCArray::create();
+	/*this->unk_arr_209 = CCArray::create();
 	this->unk_arr_209->retain();
 	this->unk_arr_211 = CCArray::create();
 	this->unk_arr_211->retain();
 	this->arr_260 = CCArray::create();
-	this->arr_260->retain();
+	this->arr_260->retain();*/
 
 	this->_dCross() = CCSprite::createWithSpriteFrameName( "d_cross_01_001.png" );
 	this->_batchNode()->addChild( this->_dCross(), 10 );
@@ -191,23 +210,15 @@ CCLog("kkk");
 	this->_dCross()->setVisible( false );
 	this->_dCross()->setScale( 0.7 );
 
-	CCLog("cross done");
-
 	std::string a = ZipUtils::decompressString( std::string( ( char* ) this->_gameLevel()->_levelString() ), false, 11 );
 
-	CCLog("why you crash");
 	this->_levelString() = new std::string(a);
-	CCLog("why you crash2");
 
 	this->createObjectsFromSetup(a);
-	
-	CCLog("3333");
 
 	this->createTextLayers();
 	if ( GameManager::sharedState()->getGameVariable( "0066") == 1 )
 		this->enableHighCapacityMode();
-
-	CCLog("more shit");
 
 	if ( !this->_levelSettings() )
 	{
@@ -217,12 +228,8 @@ CCLog("kkk");
 		this->_levelSettings()->retain();
 	}
 
-	CCLog("more shit2");
-
 	this->_editorUI() = EditorUI::create(this);
 	this->addChild(this->_editorUI(), 100);
-
-	CCLog("4444");
 
 	//put the editor in the last position/zoom
 	//this->gameLayer_->setPosition(this->_level->lastCameraPos_);
@@ -242,13 +249,11 @@ CCLog("kkk");
 	this->createBackground(1);
 	this->createGroundLayer(false, false);
 
-CCLog("555");
-
     this->_editorUI()->updateSlider();
-	CCLog("666");
+
     this->resetGroupCounters(false);
 	//this->sortStickyGroups();
-	CCLog("777");
+
     //this->updateEditorMode();
 
     //this->schedule(schedule_selector(LevelEditorLayer::updateEditor));
