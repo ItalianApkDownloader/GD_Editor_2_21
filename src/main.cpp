@@ -1391,7 +1391,6 @@ void loader()
 	tmp->addPatch("libcocos2dcpp.so", 0x2BC360, "01 22");
 
 	//tmp->Modify();
-	
 }
 
 JNIEXPORT jint JNI_OnLoad(JavaVM *vm, void *reserved)

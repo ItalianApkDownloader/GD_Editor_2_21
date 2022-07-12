@@ -3,6 +3,10 @@
 #include "LevelEditorLayerExt.h"
 #include "hooking.h"
 
+#define FUNCTIONHOOK(returntype, name, ...) \
+returntype (*name##O)(__VA_ARGS__);			\
+returntype name##H(__VA_ARGS__)
+
 #define CreateAndRetainArray(name, class, offset) \
 	auto name = *reinterpret_cast<CCArray**>(reinterpret_cast<uintptr_t>(class) + offset); \
 	name = CCArray::create(); \
@@ -28,7 +32,7 @@ bool LevelEditorLayerExt::initH(GJGameLevel* level)
 		return false;
 
 	auto gm = GameManager::sharedState( );
-	*((bool *)gm + 442) = true;
+	MEMBERBYOFFSET(bool, gm, 0x299) = true;
 	/*this->ignoreDamage_ = gm->getGameVariable( "0009");
 	this->unk_bool_01 = gm->getGameVariable( "0001");
 	this->unk_bool_02 = false; //orbs
@@ -52,6 +56,7 @@ bool LevelEditorLayerExt::initH(GJGameLevel* level)
 	this->_gameLevel() = level;
 	this->_gameLevel()->retain();
 
+	MEMBERBYOFFSET(LevelEditorLayer*, gm, 0x168) = this;
 	MEMBERBYOFFSET(LevelEditorLayer*, gm, 0x16C) = this;
 	this->retain();
 	/*this->arr_03 = CCArray::create();
@@ -127,6 +132,9 @@ CCLog("ddd");
 	CreateAndRetainArray(objArr9, this, 0x2BE0);
 	CreateAndRetainArray(objArr10, this, 0x354);
 	CreateAndRetainArray(objArr11, this, 0x350);
+	CreateAndRetainArray(objArr12, this, 0x34C);
+	CreateAndRetainArray(objArr13, this, 0x2C3C);
+	CreateAndRetainArray(objArr14, this, 0x2C50);
 
 	CreateAndRetainDict(objDict1, this, 0x46C);
 	CreateAndRetainDict(objDict2, this, 0x43C);
@@ -147,6 +155,7 @@ CCLog("ddd");
 	this->_unkVector1().reserve(9999);
 	this->_unkVector2().reserve(9999);
 	this->_objectsVector().reserve(9999);
+	this->_lockedLayers().reserve(9999);
 
 	for ( size_t i = 0; i < 9999; ++i )
 	{
@@ -156,6 +165,7 @@ CCLog("ddd");
 
 		this->_unkVector1()[i] = 0;
 		this->_unkVector2()[i] = false;
+		this->_lockedLayers()[i] = false;
 		/*CCLog("loop stage 2");
 
 		this->vector_2853[ i ] = 0;
@@ -181,13 +191,12 @@ CCLog("ddd");
 	this->_drawNodes() = new int[ 0xC80 ];
 	this->setupLayers();
 
-
 	this->_gridLayer() = DrawGridLayer::create( this->_gameLayer(), this );
 
 	this->_gameLayer()->addChild( this->_gridLayer(), gm->getGameVariable( "0039" ) ? 99 : -100 );
 
-
 	this->createPlayer();
+
 	/**(bool *)(*((int *)this + 204) + 1556) = false;
 	*(bool *)(*((int *)this + 205) + 1556) = false;
 
@@ -268,22 +277,22 @@ CCLog("ddd");
 
 	return true;
 }
-/*
+
 static inline void (*updateVisibilityO)(LevelEditorLayer*,float);
 void LevelEditorLayerExt::updateVisibilityH(float a1){
 
 	auto p = this;
 	
-	int cl = MBO(int, p, 0x2C1C);
+	/*int cl = MBO(int, p, 0x2C1C);
 	
 	
 	if(p->isLayerLocked(cl)) {
 		p->toggleLockActiveLayer();
-		p->editorUI_->updateGroupIDLabel();
-	}
+		p->_editorUI()->updateGroupIDLabel();
+	}*/
 	
+	/*auto node = MEMBERBYOFFSET(CCNode*, this, 0x11C);
 	
-	auto node = *((CCNode **)p + 284);
 	auto position = node->getPosition();
 	auto winSize = CCDirector::sharedDirector()->getWinSize();
 	auto scale = node->getScale();
@@ -302,32 +311,29 @@ void LevelEditorLayerExt::updateVisibilityH(float a1){
 	int startIndex = (int)(float)(floorf(centerX / 100.0) - 1.0);
 	float percentage = (float)(centerX + rect.size.width) / 100.0;
 	int limit = (int)(float)(percentage + 1.0);
-	auto sections = p->sections;
+	auto sections = MEMBERBYOFFSET(CCArray*, this, 0x348);*/
 
 	/*
 		UPDATING OBJECTS
-	
-	for(int i = startIndex;  i <= limit; i++){
+	*/
+
+	auto sections = MEMBERBYOFFSET(CCArray*, this, 0x348);
+
+	for(int i = 0;  i <= 9999; i++){
 		if(i >= 0 && i < sections->count()){
 			auto section = sections->objectAtIndex(i);
 			if(section){
 				auto sect = reinterpret_cast<CCArray*>(section);
-				
-
-
 				if (sect) {
 					if (sect->count() > 0) {
 						for (int k = 0; k < sect->count(); k++) {
 							GameObject *obj = dynamic_cast<GameObject *>(sect->objectAtIndex(k));
-							
-
-							
 							auto objectPos = obj->getPosition();
-							if(rect.containsPoint(objectPos)){
+							//if(rect.containsPoint(objectPos)){
 								obj->addMainSpriteToParent(false);
 								if(obj->hasSecondaryColor()) obj->addColorSpriteToParent(true);
 								obj->activateObject();
-								
+								/*
 								int currentLayer = MBO(int, p, 0x2C1C);
 								int l1 = MBO(int, obj, 0x450);
 								int l2 = MBO(int, obj, 0x454);
@@ -341,40 +347,49 @@ void LevelEditorLayerExt::updateVisibilityH(float a1){
 								else {
 									bool shouldBeVisible = (currentLayer == l1 || (currentLayer == l2 && l2 != 0) || currentLayer == -1);
 									GameObjectSetOpacityH(obj, shouldBeVisible ? 255 : 70);
-								}
+								}*/
 								
-								if(!MEMBERBYOFFSET(bool, obj, 0x405)) {
-									p->_objectsToUpdate()->addObject(obj);
-								}                                
-							}
+								/*if(!MEMBERBYOFFSET(bool, obj, 0x405)) {
+									//p->_objectsToUpdate()->addObject(obj);
+								}        */                        
+							/*}
 							// GOOFY AHH :trollskullirl:
 							else{
 								obj->deactivateObject(false);
-							}
+							}*/
 
 						}
 					}
 				}
 			}
-
 		}
 	}
 
-	p->updateObjectColors(p->_objectsToUpdate());
-	p->_objectsToUpdate()->removeAllObjects();
+	//p->updateObjectColors(p->_objectsToUpdate());
+	//p->_objectsToUpdate()->removeAllObjects();
 	
 	p->processAreaVisualActions();
 	p->sortBatchnodeChildren(0.0);
-}*/
+}
+
+FUNCTIONHOOK(void, GJBaseGameLayer_updateCameraBGArt, GJBaseGameLayer* self, CCPoint pos) {
+	// fix playtest bg
+	MEMBERBYOFFSET(bool, self, 0x2A19) = true;
+
+	GJBaseGameLayer_updateCameraBGArtO(self, pos);
+}
 
 void LevelEditorLayerExt::ApplyHooks() {
 	
 	HOOK_STATIC("_ZN16LevelEditorLayer4initEP11GJGameLevelb",
 	LevelEditorLayerExt::initH, LevelEditorLayerExt::initO);
-	/*
-	HOOK_STATIC("_ZN16LevelEditorLayer16updateVisibilityEf",
-	LevelEditorLayerExt::updateVisibilityH, LevelEditorLayerExt::updateVisibilityO);
 	
+	//HOOK_STATIC("_ZN16LevelEditorLayer16updateVisibilityEf",
+	//LevelEditorLayerExt::updateVisibilityH, LevelEditorLayerExt::updateVisibilityO);
+
+	//HOOK_STATIC("_ZN15GJBaseGameLayer17updateCameraBGArtEN7cocos2d7CCPointE", GJBaseGameLayer_updateCameraBGArtH, GJBaseGameLayer_updateCameraBGArtO);
+
+	/*
 	HOOK_STATIC("_ZN16LevelEditorLayer12removeObjectEP10GameObjectb", 
 	LevelEditorLayerExt::removeH, LevelEditorLayerExt::removeO);
 	*/
