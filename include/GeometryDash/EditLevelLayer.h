@@ -34,6 +34,8 @@ public:
 public:
     CLASS_MEMBER(cocos2d::CCMenu*, btnMenu, 0x148);
 
+    CLASS_MEMBER(GJGameLevel*, gameLevel, 0x150);
+
 public:
     EditLevelLayer();
     virtual ~EditLevelLayer();

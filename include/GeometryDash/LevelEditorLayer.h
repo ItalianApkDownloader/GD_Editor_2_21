@@ -87,8 +87,21 @@ public:
 
     CLASS_MEMBER(CCArray*, objectsToUpdate, 0x2BD4);
 	*/
+
+    CLASS_MEMBER(CCSprite*, dCross, 0x2C60);
+
+    CLASS_MEMBER(EditorUI*, editorUI, 0x2C70);
 	
 	CLASS_MEMBER(DrawGridLayer*, gridLayer, 0x2C88);
+
+    CLASS_MEMBER(std::string*, levelString, 0x2C94);
+
+    CLASS_MEMBER(std::vector<GameObject*>, objectsVector, 0x2C9C);
+    CLASS_MEMBER(std::vector<CCArray*>, someArrVector, 0x2CA8);
+
+    CLASS_MEMBER(OBB2D*, obb2d, 0x2C58);
+
+    CLASS_MEMBER(int*, drawNodes, 0x2C98);
 
 public:
     LevelEditorLayer();

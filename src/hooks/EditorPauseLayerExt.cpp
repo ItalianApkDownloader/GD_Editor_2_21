@@ -2,7 +2,7 @@
 #include "cocos2d.h"
 #include "EditorPauseLayerExt.h"
 #include "hooking.h"
-
+/*
 
 static inline void (*UnlockAllLayersO)(EditorPauseLayer* self, CCObject* a2);
 void EditorPauseLayerExt::UnlockAllLayersH(CCObject* a2) {
@@ -65,20 +65,21 @@ void EditorPauseLayerExt::onResumeH(CCObject* a1){
 	*((bool *)p + 11610) = gm->getGameVariable("0120");
 	*((bool *)p + 11604) = gm->getGameVariable("0079");
 	*((bool *)p + 11611) = gm->getGameVariable("0103");
-	*((bool *)p + 11612) = gm->getGameVariable("0104");*/
+	*((bool *)p + 11612) = gm->getGameVariable("0104");
 
 	p->removeFromParentAndCleanup(true);
 }
 
 
 
-	
-void EditorPauseLayerExt::ApplyHooks() {
-	
+	*/
+
+void EditorPauseLayerExt::ApplyHooks() {
+	/*
 	HOOK_STATIC("_ZN16EditorPauseLayer17onUnlockAllLayersEPN7cocos2d8CCObjectE", 
 	EditorPauseLayerExt::UnlockAllLayersH, EditorPauseLayerExt::UnlockAllLayersO);
 	
 	HOOK_STATIC("_ZN16EditorPauseLayer8onResumeEPN7cocos2d8CCObjectE", 
-	EditorPauseLayerExt::onResumeH, EditorPauseLayerExt::onResumeO);
+	EditorPauseLayerExt::onResumeH, EditorPauseLayerExt::onResumeO);*/
 
 }

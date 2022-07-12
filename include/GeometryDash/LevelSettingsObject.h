@@ -4,6 +4,8 @@
 #include "GJGameLevel.h"
 #include "GJEffectManager.h"
 
+#include "GDAPI_Macros.h"
+
 // size 0x140
 class LevelSettingsObject : public cocos2d::CCNode
 {
@@ -37,6 +39,9 @@ public:
     int GLineIdx_;
     bool byte13C;
     bool isVisible_;
+
+public:
+    CLASS_MEMBER(GJGameLevel*, gameLevel, 0x138);
 
 public:
     LevelSettingsObject();

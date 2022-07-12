@@ -54,8 +54,14 @@ public:
 	CLASS_MEMBER(GJEffectManager*, effectManager, 0x158);
 
 	
-	public:
-    CLASS_MEMBER(PlayerObject*, player1, 0x284);
+public:
+    CLASS_MEMBER(GJGameLevel*, gameLevel, 0x13C);
+
+    CLASS_MEMBER(CCSpriteBatchNode*, batchNode, 0x200);
+
+    CLASS_MEMBER(LevelSettingsObject*, levelSettings, 0x33C);
+
+    CLASS_MEMBER(CCLayer*, gameLayer, 0x48C);
 
 public:
     GJBaseGameLayer();
@@ -68,7 +74,7 @@ public:
     void createTextLayers( void );
     void enableHighCapacityMode( void );
     void resetGroupCounters( bool reset );
-    PlayerObject* createPlayer();
+    void createPlayer();
 
     void createGroundLayer( int,int);
 	void createBackground(int );

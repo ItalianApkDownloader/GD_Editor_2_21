@@ -251,8 +251,6 @@ bool MenuLayerInitH(MenuLayer *self)
 CCSprite * (*spriteCreateFrameNameO)(const char *textureName);
 CCSprite* spriteCreateFrameNameH(const char *textureName)
 {
-	// CCLog(textureName);
-
 	auto ret = spriteCreateFrameNameO(textureName);
 
 	if (contains(textureName, "GJ_fullBtn_001.png"))
@@ -262,8 +260,8 @@ CCSprite* spriteCreateFrameNameH(const char *textureName)
 		return ret;
 
 	return spriteCreateFrameNameO("GJ_optionsTxt_001.png");
-
 }
+
 #include "cocos2dx/extensions/network/HttpClient.h"
 #include "cocos2dx/extensions/network/HttpRequest.h"
 #include "cocos2dx/extensions/network/HttpResponse.h"
@@ -462,32 +460,9 @@ inline long mid_num(const std::string &s)
 GameObject * (*GameObjectCreateO)(int key);
 GameObject* GameObjectCreateH(int key)
 {
-	auto tb = ObjectToolbox::sharedState()->intKeyToFrame(key);
-	//	CCLog("name: %s | key: %d", tb, key);
-	/*
-	switch(key) {
-		case 2013:
-		case 2223:
-		return GameObjectCreateO(1);
+	
 
-	}
-
-	*/
-	if (contains(tb, "pixelb"))
-		return GameObjectCreateO(2142);
-
-	if (contains(tb, "pixel"))
-	{
-		if (contains(tb, "b_"))
-			return GameObjectCreateO(2142);
-
-		auto pixelKey = mid_num(tb);
-
-		return GameObjectCreateO(pixelKey > 140 ? 2142 : key);
-	}
-
-	return GameObjectCreateO(key);
-
+	return GameObjectCreateO(1);
 }
 
 const char *(*keyToFrameO)(ObjectToolbox *self, int key);
@@ -1279,7 +1254,7 @@ void loader()
 	*/
 //	HOOK("_ZN8EditorUI13selectObjectsEPN7cocos2d7CCArrayEb", EditorUI_SelectObjectsH, EditorUI_SelectObjectsO);
 //	HOOK("_ZN10GameObject10setOpacityEh", GameObjectSetOpacityH, GameObjectSetOpacityO);
-//	HOOK("_ZN10GameObject13createWithKeyEi", GameObjectCreateH, GameObjectCreateO);
+	HOOK("_ZN10GameObject13createWithKeyEi", GameObjectCreateH, GameObjectCreateO);
 	//HOOK("_ZN14LevelInfoLayer4initEP11GJGameLevelb", LevelInfoLayerInitH, LevelInfoLayerInitO);	
 /*	HOOK("_ZN12LoadingLayer4initEb", LoadingLayer_initH, LoadingLayer_initO);
 

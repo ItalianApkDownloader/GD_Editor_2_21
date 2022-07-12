@@ -2,6 +2,8 @@
 
 #include "CCLayer.h"
 
+#include "GDAPI_Macros.h"
+
 // size 0x2F4
 
     enum GJLevelType {
@@ -153,6 +155,8 @@ public:
     std::string levelSeed_;
     int dword2F0;
 
+public:
+    CLASS_MEMBER(std::string*, levelString, 0x11C);
     
 public:
     GJGameLevel();

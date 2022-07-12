@@ -22,7 +22,7 @@ void EditLevelLayerExt::onClick(CCObject* sender){
 	
 
 	auto dir = cocos2d::CCDirector::sharedDirector( );
-	auto layer = LevelEditorLayer::create( this->gameLevel_ ,false);
+	auto layer = LevelEditorLayer::create( this->_gameLevel(), false);
 	auto sc = CCScene::create();
 	sc->addChild(layer);
 
