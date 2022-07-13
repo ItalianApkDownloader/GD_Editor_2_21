@@ -1251,7 +1251,7 @@ void loader()
 	HOOK("_ZN16LevelEditorLayer14onStopPlaytestEv", LevelEditorLayer_onStopPlaytestH, LevelEditorLayer_onStopPlaytestO);
 
 	//HOOK("_ZN7UILayer4initEv", UILayer_initH, UILayer_initO);
-	HOOK("_ZN10PauseLayer6onEditEPN7cocos2d8CCObjectE", PauseLayer_onEditH, PauseLayer_onEditO);
+	//HOOK("_ZN10PauseLayer6onEditEPN7cocos2d8CCObjectE", PauseLayer_onEditH, PauseLayer_onEditO);
 /*	HOOK("_ZN12PlayerObject15spawnDualCircleEv", PlayerObject_spawnDualCircleH, PlayerObject_spawnDualCircleO);
 	HOOK("_ZN9PlayLayer18togglePracticeModeEb", togglePracticeModeH, togglePracticeModeO);
 	HOOK("_ZN8EditorUI10onPlaytestEPN7cocos2d8CCObjectE", EditorUI_onPlaytestH, EditorUI_onPlaytestO);

@@ -111,6 +111,7 @@ public:
     CLASS_MEMBER(std::vector<unsigned char>, unkVector1, 0x2CDC);
     CLASS_MEMBER(std::vector<bool>, unkVector2, 0x2D2C);
     CLASS_MEMBER(std::vector<bool>, lockedLayers, 0x2CF0);
+    CLASS_MEMBER(std::vector<bool>, blendingVec, 0x2D04);
 
 public:
     LevelEditorLayer();

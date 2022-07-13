@@ -156,6 +156,7 @@ CCLog("ddd");
 	this->_unkVector2().reserve(9999);
 	this->_objectsVector().reserve(9999);
 	this->_lockedLayers().reserve(9999);
+	this->_blendingVec().reserve(9999);
 
 	for ( size_t i = 0; i < 9999; ++i )
 	{
@@ -166,6 +167,7 @@ CCLog("ddd");
 		this->_unkVector1()[i] = 0;
 		this->_unkVector2()[i] = false;
 		this->_lockedLayers()[i] = false;
+		this->_blendingVec()[i] = false;
 		/*CCLog("loop stage 2");
 
 		this->vector_2853[ i ] = 0;
@@ -250,16 +252,12 @@ CCLog("ddd");
 	this->_gridLayer()->updateTimeMarkers();
 
 	// create ground, middleground and background
-	// ----- OFFSETS ARE OUTDATED, GOTTA FIX LATER
-	//this->createBackground(MEMBERBYOFFSET(int, this->levelSettings_, 0x11C));
-	//this->createMiddleground(MEMBERBYOFFSET(int, this->levelSettings_, 0x128));
-    //this->createGroundLayer(
-	//	MEMBERBYOFFSET(int, this->levelSettings_, 0x120),
-	//	MEMBERBYOFFSET(int, this->levelSettings_, 0x148)
-	//);
-
-	this->createBackground(1);
-	this->createGroundLayer(1, 1);
+	this->createBackground(MEMBERBYOFFSET(int, this->_levelSettings(), 0x11C));
+	this->createMiddleground(MEMBERBYOFFSET(int, this->_levelSettings(), 0x128));
+    this->createGroundLayer(
+		MEMBERBYOFFSET(int, this->_levelSettings(), 0x120),
+		MEMBERBYOFFSET(int, this->_levelSettings(), 0x148)
+	);
 
 	// fix background
 	MEMBERBYOFFSET(bool, this, 0x2A19) = true;
@@ -287,7 +285,7 @@ static inline void (*updateVisibilityO)(LevelEditorLayer*,float);
 void LevelEditorLayerExt::updateVisibilityH(float a1){
 
 	auto p = this;
-	
+	CCLog("sexxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
 	/*int cl = MBO(int, p, 0x2C1C);
 	
 	
@@ -387,8 +385,8 @@ void LevelEditorLayerExt::ApplyHooks() {
 	HOOK_STATIC("_ZN16LevelEditorLayer4initEP11GJGameLevelb",
 	LevelEditorLayerExt::initH, LevelEditorLayerExt::initO);
 	
-	HOOK_STATIC("_ZN16LevelEditorLayer16updateVisibilityEf",
-	LevelEditorLayerExt::updateVisibilityH, LevelEditorLayerExt::updateVisibilityO);
+	//HOOK_STATIC("_ZN16LevelEditorLayer16updateVisibilityEf",
+	//LevelEditorLayerExt::updateVisibilityH, LevelEditorLayerExt::updateVisibilityO);
 
 	/*
 	HOOK_STATIC("_ZN16LevelEditorLayer12removeObjectEP10GameObjectb", 
