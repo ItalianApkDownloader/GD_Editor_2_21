@@ -1391,6 +1391,31 @@ void loader()
 	tmp->addPatch("libcocos2dcpp.so", 0x2BC360, "01 22");
 
 	//tmp->Modify();
+	
+	
+	
+	
+		patch *tms = new patch();
+	
+	#define NOP4(a, b) a->addPatch("libcocos2dcpp.so", b, "00 BF 00 BF");
+	#define NOP2(a, b) a->addPatch("libcocos2dcpp.so", b, "00 BF");
+	
+	NOP4(tms, 0x2726A6)
+	NOP4(tms, 0x2EAE24)
+	NOP4(tms, 0x2EBE3C)
+	NOP4(tms, 0x2726A0)
+	NOP4(tms, 0x34909C)
+	NOP4(tms, 0x34B5D4)
+	NOP4(tms, 0x3539CC)
+	NOP4(tms, 0x27FDCE)
+	NOP4(tms, 0x27FE9E)
+	NOP4(tms, 0x27FE9E)
+	
+	NOP4(tms, 0x2CEA7C) //pause
+	
+	tms->Modify();
+	
+	
 }
 
 JNIEXPORT jint JNI_OnLoad(JavaVM *vm, void *reserved)
