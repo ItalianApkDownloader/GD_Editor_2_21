@@ -39,14 +39,7 @@ void *GameObjectSetOpacityH(GameObject *self, unsigned char opacity)
 	return GameObjectSetOpacityO(self, opacity);
 
 }
-
-void(*GJBaseGameLayer_addToSectionO)(GJBaseGameLayer *self, GameObject *obj);
-void GJBaseGameLayer_addToSectionH(GJBaseGameLayer *self, GameObject *obj)
-{
-	if (obj)
-		GJBaseGameLayer_addToSectionO(self, obj);
-}
-
+/*
 void(*GJBaseGameLayer_removeObjectFromSectionO)(GJBaseGameLayer *self, GameObject *obj);
 void GJBaseGameLayer_removeObjectFromSectionH(GJBaseGameLayer *self, GameObject *obj)
 {
@@ -56,7 +49,7 @@ void GJBaseGameLayer_removeObjectFromSectionH(GJBaseGameLayer *self, GameObject 
 		if (GM->_inEditor())
 			obj->removeFromParent();
 	}
-}
+}*/
 
 bool(*UILayer_ccTouchBeganO)(UILayer *self, CCTouch *touch, CCEvent *event);
 bool UILayer_ccTouchBeganH(UILayer *self, CCTouch *touch, CCEvent *event)
@@ -1239,6 +1232,10 @@ FUNCTIONHOOK(void, LevelEditorLayer_onStopPlaytest, PlayerObject* self) {
 	
 }
 
+FUNCTIONHOOK(void, GJBaseGameLayer_addToSection, GJBaseGameLayer* self, GameObject* object) {
+	if(object) GJBaseGameLayer_addToSectionO(self, object);
+}
+
 void loader()
 {
 	auto cocos2d = dlopen(targetLibName != "" ? targetLibName : NULL, RTLD_LAZY);
@@ -1249,6 +1246,7 @@ void loader()
 	EditorPauseLayerExt::ApplyHooks();
 
 	HOOK("_ZN16LevelEditorLayer14onStopPlaytestEv", LevelEditorLayer_onStopPlaytestH, LevelEditorLayer_onStopPlaytestO);
+	HOOK("_ZN15GJBaseGameLayer12addToSectionEP10GameObject", GJBaseGameLayer_addToSectionH, GJBaseGameLayer_addToSectionO);
 
 	//HOOK("_ZN7UILayer4initEv", UILayer_initH, UILayer_initO);
 	//HOOK("_ZN10PauseLayer6onEditEPN7cocos2d8CCObjectE", PauseLayer_onEditH, PauseLayer_onEditO);

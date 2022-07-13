@@ -100,18 +100,16 @@ public:
 
     CLASS_MEMBER(int*, drawNodes, 0x2C98);
 
-    // arrays
-    CLASS_MEMBER(CCArray*, array3, 0x2BFC);
-    CLASS_MEMBER(CCArray*, array1, 0x2C74);
-    CLASS_MEMBER(CCArray*, array2, 0x2C78);
+    CLASS_MEMBER(CCArray*, objectsToUpdate, 0x2C08);
 
     // vectors
     CLASS_MEMBER(std::vector<GameObject*>, objectsVector, 0x2C9C);
     CLASS_MEMBER(std::vector<CCArray*>, someArrVector, 0x2CA8);
     CLASS_MEMBER(std::vector<unsigned char>, unkVector1, 0x2CDC);
-    CLASS_MEMBER(std::vector<bool>, unkVector2, 0x2D2C);
+    CLASS_MEMBER(std::vector<unsigned char>, unkVector2, 0x2D2C);
     CLASS_MEMBER(std::vector<bool>, lockedLayers, 0x2CF0);
     CLASS_MEMBER(std::vector<bool>, blendingVec, 0x2D04);
+    CLASS_MEMBER(std::vector<CCArray*>, triggerGroupsVec, 0x2CB8);
 
 public:
     LevelEditorLayer();
@@ -165,4 +163,7 @@ public:
     virtual cocos2d::CCParticleSystemQuad* claimCustomParticle( std::string, int, int );
     virtual void unclaimCustomParticle( std::string, cocos2d::CCParticleSystemQuad* );
     virtual void levelSettingsUpdated( void );
+
+    void updatePreviewAnim();
+    void updatePreviewParticles();
 };
