@@ -55,6 +55,9 @@ public:
 
 	
 public:
+    CLASS_MEMBER(PlayerObject*, player1, 0x334);
+    CLASS_MEMBER(PlayerObject*, player2, 0x338);
+
     CLASS_MEMBER(GJGameLevel*, gameLevel, 0x13C);
 
     CLASS_MEMBER(CCSpriteBatchNode*, batchNode, 0x200);
@@ -89,6 +92,7 @@ public:
 
     void tweenValue( float from, float to, int tag, std::string property_key, float duration, int action, float f_rate );
 
+    void resetLevelVariables();
 
     void queueButton(int,bool,bool);
     void processAreaVisualActions();

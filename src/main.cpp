@@ -1234,6 +1234,11 @@ FUNCTIONHOOK(bool, UILayer_init, CCLayer* self) {
 	return true;
 }
 
+// debug funcs
+FUNCTIONHOOK(void, LevelEditorLayer_onStopPlaytest, PlayerObject* self) {
+	
+}
+
 void loader()
 {
 	auto cocos2d = dlopen(targetLibName != "" ? targetLibName : NULL, RTLD_LAZY);
@@ -1242,6 +1247,8 @@ void loader()
 	EditLevelLayerExt::ApplyHooks();
 	LevelEditorLayerExt::ApplyHooks();
 	EditorPauseLayerExt::ApplyHooks();
+
+	HOOK("_ZN16LevelEditorLayer14onStopPlaytestEv", LevelEditorLayer_onStopPlaytestH, LevelEditorLayer_onStopPlaytestO);
 
 	//HOOK("_ZN7UILayer4initEv", UILayer_initH, UILayer_initO);
 	HOOK("_ZN10PauseLayer6onEditEPN7cocos2d8CCObjectE", PauseLayer_onEditH, PauseLayer_onEditO);
@@ -1397,25 +1404,21 @@ void loader()
 	
 		patch *tms = new patch();
 	
-	#define NOP4(a, b) a->addPatch("libcocos2dcpp.so", b, "00 BF 00 BF");
-	#define NOP2(a, b) a->addPatch("libcocos2dcpp.so", b, "00 BF");
+	#define NOP4(a, b) a->addPatch("libcocos2dcpp.so", b, "00 BF 00 BF")
+	#define NOP2(a, b) a->addPatch("libcocos2dcpp.so", b, "00 BF")
 	
-	NOP4(tms, 0x2726A6)
-	NOP4(tms, 0x2EAE24)
-	NOP4(tms, 0x2EBE3C)
-	NOP4(tms, 0x2726A0)
-	NOP4(tms, 0x34909C)
-	NOP4(tms, 0x34B5D4)
-	NOP4(tms, 0x3539CC)
-	NOP4(tms, 0x27FDCE)
-	NOP4(tms, 0x27FE9E)
-	NOP4(tms, 0x27FE9E)
-	
-	NOP4(tms, 0x2CEA7C) //pause
+	NOP4(tms, 0x2726A6);
+	NOP4(tms, 0x2EAE24);
+	NOP4(tms, 0x2EBE3C);
+	NOP4(tms, 0x2726A0);
+	NOP4(tms, 0x34909C);
+	NOP4(tms, 0x34B5D4);
+	NOP4(tms, 0x3539CC);
+	NOP4(tms, 0x27FDCE);
+	NOP4(tms, 0x27FE9E);
+	NOP4(tms, 0x27FE9E);
 	
 	tms->Modify();
-	
-	
 }
 
 JNIEXPORT jint JNI_OnLoad(JavaVM *vm, void *reserved)

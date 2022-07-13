@@ -32,7 +32,7 @@ bool LevelEditorLayerExt::initH(GJGameLevel* level)
 		return false;
 
 	auto gm = GameManager::sharedState( );
-	MEMBERBYOFFSET(bool, gm, 0x299) = true;
+	MEMBERBYOFFSET(bool, gm, 0x1BA) = true;
 	/*this->ignoreDamage_ = gm->getGameVariable( "0009");
 	this->unk_bool_01 = gm->getGameVariable( "0001");
 	this->unk_bool_02 = false; //orbs
@@ -197,6 +197,9 @@ CCLog("ddd");
 
 	this->createPlayer();
 
+	MBO(bool, this->_player1(), 0x60C) = false;
+	MBO(bool, this->_player2(), 0x60C) = false;
+
 	/**(bool *)(*((int *)this + 204) + 1556) = false;
 	*(bool *)(*((int *)this + 205) + 1556) = false;
 
@@ -226,8 +229,7 @@ CCLog("ddd");
 	this->createObjectsFromSetup(a);
 
 	this->createTextLayers();
-	if ( GameManager::sharedState()->getGameVariable( "0066") == 1 )
-		this->enableHighCapacityMode();
+	if (gm->getGameVariable("0066")) this->enableHighCapacityMode();
 
 	if ( !this->_levelSettings() )
 	{
@@ -248,6 +250,7 @@ CCLog("ddd");
 	this->_gridLayer()->updateTimeMarkers();
 
 	// create ground, middleground and background
+	// ----- OFFSETS ARE OUTDATED, GOTTA FIX LATER
 	//this->createBackground(MEMBERBYOFFSET(int, this->levelSettings_, 0x11C));
 	//this->createMiddleground(MEMBERBYOFFSET(int, this->levelSettings_, 0x128));
     //this->createGroundLayer(
@@ -256,14 +259,16 @@ CCLog("ddd");
 	//);
 
 	this->createBackground(1);
-	this->createGroundLayer(false, false);
+	this->createGroundLayer(1, 1);
+
+	// fix background
+	MEMBERBYOFFSET(bool, this, 0x2A19) = true;
 
     this->_editorUI()->updateSlider();
 
     this->resetGroupCounters(false);
 	//this->sortStickyGroups();
-
-    //this->updateEditorMode();
+	this->updateEditorMode();
 
     //this->schedule(schedule_selector(LevelEditorLayer::updateEditor));
 
@@ -322,13 +327,19 @@ void LevelEditorLayerExt::updateVisibilityH(float a1){
 	for(int i = 0;  i <= 9999; i++){
 		if(i >= 0 && i < sections->count()){
 			auto section = sections->objectAtIndex(i);
+			CCLog("fuerlfgbnweru");
 			if(section){
+				CCLog("balls");
 				auto sect = reinterpret_cast<CCArray*>(section);
 				if (sect) {
+					CCLog("sexxxxxxxxxxxx");
 					if (sect->count() > 0) {
+						CCLog("sexxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
 						for (int k = 0; k < sect->count(); k++) {
+							CCLog("sexxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx 2222222222222222");
 							GameObject *obj = dynamic_cast<GameObject *>(sect->objectAtIndex(k));
 							auto objectPos = obj->getPosition();
+							CCLog("sexxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx   33333333333333333333333");
 							//if(rect.containsPoint(objectPos)){
 								obj->addMainSpriteToParent(false);
 								if(obj->hasSecondaryColor()) obj->addColorSpriteToParent(true);
@@ -372,22 +383,12 @@ void LevelEditorLayerExt::updateVisibilityH(float a1){
 	p->sortBatchnodeChildren(0.0);
 }
 
-FUNCTIONHOOK(void, GJBaseGameLayer_updateCameraBGArt, GJBaseGameLayer* self, CCPoint pos) {
-	// fix playtest bg
-	MEMBERBYOFFSET(bool, self, 0x2A19) = true;
-
-	GJBaseGameLayer_updateCameraBGArtO(self, pos);
-}
-
 void LevelEditorLayerExt::ApplyHooks() {
-	
 	HOOK_STATIC("_ZN16LevelEditorLayer4initEP11GJGameLevelb",
 	LevelEditorLayerExt::initH, LevelEditorLayerExt::initO);
 	
-	//HOOK_STATIC("_ZN16LevelEditorLayer16updateVisibilityEf",
-	//LevelEditorLayerExt::updateVisibilityH, LevelEditorLayerExt::updateVisibilityO);
-
-	//HOOK_STATIC("_ZN15GJBaseGameLayer17updateCameraBGArtEN7cocos2d7CCPointE", GJBaseGameLayer_updateCameraBGArtH, GJBaseGameLayer_updateCameraBGArtO);
+	HOOK_STATIC("_ZN16LevelEditorLayer16updateVisibilityEf",
+	LevelEditorLayerExt::updateVisibilityH, LevelEditorLayerExt::updateVisibilityO);
 
 	/*
 	HOOK_STATIC("_ZN16LevelEditorLayer12removeObjectEP10GameObjectb", 
