@@ -1239,6 +1239,15 @@ FUNCTIONHOOK(void, PlayerObject_spawnDualCircle, PlayerObject* self) {
 	if(!GM->_inEditor()) PlayerObject_spawnDualCircleO(self);
 }
 
+// weird
+FUNCTIONHOOK(GameObject*, GameObject_objectFromVector, std::vector<std::string> str, GJBaseGameLayer* baseLayer) {
+	auto obj = GameObject_objectFromVectorO(str, baseLayer);
+
+	if(!obj) return GameObject::createWithKey(1);
+
+	return obj;
+}
+
 // testing big levels
 FUNCTIONHOOK(bool, LevelInfoLayer_init, LevelInfoLayer* self, GJGameLevel* level, bool idk) {
 	if(!LevelInfoLayer_initO(self, level, idk)) return false;
@@ -1259,6 +1268,7 @@ void loader()
 	LevelEditorLayerExt::ApplyHooks();
 	EditorPauseLayerExt::ApplyHooks();
 
+	HOOK("_ZN10GameObject16objectFromVectorERSt6vectorISsSaISsEEP15GJBaseGameLayerb", GameObject_objectFromVectorH, GameObject_objectFromVectorO);
 	HOOK("_ZN14LevelInfoLayer4initEP11GJGameLevelb", LevelInfoLayer_initH, LevelInfoLayer_initO);
 	//HOOK("_ZN12PlayerObject15spawnDualCircleEv", PlayerObject_spawnDualCircleH, PlayerObject_spawnDualCircleO);
 	HOOK("_ZN15GJBaseGameLayer12addToSectionEP10GameObject", GJBaseGameLayer_addToSectionH, GJBaseGameLayer_addToSectionO);
