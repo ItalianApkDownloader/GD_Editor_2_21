@@ -99,6 +99,8 @@ bool LevelEditorLayerExt::initH(GJGameLevel* level)
 	this->_unkVector1().reserve(9999);
 	this->_unkVector2().reserve(9999);
 	this->_unkVector3().reserve(9999);
+	this->_unkVector4().reserve(9999);
+	this->_unkVector5().reserve(9999);
 	this->_objectsVector().reserve(9999);
 	this->_lockedLayers().reserve(9999);
 	this->_blendingVec().reserve(9999);
@@ -113,6 +115,8 @@ bool LevelEditorLayerExt::initH(GJGameLevel* level)
 		this->_unkVector1()[i] = 0;
 		this->_unkVector2()[i] = 0;
 		this->_unkVector3()[i] = false;
+		this->_unkVector4()[i] = 0;
+		this->_unkVector5()[i] = false;
 		this->_lockedLayers()[i] = false;
 		this->_blendingVec()[i] = false;
 		this->_triggerGroupsVec()[i] = nullptr;
