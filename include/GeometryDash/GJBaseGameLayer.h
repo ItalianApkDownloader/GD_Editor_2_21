@@ -50,7 +50,7 @@ public:
     cocos2d::CCLayer * gameLayer_;
 	PAD(10001);
 
-    CLASS_MEMBER(vector<int>,something,2778*4);
+    CLASS_MEMBER(vector<int>,something, 0x2B9C);
 	CLASS_MEMBER(GJEffectManager*, effectManager, 0x158);
 
 	

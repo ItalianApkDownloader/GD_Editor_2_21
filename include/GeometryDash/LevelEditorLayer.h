@@ -109,6 +109,7 @@ public:
     CLASS_MEMBER(std::vector<unsigned char>, unkVector2, 0x2D2C);
     CLASS_MEMBER(std::vector<bool>, lockedLayers, 0x2CF0);
     CLASS_MEMBER(std::vector<bool>, blendingVec, 0x2D04);
+    CLASS_MEMBER(std::vector<bool>, unkVector3, 0x2D18);
     CLASS_MEMBER(std::vector<CCArray*>, triggerGroupsVec, 0x2CB8);
 
 public:

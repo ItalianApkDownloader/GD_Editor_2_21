@@ -1163,14 +1163,14 @@ bool SetupAreaTintTriggerPopupH(SetupAreaTintTriggerPopup *self, EffectGameObjec
 
 void(*CreateParticlePopup_onPasteSettingsO)(SetupTriggerPopup *self, CCObject *a2);
 void CreateParticlePopup_onPasteSettingsH(SetupTriggerPopup *self, CCObject *a2) {}
-
+/*
 void(*EditorUI_onPlaytestO)(EditorUI *self, CCObject *a2);
 void EditorUI_onPlaytestH(EditorUI *self, CCObject *a2)
 {
 	if (!GM->getGameVariable("100006"))
 		return EditorUI_onPlaytestO(self, a2);
 
-}
+}*/
 
 void(*togglePracticeModeO)(PlayLayer *self, bool *on);
 void togglePracticeModeH(PlayLayer *self, bool *on)
@@ -1178,11 +1178,6 @@ void togglePracticeModeH(PlayLayer *self, bool *on)
 	MBO(bool, self, 0x2D59) = GM->getGameVariable("0125");
 
 	togglePracticeModeO(self, on);
-}
-
-// fix dual crash in playtest
-FUNCTIONHOOK(void, PlayerObject_spawnDualCircle, PlayerObject* self) {
-	if(!MEMBERBYOFFSET(bool, GM, 442)) PlayerObject_spawnDualCircleO(self);
 }
 
 // open editor from pause
@@ -1227,13 +1222,21 @@ FUNCTIONHOOK(bool, UILayer_init, CCLayer* self) {
 	return true;
 }
 
-// debug funcs
-FUNCTIONHOOK(void, LevelEditorLayer_onStopPlaytest, PlayerObject* self) {
-	
-}
-
 FUNCTIONHOOK(void, GJBaseGameLayer_addToSection, GJBaseGameLayer* self, GameObject* object) {
 	if(object) GJBaseGameLayer_addToSectionO(self, object);
+}
+
+FUNCTIONHOOK(void, GJBaseGameLayer_removeObjectFromSection, GJBaseGameLayer* self, GameObject* object) {
+	if(object) {
+		GJBaseGameLayer_removeObjectFromSectionO(self, object);
+
+		if(GM->_inEditor()) object->removeFromParent();
+	}
+}
+
+// fix duals in playtest
+FUNCTIONHOOK(void, PlayerObject_spawnDualCircle, PlayerObject* self) {
+	if(!GM->_inEditor()) PlayerObject_spawnDualCircleO(self);
 }
 
 void loader()
@@ -1245,8 +1248,9 @@ void loader()
 	LevelEditorLayerExt::ApplyHooks();
 	EditorPauseLayerExt::ApplyHooks();
 
-	HOOK("_ZN16LevelEditorLayer14onStopPlaytestEv", LevelEditorLayer_onStopPlaytestH, LevelEditorLayer_onStopPlaytestO);
+	//HOOK("_ZN12PlayerObject15spawnDualCircleEv", PlayerObject_spawnDualCircleH, PlayerObject_spawnDualCircleO);
 	HOOK("_ZN15GJBaseGameLayer12addToSectionEP10GameObject", GJBaseGameLayer_addToSectionH, GJBaseGameLayer_addToSectionO);
+	HOOK("_ZN15GJBaseGameLayer23removeObjectFromSectionEP10GameObject", GJBaseGameLayer_removeObjectFromSectionH, GJBaseGameLayer_removeObjectFromSectionO);
 
 	//HOOK("_ZN7UILayer4initEv", UILayer_initH, UILayer_initO);
 	//HOOK("_ZN10PauseLayer6onEditEPN7cocos2d8CCObjectE", PauseLayer_onEditH, PauseLayer_onEditO);
@@ -1415,6 +1419,11 @@ void loader()
 	NOP4(tms, 0x27FDCE);
 	NOP4(tms, 0x27FE9E);
 	NOP4(tms, 0x27FE9E);
+
+	// playtest
+	NOP4(tms, 0x2BC876);
+	NOP4(tms, 0x2BC884);
+	tms->addPatch("libcocos2dcpp.so", 0x2C0384, "01 22"); // fix bg
 	
 	tms->Modify();
 }

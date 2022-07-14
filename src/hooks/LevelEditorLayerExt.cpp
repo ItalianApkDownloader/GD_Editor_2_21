@@ -7,17 +7,19 @@
 returntype (*name##O)(__VA_ARGS__);			\
 returntype name##H(__VA_ARGS__)
 
-#define CreateAndRetainArray(name, class, offset) \
-	auto name = *reinterpret_cast<CCArray**>(reinterpret_cast<uintptr_t>(class) + offset); \
-	name = CCArray::create(); \
-	name->retain();			  \
-	*reinterpret_cast<CCArray**>(reinterpret_cast<uintptr_t>(class) + offset) = name;
+void CreateAndRetainArrayA(uintptr_t obj, int offset) {
+	auto array = CCArray::create();
+	array->retain();
+	*reinterpret_cast<CCArray**>(obj + offset) = array;
+}
+#define CreateAndRetainArray(class, offset) CreateAndRetainArrayA(reinterpret_cast<uintptr_t>(class), offset);
 
-#define CreateAndRetainDict(name, class, offset) \
-	auto name = *reinterpret_cast<CCDictionary**>(reinterpret_cast<uintptr_t>(class) + offset); \
-	name = CCDictionary::create(); \
-	name->retain();                \
-	*reinterpret_cast<CCDictionary**>(reinterpret_cast<uintptr_t>(class) + offset) = name;
+void CreateAndRetainDictA(uintptr_t obj, int offset) {
+	auto dict = CCDictionary::create();
+	dict->retain();
+	*reinterpret_cast<CCDictionary**>(obj + offset) = dict;
+}
+#define CreateAndRetainDict(class, offset) CreateAndRetainDictA(reinterpret_cast<uintptr_t>(class), offset);
 
 static inline void (*removeO)(LevelEditorLayer* self,GameObject *,bool);
 void LevelEditorLayerExt::removeH(GameObject * obj,bool a1) {
@@ -34,7 +36,9 @@ bool LevelEditorLayerExt::initH(GJGameLevel* level)
 		return false;
 
 	auto gm = GameManager::sharedState();
-	MEMBERBYOFFSET(bool, gm, 0x1BA) = true; // inEditor
+	gm->_inEditor() = true;
+
+	MEMBERBYOFFSET(bool, this, 0x2780) = true;
 
 	this->setObjectCount(0);
 
@@ -48,44 +52,44 @@ bool LevelEditorLayerExt::initH(GJGameLevel* level)
 	this->_gameLevel() = level;
 	this->_gameLevel()->retain();
 
-	MEMBERBYOFFSET(LevelEditorLayer*, gm, 0x168) = this;
 	MEMBERBYOFFSET(LevelEditorLayer*, gm, 0x16C) = this;
 	this->retain();
 
-	CreateAndRetainArray(objArr1, this, 0x2C00);
-	CreateAndRetainArray(objArr2, this, 0x2BF8);
-	CreateAndRetainArray(objArr3, this, 0x2BF0);
-	CreateAndRetainArray(objArr4, this, 0x2BEC);
-	CreateAndRetainArray(objArr5, this, 0x2BE4);
-	CreateAndRetainArray(objArr6, this, 0x2BE8);
-	CreateAndRetainArray(objArr8, this, 0x2C08);
-	CreateAndRetainArray(objArr9, this, 0x2BE0);
-	CreateAndRetainArray(objArr10, this, 0x354);
-	CreateAndRetainArray(objArr11, this, 0x350);
-	CreateAndRetainArray(objArr12, this, 0x34C);
-	CreateAndRetainArray(objArr13, this, 0x2C3C);
-	CreateAndRetainArray(objArr14, this, 0x2C50);
-	CreateAndRetainArray(objArr15, this, 0x2BFC);
-	CreateAndRetainArray(objArr16, this, 0x2BF8);
-	CreateAndRetainArray(objArr17, this, 0x2BF4);
-	CreateAndRetainArray(objArr18, this, 0x2C34);
-	CreateAndRetainArray(objArr19, this, 0x348);
-	CreateAndRetainArray(objArr20, this, 0x344);
-	CreateAndRetainArray(objArr21, this, 0x2C74);
-	CreateAndRetainArray(objArr22, this, 0x2C78);
+	CreateAndRetainArray(this, 0x2C00);
+	CreateAndRetainArray(this, 0x2BF8);
+	CreateAndRetainArray(this, 0x2BF0);
+	CreateAndRetainArray(this, 0x2BEC);
+	CreateAndRetainArray(this, 0x2BE4);
+	CreateAndRetainArray(this, 0x2BE8);
+	CreateAndRetainArray(this, 0x2C08);
+	CreateAndRetainArray(this, 0x2BE0);
+	CreateAndRetainArray(this, 0x354);
+	CreateAndRetainArray(this, 0x350);
+	CreateAndRetainArray(this, 0x34C);
+	CreateAndRetainArray(this, 0x2C3C);
+	CreateAndRetainArray(this, 0x2C50);
+	CreateAndRetainArray(this, 0x2BFC);
+	CreateAndRetainArray(this, 0x2BF8);
+	CreateAndRetainArray(this, 0x2BF4);
+	CreateAndRetainArray(this, 0x2C34);
+	CreateAndRetainArray(this, 0x348);
+	CreateAndRetainArray(this, 0x344);
+	CreateAndRetainArray(this, 0x2C74);
+	CreateAndRetainArray(this, 0x2C78);
 
-	CreateAndRetainDict(objDict1, this, 0x46C);
-	CreateAndRetainDict(objDict2, this, 0x43C);
-	CreateAndRetainArray(objDict3, this, 0x2CB4);
-
-	//*((bool *)this + 316) = *((bool *)level + 393);
+	CreateAndRetainDict(this, 0x46C);
+	CreateAndRetainDict(this, 0x43C);
+	CreateAndRetainDict(this, 0x2CB4);
 
 	this->_unkVector1().reserve(9999);
 	this->_unkVector2().reserve(9999);
+	this->_unkVector3().reserve(9999);
 	this->_objectsVector().reserve(9999);
 	this->_lockedLayers().reserve(9999);
 	this->_blendingVec().reserve(9999);
 	this->_triggerGroupsVec().reserve(9999);
+
+	this->_something().reserve(9999);
 
 	for ( size_t i = 0; i < 9999; ++i )
 	{
@@ -93,9 +97,12 @@ bool LevelEditorLayerExt::initH(GJGameLevel* level)
 
 		this->_unkVector1()[i] = 0;
 		this->_unkVector2()[i] = 0;
+		this->_unkVector3()[i] = false;
 		this->_lockedLayers()[i] = false;
 		this->_blendingVec()[i] = false;
 		this->_triggerGroupsVec()[i] = nullptr;
+
+		this->_something()[i] = 0;
 	}
 
 	this->_obb2d() = OBB2D::create( CCPoint( 1, 1 ), 1.0, 1.0, 0.0 );
@@ -112,22 +119,6 @@ bool LevelEditorLayerExt::initH(GJGameLevel* level)
 
 	MBO(bool, this->_player1(), 0x60C) = false;
 	MBO(bool, this->_player2(), 0x60C) = false;
-
-	/**(bool *)(*((int *)this + 204) + 1556) = false;
-	*(bool *)(*((int *)this + 205) + 1556) = false;
-
-	if(GM->getGameVariable("0114")){
-		*(bool *)(*((int *)this + 204) + 3008) = true;
-		*(bool *)(*((int *)this + 205) + 3008) = true;
-	}*/
-
-
-	/*this->unk_arr_209 = CCArray::create();
-	this->unk_arr_209->retain();
-	this->unk_arr_211 = CCArray::create();
-	this->unk_arr_211->retain();
-	this->arr_260 = CCArray::create();
-	this->arr_260->retain();*/
 
 	this->_dCross() = CCSprite::createWithSpriteFrameName( "d_cross_01_001.png" );
 	this->_batchNode()->addChild( this->_dCross(), 10 );
@@ -156,9 +147,9 @@ bool LevelEditorLayerExt::initH(GJGameLevel* level)
 	this->addChild(this->_editorUI(), 100);
 
 	//put the editor in the last position/zoom
-	//this->gameLayer_->setPosition(this->_level->lastCameraPos_);
-	//if(this->_level->lastEditorZoom != 0.0)
-	//this->gameLayer_->setScale(this->_level->lastEditorZoom);
+	this->_gameLayer()->setPosition(this->_gameLevel()->lastCameraPos_);
+	if(this->_gameLevel()->lastEditorZoom != 0.0)
+	this->_gameLayer()->setScale(this->_gameLevel()->lastEditorZoom);
 
 	this->_gridLayer()->updateTimeMarkers();
 
@@ -178,21 +169,13 @@ bool LevelEditorLayerExt::initH(GJGameLevel* level)
     this->resetGroupCounters(false);
 
 	//this->sortStickyGroups();
-	//this->updateEditorMode();
+	this->updateEditorMode();
 	//MEMBERBYOFFSET(bool, this, 0x2C91) = false;
 
     this->schedule(schedule_selector(LevelEditorLayer::updateEditor));
 
 	this->updatePreviewAnim();
 	this->updatePreviewParticles();
-
-    // fix to the glitched background with updateEditor
-    //MEMBERBYOFFSET(bool, this, 0x29E9) = true;
-
-	// fix playtest pause
-	//MEMBERBYOFFSET(int, this, 0x2C58) = 0;
-	//CCLog("6666");
-
 
 	return true;
 }
@@ -208,8 +191,8 @@ void LevelEditorLayerExt::updateVisibilityH(float a1) {
 		p->toggleLockActiveLayer();
 		p->_editorUI()->updateGroupIDLabel();
 	}*/
-	
-	/*auto node = MEMBERBYOFFSET(CCNode*, this, 0x11C);
+
+	auto node = MEMBERBYOFFSET(CCNode*, this, 0x11C);
 	
 	auto position = node->getPosition();
 	auto winSize = CCDirector::sharedDirector()->getWinSize();
@@ -229,25 +212,29 @@ void LevelEditorLayerExt::updateVisibilityH(float a1) {
 	int startIndex = (int)(float)(floorf(centerX / 100.0) - 1.0);
 	float percentage = (float)(centerX + rect.size.width) / 100.0;
 	int limit = (int)(float)(percentage + 1.0);
-	auto sections = MEMBERBYOFFSET(CCArray*, this, 0x348);*/
 
 	/*
 		UPDATING OBJECTS
 	*/
 
 	auto sections = MEMBERBYOFFSET(CCArray*, this, 0x348);
-
-	for(int i = 0;  i <= 9999; i++){
+	CCLog("funny");
+	for(int i = startIndex;  i <= 9999; i++){
+		CCLog("ball");
 		if(i >= 0 && i < sections->count()){
+			CCLog("real");
 			auto section = sections->objectAtIndex(i);
 			if(section){
+				CCLog("nah");
 				auto sect = reinterpret_cast<CCArray*>(section);
 				if (sect) {
+					CCLog("tf");
 					if (sect->count() > 0) {
+						CCLog("sex");
 						for (int k = 0; k < sect->count(); k++) {
 							GameObject *obj = dynamic_cast<GameObject *>(sect->objectAtIndex(k));
 							auto objectPos = obj->getPosition();
-							//if(rect.containsPoint(objectPos)){
+							if(rect.containsPoint(objectPos)){
 								obj->addMainSpriteToParent(false);
 								if(obj->hasSecondaryColor()) obj->addColorSpriteToParent(true);
 								obj->activateObject();
@@ -270,12 +257,11 @@ void LevelEditorLayerExt::updateVisibilityH(float a1) {
 								if(!MEMBERBYOFFSET(bool, obj, 0x405)) {
 									this->_objectsToUpdate()->addObject(obj);
 								}                                
-							/*}
+							}
 							// GOOFY AHH :trollskullirl:
 							else{
 								obj->deactivateObject(false);
-							}*/
-
+							}
 						}
 					}
 				}
@@ -286,8 +272,8 @@ void LevelEditorLayerExt::updateVisibilityH(float a1) {
 	this->updateObjectColors(this->_objectsToUpdate());
 	this->_objectsToUpdate()->removeAllObjects();
 	
-	p->processAreaVisualActions();
-	p->sortBatchnodeChildren(0);
+	this->processAreaVisualActions();
+	this->sortBatchnodeChildren(0);
 }
 
 void LevelEditorLayerExt::ApplyHooks() {
