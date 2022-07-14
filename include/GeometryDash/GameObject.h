@@ -315,4 +315,6 @@ public:
 
     void activateObject();
     void deactivateObject(bool);
+
+    void updateSyncedAnimation(float, int);
 };

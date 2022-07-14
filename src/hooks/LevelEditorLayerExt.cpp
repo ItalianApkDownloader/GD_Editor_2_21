@@ -117,6 +117,10 @@ bool LevelEditorLayerExt::initH(GJGameLevel* level)
 
 	this->createPlayer();
 
+	// questionmark
+	MBO(bool, this->_player1(), 0x609) = true;
+	MBO(bool, this->_player2(), 0x609) = true;
+
 	MBO(bool, this->_player1(), 0x60C) = false;
 	MBO(bool, this->_player2(), 0x60C) = false;
 
@@ -192,7 +196,7 @@ void LevelEditorLayerExt::updateVisibilityH(float a1) {
 		p->_editorUI()->updateGroupIDLabel();
 	}*/
 
-	auto node = MEMBERBYOFFSET(CCNode*, this, 0x11C);
+	/*auto node = MEMBERBYOFFSET(CCNode*, this, 0x11C);
 	
 	auto position = node->getPosition();
 	auto winSize = CCDirector::sharedDirector()->getWinSize();
@@ -211,35 +215,32 @@ void LevelEditorLayerExt::updateVisibilityH(float a1) {
 	float centerX = rect.origin.x;
 	int startIndex = (int)(float)(floorf(centerX / 100.0) - 1.0);
 	float percentage = (float)(centerX + rect.size.width) / 100.0;
-	int limit = (int)(float)(percentage + 1.0);
+	int limit = (int)(float)(percentage + 1.0);*/
 
 	/*
 		UPDATING OBJECTS
 	*/
 
 	auto sections = MEMBERBYOFFSET(CCArray*, this, 0x348);
-	CCLog("funny");
-	for(int i = startIndex;  i <= 9999; i++){
-		CCLog("ball");
+	for(int i = 0;  i <= 9999; i++){
 		if(i >= 0 && i < sections->count()){
-			CCLog("real");
 			auto section = sections->objectAtIndex(i);
 			if(section){
-				CCLog("nah");
 				auto sect = reinterpret_cast<CCArray*>(section);
 				if (sect) {
-					CCLog("tf");
 					if (sect->count() > 0) {
-						CCLog("sex");
 						for (int k = 0; k < sect->count(); k++) {
 							GameObject *obj = dynamic_cast<GameObject *>(sect->objectAtIndex(k));
 							auto objectPos = obj->getPosition();
-							if(rect.containsPoint(objectPos)){
+							//if(rect.containsPoint(objectPos)){
 								obj->addMainSpriteToParent(false);
 								if(obj->hasSecondaryColor()) obj->addColorSpriteToParent(true);
 								obj->activateObject();
-								/*
-								int currentLayer = MBO(int, p, 0x2C1C);
+
+								// attempt at preview animation for animated objects
+								if(MBO(bool, obj, 0x47C)) obj->updateSyncedAnimation(MEMBERBYOFFSET(float, this, 0x28B0), -1);
+								
+								/*int currentLayer = MBO(int, p, 0x2C1C);
 								int l1 = MBO(int, obj, 0x450);
 								int l2 = MBO(int, obj, 0x454);
 								
@@ -257,11 +258,11 @@ void LevelEditorLayerExt::updateVisibilityH(float a1) {
 								if(!MEMBERBYOFFSET(bool, obj, 0x405)) {
 									this->_objectsToUpdate()->addObject(obj);
 								}                                
-							}
+							//}
 							// GOOFY AHH :trollskullirl:
-							else{
+							/*else{
 								obj->deactivateObject(false);
-							}
+							}*/
 						}
 					}
 				}
