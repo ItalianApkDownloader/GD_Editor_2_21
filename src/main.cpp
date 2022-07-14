@@ -1239,6 +1239,17 @@ FUNCTIONHOOK(void, PlayerObject_spawnDualCircle, PlayerObject* self) {
 	if(!GM->_inEditor()) PlayerObject_spawnDualCircleO(self);
 }
 
+// testing big levels
+FUNCTIONHOOK(bool, LevelInfoLayer_init, LevelInfoLayer* self, GJGameLevel* level, bool idk) {
+	if(!LevelInfoLayer_initO(self, level, idk)) return false;
+
+	auto copyBtn = CCMenuItemSpriteExtra::create(CCSprite::create("GJ_button_06-hd.png"), nullptr, self, menu_selector(LevelInfoLayer::onClone));
+	auto menu = CCMenu::createWithItem(copyBtn);
+	self->addChild(menu, 1000);
+
+	return true;
+}
+
 void loader()
 {
 	auto cocos2d = dlopen(targetLibName != "" ? targetLibName : NULL, RTLD_LAZY);
@@ -1248,6 +1259,7 @@ void loader()
 	LevelEditorLayerExt::ApplyHooks();
 	EditorPauseLayerExt::ApplyHooks();
 
+	HOOK("_ZN14LevelInfoLayer4initEP11GJGameLevelb", LevelInfoLayer_initH, LevelInfoLayer_initO);
 	//HOOK("_ZN12PlayerObject15spawnDualCircleEv", PlayerObject_spawnDualCircleH, PlayerObject_spawnDualCircleO);
 	HOOK("_ZN15GJBaseGameLayer12addToSectionEP10GameObject", GJBaseGameLayer_addToSectionH, GJBaseGameLayer_addToSectionO);
 	HOOK("_ZN15GJBaseGameLayer23removeObjectFromSectionEP10GameObject", GJBaseGameLayer_removeObjectFromSectionH, GJBaseGameLayer_removeObjectFromSectionO);

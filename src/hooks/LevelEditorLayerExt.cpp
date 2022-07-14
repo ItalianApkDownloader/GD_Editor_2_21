@@ -46,6 +46,21 @@ bool LevelEditorLayerExt::initH(GJGameLevel* level)
 
 	//////////////////////
 	// updateOptions
+	MBO(bool, this, 0x142) = gm->getGameVariable("0009");
+	MBO(bool, this, 0x2BC0) = gm->getGameVariable("0001");
+	MBO(bool, this, 0x2BC1) = gm->getGameVariable("0044");
+	MBO(bool, this, 0x2BC2) = gm->getGameVariable("0045");
+	MBO(bool, this, 0x2BC3) = gm->getGameVariable("0038");
+	MBO(bool, this, 0x2BC5) = gm->getGameVariable("0043");
+	MBO(bool, this, 0x2BC6) = gm->getGameVariable("0037");
+	MBO(bool, this, 0x2BC7) = gm->getGameVariable("0058");
+	MBO(bool, this, 0x2BC8) = gm->getGameVariable("0013");
+	MBO(bool, this, 0x2C91) = gm->getGameVariable("0036");
+	MBO(bool, this, 0x2BC9) = gm->getGameVariable("0078");
+	MBO(bool, this, 0x2BCA) = gm->getGameVariable("0120");
+	MBO(bool, this, 0x2BC4) = gm->getGameVariable("0079");
+	MBO(bool, this, 0x2BCB) = gm->getGameVariable("0103");
+	MBO(bool, this, 0x2BCC) = gm->getGameVariable("0104");
 
 	//////////////////////
 
@@ -172,9 +187,8 @@ bool LevelEditorLayerExt::initH(GJGameLevel* level)
 
     this->resetGroupCounters(false);
 
-	//this->sortStickyGroups();
+	this->sortStickyGroups();
 	this->updateEditorMode();
-	//MEMBERBYOFFSET(bool, this, 0x2C91) = false;
 
     this->schedule(schedule_selector(LevelEditorLayer::updateEditor));
 
@@ -182,6 +196,10 @@ bool LevelEditorLayerExt::initH(GJGameLevel* level)
 	this->updatePreviewParticles();
 
 	return true;
+}
+
+FUNCTIONHOOK(void, GameObject_setOpacity, GameObject* self, unsigned char opacity) {
+	GameObject_setOpacityO(self, opacity);
 }
 
 static inline void (*updateVisibilityO)(LevelEditorLayer*,float);
@@ -238,22 +256,22 @@ void LevelEditorLayerExt::updateVisibilityH(float a1) {
 								obj->activateObject();
 
 								// attempt at preview animation for animated objects
-								if(MBO(bool, obj, 0x47C)) obj->updateSyncedAnimation(MEMBERBYOFFSET(float, this, 0x28B0), -1);
+								//if(MBO(bool, obj, 0x47C)) obj->updateSyncedAnimation(MEMBERBYOFFSET(float, this, 0x28B0), -1);
 								
-								/*int currentLayer = MBO(int, p, 0x2C1C);
+								int currentLayer = MBO(int, p, 0x2C50);
 								int l1 = MBO(int, obj, 0x450);
 								int l2 = MBO(int, obj, 0x454);
 								
-								extern void* GameObjectSetOpacityH(GameObject* self, unsigned char opacity);
+								//extern void* GameObjectSetOpacityH(GameObject* self, unsigned char opacity);
 
 								// new option "Hide invisible"
 								if(MBO(bool, obj, 0x4AF) && GM->getGameVariable("0121")) {
-									GameObjectSetOpacityH(obj, 0);
+									GameObject_setOpacityH(obj, 0);
 								}
 								else {
 									bool shouldBeVisible = (currentLayer == l1 || (currentLayer == l2 && l2 != 0) || currentLayer == -1);
-									GameObjectSetOpacityH(obj, shouldBeVisible ? 255 : 70);
-								}*/
+									GameObject_setOpacityH(obj, shouldBeVisible ? 255 : 70);
+								}
 								
 								if(!MEMBERBYOFFSET(bool, obj, 0x405)) {
 									this->_objectsToUpdate()->addObject(obj);
@@ -283,6 +301,8 @@ void LevelEditorLayerExt::ApplyHooks() {
 	
 	HOOK_STATIC("_ZN16LevelEditorLayer16updateVisibilityEf",
 	LevelEditorLayerExt::updateVisibilityH, LevelEditorLayerExt::updateVisibilityO);
+
+	HOOK_STATIC("_ZN10GameObject10setOpacityEh", GameObject_setOpacityH, GameObject_setOpacityO);
 
 	/*
 	HOOK_STATIC("_ZN16LevelEditorLayer12removeObjectEP10GameObjectb", 

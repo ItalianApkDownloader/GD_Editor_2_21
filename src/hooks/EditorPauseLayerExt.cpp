@@ -31,22 +31,21 @@ void EditorPauseLayerExt::onResumeH(CCObject* a1){
 
 	auto editor = MEMBERBYOFFSET(LevelEditorLayer*, this, 0x1C8);
 
-	MEMBERBYOFFSET(bool, editor, 0x142) = gm->getGameVariable("0009");
-	MEMBERBYOFFSET(bool, editor, 0x2BC0) = gm->getGameVariable("0001");
-	//MEMBERBYOFFSET(bool, editor, 0x2BC1) = gm->getGameVariable("0044"); // orbs and shit
-	MEMBERBYOFFSET(bool, editor, 0x2BC1) = false;
-	MEMBERBYOFFSET(bool, editor, 0x2BC2) = gm->getGameVariable("0045");
-	MEMBERBYOFFSET(bool, editor, 0x2BC3) = gm->getGameVariable("0038");
-	MEMBERBYOFFSET(bool, editor, 0x2BC5) = gm->getGameVariable("0043");
-	MEMBERBYOFFSET(bool, editor, 0x2BC6) = gm->getGameVariable("0037");
-	MEMBERBYOFFSET(bool, editor, 0x2BC7) = gm->getGameVariable("0058");
-	MEMBERBYOFFSET(bool, editor, 0x2BC8) = gm->getGameVariable("0013");
-	MEMBERBYOFFSET(bool, editor, 0x2C91) = gm->getGameVariable("0036");
-	MEMBERBYOFFSET(bool, editor, 0x2BC9) = gm->getGameVariable("0078");
-	MEMBERBYOFFSET(bool, editor, 0x2BCA) = gm->getGameVariable("0120");
-	MEMBERBYOFFSET(bool, editor, 0x2BC4) = gm->getGameVariable("0079");
-	MEMBERBYOFFSET(bool, editor, 0x2BCB) = true; //layer locking
-	MEMBERBYOFFSET(bool, editor, 0x2BCC) = gm->getGameVariable("0104");
+	MBO(bool, editor, 0x142) = gm->getGameVariable("0009");
+	MBO(bool, editor, 0x2BC0) = gm->getGameVariable("0001");
+	MBO(bool, editor, 0x2BC1) = gm->getGameVariable("0044");
+	MBO(bool, editor, 0x2BC2) = gm->getGameVariable("0045");
+	MBO(bool, editor, 0x2BC3) = gm->getGameVariable("0038");
+	MBO(bool, editor, 0x2BC5) = gm->getGameVariable("0043");
+	MBO(bool, editor, 0x2BC6) = gm->getGameVariable("0037");
+	MBO(bool, editor, 0x2BC7) = gm->getGameVariable("0058");
+	MBO(bool, editor, 0x2BC8) = gm->getGameVariable("0013");
+	MBO(bool, editor, 0x2C91) = gm->getGameVariable("0036");
+	MBO(bool, editor, 0x2BC9) = gm->getGameVariable("0078");
+	MBO(bool, editor, 0x2BCA) = gm->getGameVariable("0120");
+	MBO(bool, editor, 0x2BC4) = gm->getGameVariable("0079");
+	MBO(bool, editor, 0x2BCB) = gm->getGameVariable("0103");
+	MBO(bool, editor, 0x2BCC) = gm->getGameVariable("0104");
 
 	if(editor->_editorUI()) editor->_editorUI()->updateGroupIDLabel();
 
