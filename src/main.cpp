@@ -594,7 +594,7 @@ bool LoadingLayer_initH(LoadingLayer *self, bool fromReload)
 void *(*EditorUI_SelectObjectsO)(EditorUI *self, CCArray *objects, bool a3);
 void *EditorUI_SelectObjectsH(EditorUI *self, CCArray *objects, bool a3)
 {
-	int cl = MBO(int, self->_levelEditor(), 0x2C1C);
+	int cl = MBO(int, self->_levelEditor(), 0x2C50);
 	if (cl != -1)
 	{
 		int count = objects->count();
@@ -1298,7 +1298,7 @@ void loader()
 	HOOK("_ZN13ObjectToolbox13intKeyToFrameEi", keyToFrameH, keyToFrameO);
 	HOOK("_ZN8EditorUI4initEP16LevelEditorLayer", EditorUI_InitH, EditorUI_InitO);
 	*/
-//	HOOK("_ZN8EditorUI13selectObjectsEPN7cocos2d7CCArrayEb", EditorUI_SelectObjectsH, EditorUI_SelectObjectsO);
+HOOK("_ZN8EditorUI13selectObjectsEPN7cocos2d7CCArrayEb", EditorUI_SelectObjectsH, EditorUI_SelectObjectsO);
 //	HOOK("_ZN10GameObject10setOpacityEh", GameObjectSetOpacityH, GameObjectSetOpacityO);
 	HOOK("_ZN10GameObject13createWithKeyEi", GameObjectCreateH, GameObjectCreateO);
 	//HOOK("_ZN14LevelInfoLayer4initEP11GJGameLevelb", LevelInfoLayerInitH, LevelInfoLayerInitO);	
@@ -1459,3 +1459,5 @@ JNIEXPORT jint JNI_OnLoad(JavaVM *vm, void *reserved)
 
 	return JNI_VERSION_1_6;
 }
+
+//0x40000
