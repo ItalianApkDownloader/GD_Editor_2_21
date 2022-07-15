@@ -71,7 +71,7 @@ bool LevelEditorLayerExt::initH(GJGameLevel* level)
 	this->retain();
 
 	CreateAndRetainArray(this, 0x2C00);
-	CreateAndRetainArray(this, 0x2BF8); //here
+	CreateAndRetainArray(this, 0x2BF8);
 	CreateAndRetainArray(this, 0x2BF0);
 	CreateAndRetainArray(this, 0x2BEC);
 	CreateAndRetainArray(this, 0x2BE4);
@@ -84,7 +84,6 @@ bool LevelEditorLayerExt::initH(GJGameLevel* level)
 	CreateAndRetainArray(this, 0x2C3C);
 	CreateAndRetainArray(this, 0x2C50);
 	CreateAndRetainArray(this, 0x2BFC);
-	//CreateAndRetainArray(this, 0x2BF8); again?
 	CreateAndRetainArray(this, 0x2BF4);
 	CreateAndRetainArray(this, 0x2C34);
 	CreateAndRetainArray(this, 0x348);
@@ -170,7 +169,7 @@ bool LevelEditorLayerExt::initH(GJGameLevel* level)
 	this->_editorUI() = EditorUI::create(this);
 	this->addChild(this->_editorUI(), 100);
 
-	//put the editor in the last position/zoom
+	// put the editor in the last position/zoom
 	this->_gameLayer()->setPosition(this->_gameLevel()->lastCameraPos_);
 	if(this->_gameLevel()->lastEditorZoom != 0.0)
 	this->_gameLayer()->setScale(this->_gameLevel()->lastEditorZoom);
@@ -219,7 +218,7 @@ void LevelEditorLayerExt::updateVisibilityH(float a1) {
 		p->_editorUI()->updateGroupIDLabel();
 	}*/
 
-	/*auto node = MEMBERBYOFFSET(CCNode*, this, 0x11C);
+	auto node = this->_gameLayer();
 	
 	auto position = node->getPosition();
 	auto winSize = CCDirector::sharedDirector()->getWinSize();
@@ -238,14 +237,14 @@ void LevelEditorLayerExt::updateVisibilityH(float a1) {
 	float centerX = rect.origin.x;
 	int startIndex = (int)(float)(floorf(centerX / 100.0) - 1.0);
 	float percentage = (float)(centerX + rect.size.width) / 100.0;
-	int limit = (int)(float)(percentage + 1.0);*/
+	int limit = (int)(float)(percentage + 1.0);
 
 	/*
 		UPDATING OBJECTS
 	*/
 
 	auto sections = MEMBERBYOFFSET(CCArray*, this, 0x348);
-	for(int i = 0;  i <= 9999; i++){
+	for(int i = startIndex;  i <= 9999; i++){
 		if(i >= 0 && i < sections->count()){
 			auto section = sections->objectAtIndex(i);
 			if(section){
@@ -255,7 +254,7 @@ void LevelEditorLayerExt::updateVisibilityH(float a1) {
 						for (int k = 0; k < sect->count(); k++) {
 							GameObject *obj = dynamic_cast<GameObject *>(sect->objectAtIndex(k));
 							auto objectPos = obj->getPosition();
-							//if(rect.containsPoint(objectPos)){
+							if(rect.containsPoint(objectPos)){
 								obj->addMainSpriteToParent(false);
 								if(obj->hasSecondaryColor()) obj->addColorSpriteToParent(true);
 								obj->activateObject();
@@ -281,11 +280,11 @@ void LevelEditorLayerExt::updateVisibilityH(float a1) {
 								if(!MEMBERBYOFFSET(bool, obj, 0x405)) {
 									this->_objectsToUpdate()->addObject(obj);
 								}                                
-							//}
+							}
 							// GOOFY AHH :trollskullirl:
-							/*else{
+							else{
 								obj->deactivateObject(false);
-							}*/
+							}
 						}
 					}
 				}
