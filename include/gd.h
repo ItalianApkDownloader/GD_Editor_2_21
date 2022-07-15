@@ -51,4 +51,5 @@
 #include "SelectArtLayer.h" 
 #include "WorldSelectLayer.h"
 #include "CCMenuItemToggler.h"
+#include "EndLevelLayer.h"
 #endif

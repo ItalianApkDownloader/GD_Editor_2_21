@@ -14,7 +14,7 @@ public:
 public:
 
 	    CLASS_MEMBER(bool, practiceMode, 0x675);
-		CLASS_MEMBER(GJGameLevel*, level, 0x138);
+		CLASS_MEMBER(GJGameLevel*, level, 0x13C);
 
 public:
     PlayLayer();

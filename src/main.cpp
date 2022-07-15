@@ -1209,6 +1209,28 @@ void PauseLayer::goEditFix() {
 	);
 }
 
+// open editor from endlayer
+FUNCTIONHOOK(void, EndLevelLayer_onEdit, EndLevelLayer* self, CCObject*) {
+	GM->_playLayer()->stopAllActions();
+	GM->_playLayer()->unscheduleAllSelectors();
+	GSM->stopBackgroundMusic();
+
+	GM->_playLayer()->removeAllObjects();
+
+	self->runAction(
+		CCSequence::create(
+			CCDelayTime::create(0),
+			CCCallFunc::create(self, callfunc_selector(EndLevelLayer::goEditFix)),
+			nullptr
+		)
+	);
+}
+
+void EndLevelLayer::goEditFix() {
+	this->exitLayer(nullptr);
+	reinterpret_cast<PauseLayer*>(this)->goEditFix();
+}
+
 // make platformer dpad visible
 FUNCTIONHOOK(bool, UILayer_init, CCLayer* self) {
 	if(!UILayer_initO(self)) return false;
@@ -1275,7 +1297,8 @@ void loader()
 	HOOK("_ZN15GJBaseGameLayer23removeObjectFromSectionEP10GameObject", GJBaseGameLayer_removeObjectFromSectionH, GJBaseGameLayer_removeObjectFromSectionO);
 
 	//HOOK("_ZN7UILayer4initEv", UILayer_initH, UILayer_initO);
-	//HOOK("_ZN10PauseLayer6onEditEPN7cocos2d8CCObjectE", PauseLayer_onEditH, PauseLayer_onEditO);
+	HOOK("_ZN10PauseLayer6onEditEPN7cocos2d8CCObjectE", PauseLayer_onEditH, PauseLayer_onEditO);
+	HOOK("_ZN13EndLevelLayer6onEditEPN7cocos2d8CCObjectE", EndLevelLayer_onEditH, EndLevelLayer_onEditO);
 /*	HOOK("_ZN12PlayerObject15spawnDualCircleEv", PlayerObject_spawnDualCircleH, PlayerObject_spawnDualCircleO);
 	HOOK("_ZN9PlayLayer18togglePracticeModeEb", togglePracticeModeH, togglePracticeModeO);
 	HOOK("_ZN8EditorUI10onPlaytestEPN7cocos2d8CCObjectE", EditorUI_onPlaytestH, EditorUI_onPlaytestO);
@@ -1298,7 +1321,7 @@ void loader()
 	HOOK("_ZN13ObjectToolbox13intKeyToFrameEi", keyToFrameH, keyToFrameO);
 	HOOK("_ZN8EditorUI4initEP16LevelEditorLayer", EditorUI_InitH, EditorUI_InitO);
 	*/
-HOOK("_ZN8EditorUI13selectObjectsEPN7cocos2d7CCArrayEb", EditorUI_SelectObjectsH, EditorUI_SelectObjectsO);
+	HOOK("_ZN8EditorUI13selectObjectsEPN7cocos2d7CCArrayEb", EditorUI_SelectObjectsH, EditorUI_SelectObjectsO);
 //	HOOK("_ZN10GameObject10setOpacityEh", GameObjectSetOpacityH, GameObjectSetOpacityO);
 	HOOK("_ZN10GameObject13createWithKeyEi", GameObjectCreateH, GameObjectCreateO);
 	//HOOK("_ZN14LevelInfoLayer4initEP11GJGameLevelb", LevelInfoLayerInitH, LevelInfoLayerInitO);	
