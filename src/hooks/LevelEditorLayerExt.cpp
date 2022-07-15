@@ -71,7 +71,7 @@ bool LevelEditorLayerExt::initH(GJGameLevel* level)
 	this->retain();
 
 	CreateAndRetainArray(this, 0x2C00);
-	CreateAndRetainArray(this, 0x2BF8);
+	CreateAndRetainArray(this, 0x2BF8); //here
 	CreateAndRetainArray(this, 0x2BF0);
 	CreateAndRetainArray(this, 0x2BEC);
 	CreateAndRetainArray(this, 0x2BE4);
@@ -84,13 +84,14 @@ bool LevelEditorLayerExt::initH(GJGameLevel* level)
 	CreateAndRetainArray(this, 0x2C3C);
 	CreateAndRetainArray(this, 0x2C50);
 	CreateAndRetainArray(this, 0x2BFC);
-	CreateAndRetainArray(this, 0x2BF8);
+	//CreateAndRetainArray(this, 0x2BF8); again?
 	CreateAndRetainArray(this, 0x2BF4);
 	CreateAndRetainArray(this, 0x2C34);
 	CreateAndRetainArray(this, 0x348);
 	CreateAndRetainArray(this, 0x344);
 	CreateAndRetainArray(this, 0x2C74);
 	CreateAndRetainArray(this, 0x2C78);
+	CreateAndRetainArray(this, 0x2D50);
 
 	CreateAndRetainDict(this, 0x46C);
 	CreateAndRetainDict(this, 0x43C);
