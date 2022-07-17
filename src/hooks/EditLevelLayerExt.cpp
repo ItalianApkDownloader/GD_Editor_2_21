@@ -49,12 +49,14 @@ bool EditLevelLayerExt::initH(GJGameLevel* level) {
 	editBtnCustom->setPosition(editBtn->getPosition());
 	editBtn->removeFromParentAndCleanup(true);
 	
-	
-	auto optionsBtn = CCMenuItemSpriteExtra::create(CCSprite::createWithSpriteFrameName("GJ_optionsBtn_001.png"), nullptr, this, menu_selector(MenuLayer::onOptions));
-	optionsBtn->setScale(.7);
+	auto sprite = CCSprite::createWithSpriteFrameName("GJ_optionsBtn_001.png");
+	sprite->setScale(.7);
+	auto optionsBtn = CCMenuItemSpriteExtra::create(sprite, nullptr, this, menu_selector(MenuLayer::onOptions));
 	auto bottomMenu2 = CCMenu::createWithItem(optionsBtn);
-	reinterpret_cast<CCSprite *>(bottomMenu2)->setPosition({CCLEFT + 75, CCTOP - 25});
+	reinterpret_cast<CCSprite *>(bottomMenu2)->setPosition({CCLEFT + 80, CCTOP - 25});
 	this->addChild(bottomMenu2);
+	
+	return ret;
 	
 }
 

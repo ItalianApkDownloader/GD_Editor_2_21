@@ -1300,10 +1300,11 @@ FUNCTIONHOOK(bool, LevelInfoLayer_init, LevelInfoLayer* self, GJGameLevel* level
 	self->addChild(menu, 1000);
 
 	
-	auto optionsBtn = CCMenuItemSpriteExtra::create(CCSprite::createWithSpriteFrameName("GJ_optionsBtn_001.png"), nullptr, self, menu_selector(MenuLayer::onOptions));
-	optionsBtn->setScale(.7);
+	auto sprite = CCSprite::createWithSpriteFrameName("GJ_optionsBtn_001.png");
+	sprite->setScale(.7);
+	auto optionsBtn = CCMenuItemSpriteExtra::create(sprite, nullptr, self, menu_selector(MenuLayer::onOptions));
 	auto bottomMenu2 = CCMenu::createWithItem(optionsBtn);
-	reinterpret_cast<CCSprite *>(bottomMenu2)->setPosition({CCLEFT + 75, CCTOP - 25});
+	reinterpret_cast<CCSprite *>(bottomMenu2)->setPosition({CCLEFT + 80, CCTOP - 25});
 	self->addChild(bottomMenu2);
 	
 
