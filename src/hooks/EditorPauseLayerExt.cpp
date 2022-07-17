@@ -58,9 +58,10 @@ void EditorPauseLayerExt::onResumeH(CCObject* a1){
 	if(editor->_gridLayer()) {
 		auto parent = editor->_gridLayer()->getParent();
 
-		int zOrder = -100;
 
-		if(GM->getGameVariable("0039")) zOrder = 99;
+		int zOrder = -9999;
+
+		if(GM->getGameVariable("0039")) zOrder = 9999;
 
 		parent->reorderChild(editor->_gridLayer(), zOrder);
 	}

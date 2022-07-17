@@ -24,5 +24,6 @@ public:
     void onOptions( CCObject* ref );
     void onSave( CCObject* ref );
     virtual void unk_func(CCObject*,bool);
+	void onSaveAndPlay(CCObject*);
 
 };

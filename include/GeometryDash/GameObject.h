@@ -265,6 +265,7 @@ public:
     static GameObject* createWithKey( int key );
     static GameObject* createWithTexture( cocos2d::CCTexture2D* texture );
     static GameObject* createWithFrame( const char* frame );
+	//static GameObject* objectFromVector(std::vector<std::string>, GJBaseGameLayer*, bool);
 
     void setMyAction( cocos2d::CCAction* action );
 

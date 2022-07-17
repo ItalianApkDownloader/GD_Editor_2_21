@@ -7,11 +7,13 @@
 
 
 void EditLevelLayerExt::onClick(CCObject* sender){
+	
 	if(!GM->getGameVariable("100099")) {
 		FLAlertLayer::create(nullptr, "DISCLAIMER", "This version of the editor is\n<cr>unstable and contains bugs and crashes that can't be fixed</c>.\nYour game will crash or freeze, <cg>save your game and levels often</c>.\n<co>If you don't want an unstable editor wait for official 2.2 and don't complain about it</c>.", "OK", nullptr, 500, false, 300)->show();
 		GM->setGameVariable("100099", true);
 	}
 	else {
+		
 		this->closeTextInputs();
 		*reinterpret_cast<int*>(reinterpret_cast<uintptr_t>(GM) + 0x1BC) = 3;
 		this->verifyLevelName();
@@ -46,8 +48,13 @@ bool EditLevelLayerExt::initH(GJGameLevel* level) {
 	menu->addChild(editBtnCustom);
 	editBtnCustom->setPosition(editBtn->getPosition());
 	editBtn->removeFromParentAndCleanup(true);
-
-	return ret;
+	
+	
+	auto optionsBtn = CCMenuItemSpriteExtra::create(CCSprite::createWithSpriteFrameName("GJ_optionsBtn_001.png"), nullptr, this, menu_selector(MenuLayer::onOptions));
+	optionsBtn->setScale(.7);
+	auto bottomMenu2 = CCMenu::createWithItem(optionsBtn);
+	reinterpret_cast<CCSprite *>(bottomMenu2)->setPosition({CCLEFT + 75, CCTOP - 25});
+	this->addChild(bottomMenu2);
 	
 }
 

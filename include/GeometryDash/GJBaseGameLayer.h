@@ -53,6 +53,8 @@ public:
     CLASS_MEMBER(vector<int>,something, 0x2B9C);
 	CLASS_MEMBER(GJEffectManager*, effectManager, 0x158);
 
+
+
 	
 public:
     CLASS_MEMBER(PlayerObject*, player1, 0x334);

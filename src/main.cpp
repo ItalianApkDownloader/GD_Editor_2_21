@@ -182,8 +182,10 @@ void addToggle_hk(MoreOptionsLayer *self, const char *title, const char *code, c
 			addToggle_trp(self, "Instantly open editor\nat startup", "100003", 0);
 			//addToggle_trp(self, "Disable editor\nobject visibility", "100004", 0);
 			addToggle_trp(self, "Enable pixel blocks\nin the editor", "100005", 0);
-			addToggle_trp(self, "Disable Playtest", "100006", 0);
+			addToggle_trp(self, "Enable Playtest", "100006", 0);
 			addToggle_trp(self, "Hide Platformer\nbuttons", "10007", 0);
+			addToggle_trp(self, "Playtest as\nSave and Play", "100008", "Playtest button makes the save and play action");
+			addToggle_trp(self, "Practice Music", "0125", 0);
 
 			isGDPSSettings = false;
 		}
@@ -646,7 +648,7 @@ void hook_onToggle(void *pthis, const char *val)
 	{
 		if (v == 100005 && GM->getGameVariable("100005"))
 		{
-			FLAlertLayer::create(nullptr, "DISCLAIMER", "<cg>Pixel blocks</c > are < cr>not official</c > and for that reason levels containing these blocks < cr>will not look good in the official 2.2.</c>\n    <co>(textures will change)</c><cr>Don't use pixel blocks if you want your level to be playable in 2.2.</c>", "OK", nullptr, 500, false, 300)->show();
+			FLAlertLayer::create(nullptr, "DISCLAIMER", "<cg>Pixel blocks</c > are <cr>not official</c > and for that reason levels containing these blocks < cr>will not look good in the official 2.2.</c>\n    <co>(textures will change)</c><cr>Don't use pixel blocks if you want your level to be playable in 2.2.</c>", "OK", nullptr, 500, false, 300)->show();
 		}
 	}
 }
@@ -807,7 +809,7 @@ bool infoButton_hk(string title, string desc, float a3)
 {
 	auto ret = infoButton(title, desc, a3);
 
-	if (GM->_inEditor() && colorPopup)
+	if (GM->_inEditor() && colorPopup && lastTriggerObjectID != 0)
 	{
 		switch (lastTriggerObjectID)
 		{
@@ -1158,9 +1160,17 @@ void LevelEditorLayerExt::onEnablePlaytest(CCObject* sender) {
 	node->setPositionY(10000);
 	
 }
+bool play;
 void(*EditorUI_onPlaytestO)(EditorUI *self, CCObject *a2);
 void EditorUI_onPlaytestH(EditorUI *self, CCObject *a2)
 {
+	//need to add comments because im confusing myself LOL
+	//if playtest disabled
+	if(GM->getGameVariable("100008")) {
+		play = true;
+		self->runAction(CCCallFuncO::create(self, callfuncO_selector(EditorUI::onPause), self));
+	}
+	
 	if (!GM->getGameVariable("100006")) {
 		
 	string desc = "<co>Playtest has a lot of bugs and crashes</c>\n\
@@ -1193,7 +1203,7 @@ void EditorUI_onPlaytestH(EditorUI *self, CCObject *a2)
 void(*togglePracticeModeO)(PlayLayer *self, bool *on);
 void togglePracticeModeH(PlayLayer *self, bool *on)
 {
-	MBO(bool, self, 0x2D59) = GM->getGameVariable("0125");
+	MBO(bool, self, 0x2D81) = GM->getGameVariable("0125");
 
 	togglePracticeModeO(self, on);
 }
@@ -1279,22 +1289,23 @@ FUNCTIONHOOK(void, PlayerObject_spawnDualCircle, PlayerObject* self) {
 	if(!GM->_inEditor()) PlayerObject_spawnDualCircleO(self);
 }
 
-// weird
-FUNCTIONHOOK(GameObject*, GameObject_objectFromVector, std::vector<std::string> str, GJBaseGameLayer* baseLayer) {
-	auto obj = GameObject_objectFromVectorO(str, baseLayer);
 
-	if(!obj) return GameObject::createWithKey(1);
-
-	return obj;
-}
 
 // testing big levels
 FUNCTIONHOOK(bool, LevelInfoLayer_init, LevelInfoLayer* self, GJGameLevel* level, bool idk) {
 	if(!LevelInfoLayer_initO(self, level, idk)) return false;
 
 	auto copyBtn = CCMenuItemSpriteExtra::create(CCSprite::create("GJ_button_06-hd.png"), nullptr, self, menu_selector(LevelInfoLayer::onClone));
-	auto menu = CCMenu::createWithItem(copyBtn);
+	auto menu = CCMenu::createWithItem(copyBtn); //LOL didnt know this existed...
 	self->addChild(menu, 1000);
+
+	
+	auto optionsBtn = CCMenuItemSpriteExtra::create(CCSprite::createWithSpriteFrameName("GJ_optionsBtn_001.png"), nullptr, self, menu_selector(MenuLayer::onOptions));
+	optionsBtn->setScale(.7);
+	auto bottomMenu2 = CCMenu::createWithItem(optionsBtn);
+	reinterpret_cast<CCSprite *>(bottomMenu2)->setPosition({CCLEFT + 75, CCTOP - 25});
+	self->addChild(bottomMenu2);
+	
 
 	return true;
 }
@@ -1320,8 +1331,8 @@ void loader()
 	LevelEditorLayerExt::ApplyHooks();
 	EditorPauseLayerExt::ApplyHooks();
 
+
 	HOOK("_ZN16LevelEditorLayer19addObjectFromVectorERSt6vectorISsSaISsEE", LevelEditorLayer_addObjectFromVectorH, LevelEditorLayer_addObjectFromVectorO);
-	//HOOK("_ZN10GameObject16objectFromVectorERSt6vectorISsSaISsEEP15GJBaseGameLayerb", GameObject_objectFromVectorH, GameObject_objectFromVectorO);
 	HOOK("_ZN11GameManager22shouldShowInterstitialEiii", shouldShowInterstitialH, shouldShowInterstitialO);
 	HOOK("_ZN14LevelInfoLayer4initEP11GJGameLevelb", LevelInfoLayer_initH, LevelInfoLayer_initO);
 	HOOK("_ZN15GJBaseGameLayer12addToSectionEP10GameObject", GJBaseGameLayer_addToSectionH, GJBaseGameLayer_addToSectionO);
