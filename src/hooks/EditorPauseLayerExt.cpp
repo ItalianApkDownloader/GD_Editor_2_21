@@ -47,7 +47,23 @@ void EditorPauseLayerExt::onResumeH(CCObject* a1){
 	MBO(bool, editor, 0x2BCB) = gm->getGameVariable("0103");
 	MBO(bool, editor, 0x2BCC) = gm->getGameVariable("0104");
 
-	if(editor->_editorUI()) editor->_editorUI()->updateGroupIDLabel();
+	if(editor->_editorUI()) {
+		editor->_editorUI()->updateGroupIDLabel();
+		editor->_editorUI()->toggleStickyControls(GM->getGameVariable("0097"));
+	}
+
+	if(editor->_background()) editor->_background()->setVisible(!MEMBERBYOFFSET(bool, editor, 0x2BC9));
+	if(editor->_middleground()) editor->_middleground()->setVisible(MEMBERBYOFFSET(bool, editor, 0x2BCA));
+
+	if(editor->_gridLayer()) {
+		auto parent = editor->_gridLayer()->getParent();
+
+		int zOrder = -100;
+
+		if(GM->getGameVariable("0039")) zOrder = 99;
+
+		parent->reorderChild(editor->_gridLayer(), zOrder);
+	}
 
 	removeFromParentAndCleanup(true);
 }

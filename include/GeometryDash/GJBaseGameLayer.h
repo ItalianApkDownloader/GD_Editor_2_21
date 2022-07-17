@@ -66,6 +66,9 @@ public:
 
     CLASS_MEMBER(CCLayer*, gameLayer, 0x48C);
 
+    CLASS_MEMBER(CCSprite*, background, 0x498);
+    CLASS_MEMBER(CCSprite*, middleground, 0x49C);
+
 public:
     GJBaseGameLayer();
     virtual ~GJBaseGameLayer();
