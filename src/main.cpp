@@ -1299,6 +1299,10 @@ FUNCTIONHOOK(bool, LevelInfoLayer_init, LevelInfoLayer* self, GJGameLevel* level
 	return true;
 }
 
+FUNCTIONHOOK(bool, shouldShowInterstitial, GameManager* self, int a, int b, int c) {
+	return false;
+}
+
 void loader()
 {
 	auto cocos2d = dlopen(targetLibName != "" ? targetLibName : NULL, RTLD_LAZY);
@@ -1309,6 +1313,7 @@ void loader()
 	EditorPauseLayerExt::ApplyHooks();
 
 	//HOOK("_ZN10GameObject16objectFromVectorERSt6vectorISsSaISsEEP15GJBaseGameLayerb", GameObject_objectFromVectorH, GameObject_objectFromVectorO);
+	HOOK("_ZN11GameManager22shouldShowInterstitialEiii", shouldShowInterstitialH, shouldShowInterstitialO);
 	HOOK("_ZN14LevelInfoLayer4initEP11GJGameLevelb", LevelInfoLayer_initH, LevelInfoLayer_initO);
 	HOOK("_ZN15GJBaseGameLayer12addToSectionEP10GameObject", GJBaseGameLayer_addToSectionH, GJBaseGameLayer_addToSectionO);
 	HOOK("_ZN15GJBaseGameLayer23removeObjectFromSectionEP10GameObject", GJBaseGameLayer_removeObjectFromSectionH, GJBaseGameLayer_removeObjectFromSectionO);
