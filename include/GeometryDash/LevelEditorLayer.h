@@ -139,6 +139,7 @@ public:
 
     void updateVisibility( float a1 );
     void updateGround( float a1 );
+	void toggleGround(bool);
 
     bool shouldBlend( int id );
     void updateObjectColors(CCArray*);

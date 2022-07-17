@@ -132,7 +132,7 @@ bool LevelEditorLayerExt::initH(GJGameLevel* level)
 
 	this->_gridLayer() = DrawGridLayer::create( this->_gameLayer(), this );
 
-	this->_gameLayer()->addChild( this->_gridLayer(), gm->getGameVariable( "0039" ) ? 99 : -100 );
+	this->_gameLayer()->addChild( this->_gridLayer(), gm->getGameVariable( "0039" ) ? 9999 : -9999 );
 
 	this->createPlayer();
 
@@ -198,6 +198,7 @@ bool LevelEditorLayerExt::initH(GJGameLevel* level)
 
 	this->updatePreviewAnim();
 	this->updatePreviewParticles();
+	this->toggleGround(GM->getGameVariable("0037"));
 
 	return true;
 }

@@ -1460,6 +1460,7 @@ void loader()
 	#define NOP4(a, b) a->addPatch("libcocos2dcpp.so", b, "00 BF 00 BF")
 	#define NOP2(a, b) a->addPatch("libcocos2dcpp.so", b, "00 BF")
 	
+	//ads
 	NOP4(tms, 0x2726A6);
 	NOP4(tms, 0x2EAE24);
 	NOP4(tms, 0x2EBE3C);
@@ -1474,6 +1475,10 @@ void loader()
 	// playtest
 	NOP4(tms, 0x2BC876);
 	NOP4(tms, 0x2BC884);
+	
+	
+	NOP4(tms, 0x2EDA9E); //versus
+	NOP4(tms, 0x2EDA74); //gauntlets
 	
 	tms->addPatch("libcocos2dcpp.so", 0x2C0384, "01 22"); // fix bg
 	
