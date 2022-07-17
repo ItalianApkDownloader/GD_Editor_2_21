@@ -70,8 +70,8 @@ void onRequestCompleted(cocos2d::extension::CCHttpClient *sender, cocos2d::exten
 	
 	static inline void (*MenuLayer_showTOSO)(MenuLayer*);
 	void MenuLayer_showTOSH() {
-    *reinterpret_cast<bool*>(reinterpret_cast<uintptr_t>(this) + 316) = false;
-}
+        *reinterpret_cast<bool*>(reinterpret_cast<uintptr_t>(this) + 320) = false;
+    }
 	
 	
 	

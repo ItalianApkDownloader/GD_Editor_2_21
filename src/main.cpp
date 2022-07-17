@@ -580,7 +580,7 @@ bool LoadingLayer_initH(LoadingLayer *self, bool fromReload)
 {
 	if (!LoadingLayer_initO(self, fromReload)) return false;
 
-	auto text = *reinterpret_cast< CCNode **> (reinterpret_cast<uintptr_t> (self) + 0x140);
+	auto text = *reinterpret_cast< CCNode **>(reinterpret_cast<uintptr_t> (self) + 0x144);
 	text->setPositionY(text->getPositionY() - 10);
 
 	return true;
@@ -731,7 +731,7 @@ bool SetupPickupTriggerH(SetupPickupTriggerPopup *self, EffectGameObject *object
 	auto ret = SetupPickupTriggerO(self, object, objects, a, b);
 	//pickup
 
-	EffectGameObject *obj = MBO(EffectGameObject *, self, 0x1F4);
+	EffectGameObject *obj = MBO(EffectGameObject *, self, 0x1F8);
 	bool overrideCount = MBO(bool, obj, 0x5C5);
 	CCMenu *menu = self->_menu();
 
@@ -1299,8 +1299,6 @@ FUNCTIONHOOK(bool, LevelInfoLayer_init, LevelInfoLayer* self, GJGameLevel* level
 	return true;
 }
 
-
-
 void loader()
 {
 	auto cocos2d = dlopen(targetLibName != "" ? targetLibName : NULL, RTLD_LAZY);
@@ -1312,7 +1310,6 @@ void loader()
 
 	//HOOK("_ZN10GameObject16objectFromVectorERSt6vectorISsSaISsEEP15GJBaseGameLayerb", GameObject_objectFromVectorH, GameObject_objectFromVectorO);
 	HOOK("_ZN14LevelInfoLayer4initEP11GJGameLevelb", LevelInfoLayer_initH, LevelInfoLayer_initO);
-	//HOOK("_ZN12PlayerObject15spawnDualCircleEv", PlayerObject_spawnDualCircleH, PlayerObject_spawnDualCircleO);
 	HOOK("_ZN15GJBaseGameLayer12addToSectionEP10GameObject", GJBaseGameLayer_addToSectionH, GJBaseGameLayer_addToSectionO);
 	HOOK("_ZN15GJBaseGameLayer23removeObjectFromSectionEP10GameObject", GJBaseGameLayer_removeObjectFromSectionH, GJBaseGameLayer_removeObjectFromSectionO);
 
