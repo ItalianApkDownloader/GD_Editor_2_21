@@ -181,21 +181,13 @@ void MenuLayerExt::onJoinDiscordH(CCObject* sender){
 static inline void (*updateUserProfileButtonO)(MenuLayer*);
 void MenuLayerExt::updateUserProfileButtonH() {
 	
-	 auto accountManager = GJAccountManager::sharedState();
 
-    int accountID1 = *reinterpret_cast<int*>(reinterpret_cast<uintptr_t>(accountManager) + 0x10C);
-    int accountID2 = *reinterpret_cast<int*>(reinterpret_cast<uintptr_t>(accountManager) + 0x110);
 
-    bool loggedIn = (accountID1 - accountID2) > 0;
+ //   this->_playerUsernameLabel()->setVisible(true);
+	auto profileBtn = MBO(CCMenuItemSpriteExtra*, this, 0x150);
+    profileBtn->setVisible(true);
 
-    this->_playerUsernameLabel()->setVisible(loggedIn);
-    this->_profileBtn()->setVisible(loggedIn);
 
-    if(loggedIn) {
-        // ---------- MOTHERFUCKER WHY DOES THIS CRASH THE OFFSET IS RIGHT AND EVERYTHING
-        //self->_playerUsernameLabel()->setString(accountManager->_username().c_str());
-        //self->_playerUsernameLabel()->limitLabelWidth(70, .7, 0);
-    }
 
 }
 

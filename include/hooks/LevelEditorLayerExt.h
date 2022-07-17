@@ -12,5 +12,7 @@ public:
 	void removeH(GameObject * obj,bool a1);
 	
 	static void ApplyHooks();
+	
+	void onEnablePlaytest(CCObject*);
 
 };

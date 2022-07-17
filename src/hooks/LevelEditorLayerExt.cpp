@@ -299,6 +299,8 @@ void LevelEditorLayerExt::updateVisibilityH(float a1) {
 	this->sortBatchnodeChildren(0);
 }
 
+
+
 void LevelEditorLayerExt::ApplyHooks() {
 	HOOK_STATIC("_ZN16LevelEditorLayer4initEP11GJGameLevelb",
 	LevelEditorLayerExt::initH, LevelEditorLayerExt::initO);
@@ -308,8 +310,8 @@ void LevelEditorLayerExt::ApplyHooks() {
 
 	HOOK_STATIC("_ZN10GameObject10setOpacityEh", GameObject_setOpacityH, GameObject_setOpacityO);
 
-	/*
+	
 	HOOK_STATIC("_ZN16LevelEditorLayer12removeObjectEP10GameObjectb", 
 	LevelEditorLayerExt::removeH, LevelEditorLayerExt::removeO);
-	*/
+	
 }

@@ -23,8 +23,8 @@ returntype (*name##O)(__VA_ARGS__);			\
 returntype name##H(__VA_ARGS__)
 
 string passwordTemp = "";
-bool shouldAdd = true;
 bool colorPopup = true;
+int nFont = 0;
 
 void(*GameManager_tryShowAdO)();
 void GameManager_tryShowAdH() {}
@@ -183,6 +183,7 @@ void addToggle_hk(MoreOptionsLayer *self, const char *title, const char *code, c
 			//addToggle_trp(self, "Disable editor\nobject visibility", "100004", 0);
 			addToggle_trp(self, "Enable pixel blocks\nin the editor", "100005", 0);
 			addToggle_trp(self, "Disable Playtest", "100006", 0);
+			addToggle_trp(self, "Hide Platformer\nbuttons", "10007", 0);
 
 			isGDPSSettings = false;
 		}
@@ -212,10 +213,12 @@ bool MenuLayerInitH(MenuLayer *self)
 			self->runAction(CCCallFuncO::create(self, callfuncO_selector(CreatorLayer::onMyLevels), self));
 		first = false;
 	}
-
+/*
 	auto dir = CCDirector::sharedDirector();
-	/*auto old_menu = CCMenu::create();
-	auto oldSprite = cocos2d::CCSprite::createWithSpriteFrameName("GJ_profileButton_001.png");
+	
+	auto old_menu = CCMenu::create();
+	auto oldSprite = cocos2d::CCSprite::createWithSpriteFrameName("GJ_creatorBtn_001.png");
+	//auto oldSprite = cocos2d::CCSprite::createWithSpriteFrameName("GJ_profileButton_001.png");
 	auto old_btn = CCMenuItemSpriteExtra::create(
 		oldSprite,
 		oldSprite,
@@ -225,17 +228,9 @@ bool MenuLayerInitH(MenuLayer *self)
 	old_btn->setPositionX(dir->getScreenLeft() + 50);
 	old_btn->setPositionY(dir->getScreenBottom() + 110);
 	old_menu->setPosition({0, 0});
-
-	/*
-	auto sprite = CCSprite::createWithSpriteFrameName("communityCreditsBtn_001.png");
-	sprite->setScale(2);
-	auto btn = CCMenuItemSpriteExtra::create(sprite, sprite, self, menu_selector(CreatorLayer::onMyLevels));
-	auto menu = CCMenu::create();
-	menu->setPositionY(menu->getPositionY() - 50);
-	menu->addChild(btn, 500);
-	self->addChild(menu, 500);
-
-	self->addChild(old_menu, 900); */
+	
+	self->addChild(old_menu);
+*/
 
 	return MenuLayerInitO(self);
 
@@ -296,13 +291,12 @@ const char *CCString_getCStringH(CCString *self)
 {
 	auto ret = CCString_getCStringO(self);
 
-	if (contains(ret, AY_OBFUSCATE("gjp2")) && !passwordTemp.empty() && shouldAdd)
+	if (contains(ret, AY_OBFUSCATE("gjp2")) && !passwordTemp.empty())
 	{
 		auto AM = GJAccountManager::sharedState();
-		const char *valid = AY_OBFUSCATE("2022");
 		const char *toAdd;
 
-		if (AM->_username().empty() || contains(ret, AY_OBFUSCATE("userName")))
+		if (contains(ret, "userName"))
 			toAdd = CCString::createWithFormat("&password=%s&gjp=%s&", passwordTemp.c_str(), FunctionHelper::gjp(passwordTemp).c_str())->getCString();
 		else
 			toAdd = CCString::createWithFormat("&password=%s&gjp=%s&userName=%s", passwordTemp.c_str(), FunctionHelper::gjp(passwordTemp).c_str(), AM->_username().c_str())->getCString();
@@ -351,7 +345,15 @@ bool canPlayOnlineLevelsH(CreatorLayer *self)
 bool(*UILayerInitO)(UILayer *self);
 bool UILayerInitH(UILayer *self)
 {
-	return UILayerInitO(self);
+	if(!UILayerInitO(self)) return false;
+
+	if(MEMBERBYOFFSET(bool, self, 0x206)) {
+		auto dpad = MEMBERBYOFFSET(CCSprite*, self, 0x1D8);
+
+		dpad->setVisible(!GM->getGameVariable("10007"));
+	}
+
+	return true;
 }
 
 /*
@@ -405,7 +407,7 @@ void *(*AccountSubmitO)(AccountLoginLayer *self, CCObject *a2, void *a3, void *a
 void *AccountSubmitH(AccountLoginLayer *self, CCObject *a2, void *a3, void *a4)
 {
 	passwordTemp = self->_inputPassword()->getString();
-	//CCLog(passwordTemp.c_str());
+	CCLog(passwordTemp.c_str());
 	auto ret = AccountSubmitO(self, a2, a3, a4);
 
 	return ret;
@@ -462,12 +464,12 @@ GameObject* GameObjectCreateH(int key)
 
 	if(contains(tb, "pixel")) {
 		
-		//if(contains(tb, "b_"))
+		if(contains(tb, "b_"))
 			return GameObjectCreateO(1);
 
-		//auto pixelKey = mid_num(tb);
+		auto pixelKey = mid_num(tb);
 //
-		//return GameObjectCreateO(pixelKey > 140 ? 1 : key);
+		return GameObjectCreateO(pixelKey > 140 ? 1 : key);
 	}
 
 	return GameObjectCreateO(key);
@@ -554,7 +556,7 @@ void *PlayLayer_addObjectH(PlayLayer *self, GameObject *obj)
 	{
 		patch *s = new patch();
 		string spider = "70 6F 72 74 61 6C 5F 31 37 5F 62 61 63 6B 5F 30 30 31 2E 70 6E 67";
-		s->addPatch("libcocos2dcpp.so", 0x7DA3E7, spider);
+		s->addPatch("libcocos2dcpp.so", 0x7E19BA, spider);
 		s->Modify();
 	}
 
@@ -562,7 +564,7 @@ void *PlayLayer_addObjectH(PlayLayer *self, GameObject *obj)
 	{
 		patch *p = new patch();
 		string swing = "70 6F 72 74 61 6C 5F 31 38 5F 62 61 63 6B 5F 30 30 31 2E 70 6E 67";
-		p->addPatch("libcocos2dcpp.so", 0x7DA3E7, swing);
+		p->addPatch("libcocos2dcpp.so", 0x7E19BA, swing);
 		p->Modify();
 
 	}
@@ -571,13 +573,6 @@ void *PlayLayer_addObjectH(PlayLayer *self, GameObject *obj)
 
 }
 
-void(*downloadLevelO)(LevelInfoLayer *self);
-void downloadLevelH(LevelInfoLayer *self)
-{
-	shouldAdd = false;
-	downloadLevelO(self);
-	shouldAdd = true;
-}
 
 // moving funny loading text
 bool(*LoadingLayer_initO)(LoadingLayer *, bool);
@@ -759,8 +754,6 @@ bool SetupPickupTriggerH(SetupPickupTriggerPopup *self, EffectGameObject *object
 	label->setPositionY(label->getPositionY() + 36);
 	label->setPositionX(label->getPositionX() - 23);
 
-	//createLabels(layer2, {0,0}, true);
-	//	createLabels(menu, {0,0}, true);
 
 	return ret;
 
@@ -806,6 +799,8 @@ string areaArrows = "<cg>Arrows pointing outwards means the effect is applied wh
 <cp>Arrows pointing inwards will apply the area effect on the target id. Center id will  remove the area effect when it approacves the target id.</c>\n\
 <cl>Line means the area effect will ignore y/x depending on how the line is placed.</c>\n\
 <cy>EffectID: gives the area effect an id which can be stopped or changed by an animate area trigger.</c>";
+
+
 
 bool(*infoButton)(string, string, float);
 bool infoButton_hk(string title, string desc, float a3)
@@ -913,12 +908,8 @@ The maximum amount of ids is 255.</c>";
 					break;
 				}
 
-			case 3007:
+			case 3007: //Area Rotate
 				{
-					//rotate
-
-					string aR1 = "<cg>Length: 30 = 1 gridspace.</c>\n\
-<cy>Offset: offsets the area effect</c > ";
 
 					string aR2 = "\n<co>Easing/ease out: determines the shape of the dropoff of the area effect</c>\n\
 	<cr>OffsetY: Offset of the area effect in the Y axis.</c>\n\
@@ -927,17 +918,15 @@ The maximum amount of ids is 255.</c>";
 
 					string aR3 = "\n<cg>Rotation: the amount of degrees the objects will spin. Ignores locked rotation objects but also doesnt change the hitbox.</c>";
 
-					string des1 = aR1 + aR2 + aR3;
+					string des1 = aR2 + aR3;
 
 					return infoButton("Area Rotate Trigger", des1, a3);
 
 					break;
 				}
 
-			case 3008:
+			case 3008: //Area Scale
 				{
-					string aR1 = "<cg>Length: 30 = 1 gridspace.</c>\n\
-<cy>Offset: offsets the area effect</c > ";
 
 					string aR2 = "\n<co>Easing/ease out: determines the shape of the dropoff of the area effect</c>\n\
 	<cr>OffsetY: Offset of the area effect in the Y axis.</c>\n\
@@ -945,7 +934,7 @@ The maximum amount of ids is 255.</c>";
 	<cl>Deadzone: the range at which the area effect is completly applied from the egde of the area effect to the center.</c>";
 
 					string aR3 = "\n<cg>Scalex/y: Scales objects by their relative x/y unless a p group is used.</c>";
-					string des1 = aR1 + aR2 + aR3;
+					string des1 =  aR2 + aR3;
 
 					return infoButton("Area Scale Trigger", des1, a3);
 
@@ -953,17 +942,15 @@ The maximum amount of ids is 255.</c>";
 
 				break;
 
-			case 3009:
+			case 3009: //Area Fade
 				{
-					string aR1 = "<cg>Length: 30 = 1 gridspace.</c>\n\
-<cy>Offset: offsets the area effect</c>";
 
 					string aR2 = "\n<cr>OffsetY: Offset of the area effect in the Y axis.</c>\n\
 	<cp>ModFront/Back: modifier for easing.</c>\n\
 	<cl>Deadzone: the range at which the area effect is completly applied from the egde of the area effect to the center.</c>";
 
 					string aR3 = "\n<co>Opacity: the opacity the object should be set to.</c>";
-					string des1 = aR1 + aR2 + aR3;
+					string des1 = aR2 + aR3;
 
 					return infoButton("Area Fade Trigger", des1, a3);
 
@@ -971,20 +958,18 @@ The maximum amount of ids is 255.</c>";
 
 				break;
 
-			case 3010:
+			case 3010: //Area Tint
 				{
-					string aR1 = "<cg>Length: 30 = 1 gridspace.</c>\n\
-<cy>Offset: offsets the area effect</c > ";
 
 					string aR2 = "\n<cr>OffsetY: Offset of the area effect in the Y axis.</c>\n\
 	<cp>ModFront/Back: modifier for easing.</c>\n\
 	<cl>Deadzone: the range at which the area effect is completly applied from the egde of the area effect to the center.</c>";
 
-					string aR3 = "\n < co>Color channel: to what colors the objects should change</c>\n\
+					string aR3 = "\n <co>Color channel: to what colors the objects should change</c>\n\
 			<cr>%: the intensity of the effect.</c>\n\
 		<cg>Hsv: uses hsv instead of a color channel.</c>";
 
-					string des1 = aR1 + aR2 + aR3;
+					string des1 = aR2 + aR3;
 
 					return infoButton("Area Tint Trigger", des1, a3);
 
@@ -992,7 +977,7 @@ The maximum amount of ids is 255.</c>";
 
 				break;
 
-			case 3011:	//All Area Triggers
+			case 3011:	//All Area Anim Triggers
 			case 3012:
 			case 3013:
 			case 3014:
@@ -1008,6 +993,7 @@ The maximum amount of ids is 255.</c>";
 
 	return ret;
 }
+
 
 bool(*SetupAreaMoveTriggerPopupO)(SetupAreaMoveTriggerPopup *, EffectGameObject *, cocos2d::CCArray *);
 bool SetupAreaMoveTriggerPopuH(SetupAreaMoveTriggerPopup *self, EffectGameObject *object, cocos2d::CCArray *objects)
@@ -1161,16 +1147,48 @@ bool SetupAreaTintTriggerPopupH(SetupAreaTintTriggerPopup *self, EffectGameObjec
 
 }
 
-void(*CreateParticlePopup_onPasteSettingsO)(SetupTriggerPopup *self, CCObject *a2);
-void CreateParticlePopup_onPasteSettingsH(SetupTriggerPopup *self, CCObject *a2) {}
-/*
+
+
+FLAlertLayer* fl;
+
+void LevelEditorLayerExt::onEnablePlaytest(CCObject* sender) {
+	
+	GM->setGameVariable("100006", true); 
+	auto node = (CCNode*)sender;
+	node->setPositionY(10000);
+	
+}
 void(*EditorUI_onPlaytestO)(EditorUI *self, CCObject *a2);
 void EditorUI_onPlaytestH(EditorUI *self, CCObject *a2)
 {
-	if (!GM->getGameVariable("100006"))
-		return EditorUI_onPlaytestO(self, a2);
+	if (!GM->getGameVariable("100006")) {
+		
+	string desc = "<co>Playtest has a lot of bugs and crashes</c>\n\
+				<cr>its use is not recommended!</c>\n\
+				<cg>You can enable playtest at your own risk</c>\n\
+				<cr>don't complain about it and don't ask for a fix!</c>";
+		fl = FLAlertLayer::create(nullptr, "Playtest disabled", desc, "OK", nullptr, 470, false, 200);
 
-}*/
+		auto menu = fl->_btnMenu();
+		auto children = menu->getChildren();
+		auto okBtn = reinterpret_cast<CCNode *>(children->objectAtIndex(0));
+
+		auto sprite = ButtonSprite::create("Enable", 80, 30, 30, 5);
+		auto btn = CCMenuItemSpriteExtra::create(sprite, sprite, fl, menu_selector(LevelEditorLayerExt::onEnablePlaytest));
+		btn->setPositionX(okBtn->getPositionX() + 60);
+
+		okBtn->setPositionX(okBtn->getPositionX() - 40);
+		menu->addChild(btn);
+
+		//  fl->m_pLayer->addChild(sprite, 50);
+		fl->show();
+	}
+	
+	else {
+		return EditorUI_onPlaytestO(self, a2);
+	}
+
+}
 
 void(*togglePracticeModeO)(PlayLayer *self, bool *on);
 void togglePracticeModeH(PlayLayer *self, bool *on)
@@ -1281,16 +1299,18 @@ FUNCTIONHOOK(bool, LevelInfoLayer_init, LevelInfoLayer* self, GJGameLevel* level
 	return true;
 }
 
+
+
 void loader()
 {
 	auto cocos2d = dlopen(targetLibName != "" ? targetLibName : NULL, RTLD_LAZY);
 
-	//MenuLayerExt::ApplyHooks();
+	MenuLayerExt::ApplyHooks();
 	EditLevelLayerExt::ApplyHooks();
 	LevelEditorLayerExt::ApplyHooks();
 	EditorPauseLayerExt::ApplyHooks();
 
-	HOOK("_ZN10GameObject16objectFromVectorERSt6vectorISsSaISsEEP15GJBaseGameLayerb", GameObject_objectFromVectorH, GameObject_objectFromVectorO);
+	//HOOK("_ZN10GameObject16objectFromVectorERSt6vectorISsSaISsEEP15GJBaseGameLayerb", GameObject_objectFromVectorH, GameObject_objectFromVectorO);
 	HOOK("_ZN14LevelInfoLayer4initEP11GJGameLevelb", LevelInfoLayer_initH, LevelInfoLayer_initO);
 	//HOOK("_ZN12PlayerObject15spawnDualCircleEv", PlayerObject_spawnDualCircleH, PlayerObject_spawnDualCircleO);
 	HOOK("_ZN15GJBaseGameLayer12addToSectionEP10GameObject", GJBaseGameLayer_addToSectionH, GJBaseGameLayer_addToSectionO);
@@ -1299,11 +1319,10 @@ void loader()
 	//HOOK("_ZN7UILayer4initEv", UILayer_initH, UILayer_initO);
 	HOOK("_ZN10PauseLayer6onEditEPN7cocos2d8CCObjectE", PauseLayer_onEditH, PauseLayer_onEditO);
 	HOOK("_ZN13EndLevelLayer6onEditEPN7cocos2d8CCObjectE", EndLevelLayer_onEditH, EndLevelLayer_onEditO);
-/*	HOOK("_ZN12PlayerObject15spawnDualCircleEv", PlayerObject_spawnDualCircleH, PlayerObject_spawnDualCircleO);
+	
+//	HOOK("_ZN12PlayerObject15spawnDualCircleEv", PlayerObject_spawnDualCircleH, PlayerObject_spawnDualCircleO);
 	HOOK("_ZN9PlayLayer18togglePracticeModeEb", togglePracticeModeH, togglePracticeModeO);
 	HOOK("_ZN8EditorUI10onPlaytestEPN7cocos2d8CCObjectE", EditorUI_onPlaytestH, EditorUI_onPlaytestO);
-	HOOK("_ZN19CreateParticlePopup14onCopySettingsEPN7cocos2d8CCObjectE", CreateParticlePopup_onPasteSettingsH, CreateParticlePopup_onPasteSettingsO);
-	HOOK("_ZN19CreateParticlePopup15onPasteSettingsEPN7cocos2d8CCObjectE", CreateParticlePopup_onPasteSettingsH, CreateParticlePopup_onPasteSettingsO);
 	HOOK("_ZN25SetupAreaTintTriggerPopup4initEP17EnterEffectObjectPN7cocos2d7CCArrayE", SetupAreaTintTriggerPopupH, SetupAreaTintTriggerPopupO);
 	HOOK("_ZN25SetupAreaFadeTriggerPopup4initEP17EnterEffectObjectPN7cocos2d7CCArrayE", SetupAreaFadeTriggerPopupH, SetupAreaFadeTriggerPopupO);
 	HOOK("_ZN30SetupAreaTransformTriggerPopup4initEP17EnterEffectObjectPN7cocos2d7CCArrayE", SetupAreaTransformTriggerPopupH, SetupAreaTransformTriggerPopupO);
@@ -1315,30 +1334,17 @@ void loader()
 	HOOK("_ZN17SetupTriggerPopup4initEP16EffectGameObjectPN7cocos2d7CCArrayEff", SetupTriggerPopupH, SetupTriggerPopupO);
 	HOOK("_ZN23SetupPickupTriggerPopup4initEP16EffectGameObjectPN7cocos2d7CCArrayE", SetupPickupTriggerH, SetupPickupTriggerO);
 	HOOK("_ZN20AccountRegisterLayer4initEv", AccountRegisterLayer_InitH, AccountRegisterLayer_InitO);
-	//HOOK("_ZN14SelectArtLayer4initE13SelectArtType", SelectArtLayer_initH, SelectArtLayer_initO)
 	HOOK("_ZN11GameManager18toggleGameVariableEPKc", hook_onToggle, onToggleTrampoline);
 	
 	HOOK("_ZN13ObjectToolbox13intKeyToFrameEi", keyToFrameH, keyToFrameO);
 	HOOK("_ZN8EditorUI4initEP16LevelEditorLayer", EditorUI_InitH, EditorUI_InitO);
-	*/
+	
 	HOOK("_ZN8EditorUI13selectObjectsEPN7cocos2d7CCArrayEb", EditorUI_SelectObjectsH, EditorUI_SelectObjectsO);
 //	HOOK("_ZN10GameObject10setOpacityEh", GameObjectSetOpacityH, GameObjectSetOpacityO);
 	HOOK("_ZN10GameObject13createWithKeyEi", GameObjectCreateH, GameObjectCreateO);
 	//HOOK("_ZN14LevelInfoLayer4initEP11GJGameLevelb", LevelInfoLayerInitH, LevelInfoLayerInitO);	
-/*	HOOK("_ZN12LoadingLayer4initEb", LoadingLayer_initH, LoadingLayer_initO);
-
-	HookManager::do_hook(HookManager::getPointerFromSymbol(cocos2d, "_ZN9AdToolbox16showInterstitialEv"),
-		(void*) GameManager_tryShowAdH,
-		(void **) &GameManager_tryShowAdO);
-		*/
-		/*
-	HookManager::do_hook(HookManager::getPointerFromSymbol(cocos2d, "_ZN15GJBaseGameLayer12addToSectionEP10GameObject"),
-		(void*) GJBaseGameLayer_addToSectionH,
-		(void **) &GJBaseGameLayer_addToSectionO);
-	HookManager::do_hook(HookManager::getPointerFromSymbol(cocos2d, "_ZN15GJBaseGameLayer23removeObjectFromSectionEP10GameObject"),
-		(void*) GJBaseGameLayer_removeObjectFromSectionH,
-		(void **) &GJBaseGameLayer_removeObjectFromSectionO);
-		*/
+	HOOK("_ZN12LoadingLayer4initEb", LoadingLayer_initH, LoadingLayer_initO);
+		
 	HookManager::do_hook(HookManager::getPointerFromSymbol(cocos2d, "_ZN7UILayer12ccTouchBeganEPN7cocos2d7CCTouchEPNS0_7CCEventE"),
 		(void*) UILayer_ccTouchBeganH,
 		(void **) &UILayer_ccTouchBeganO);
@@ -1350,7 +1356,7 @@ void loader()
 		spriteCreateH, spriteCreateO);
 	HOOK("_ZN7cocos2d8CCSprite25createWithSpriteFrameNameEPKc",
 		spriteCreateFrameNameH, spriteCreateFrameNameO);
-		/*
+		
 	HOOK("_ZN16GameStatsManager14isItemUnlockedE10UnlockTypei",
 		isIconUnlockedH, isIconUnlockedO);
 	HOOK("_ZN9MenuLayer4initEv",
@@ -1369,25 +1375,28 @@ void loader()
 		AccountProcessH, AccountProcessO);
 	HOOK("_ZN12CreatorLayer19canPlayOnlineLevelsEv",
 		canPlayOnlineLevelsH, canPlayOnlineLevelsO);
+	/*
 	HOOK("_ZN16LevelEditorLayer15getTriggerGroupEi",
 		getTriggerGroupH, getTriggerGroupO);
+		*/
+		
 	HOOK("_ZN7UILayer4initEv",
 		UILayerInitH, UILayerInitO);
+	/*
 	HOOK("_ZN16LevelEditorLayer10addToGroupEP10GameObjectib",
 		addToGroupH, addToGroupO);
-		*/
+		
 		
 	/*
 	HookManager::do_hook(HookManager::getPointerFromSymbol(cocos2d, "_ZN11AppDelegate11trySaveGameEb"), (void*) save_hook, (void **) &save_trp);
 	HookManager::do_hook(HookManager::getPointerFromSymbol(cocos2d, "_ZN7cocos2d11CCFileUtils13addSearchPathEPKc"), (void*) CCFileUtils_addSearchPath_hk, (void **) &CCFileUtils_addSearchPath_trp);
 	HookManager::do_hook(HookManager::getPointerFromSymbol(cocos2d, "_ZN11GameManager10dataLoadedEP13DS_Dictionary"), (void*) &GameManager_dataLoaded_hk, (void **) &dataLoaded_trp);
 	*/
-	/*
+	
 	HOOK("_ZN17AccountLoginLayer8onSubmitEPN7cocos2d8CCObjectE", AccountSubmitH, AccountSubmitO);
 	HOOK("_ZN17AccountLoginLayer20loginAccountFinishedEii", LoginFinishedH, LoginFinishedO);
 	HOOK("_ZN12LoadingLayer16getLoadingStringEv", getStringH, getStringO);
-	HOOK("_ZN14LevelInfoLayer13downloadLevelEv", downloadLevelH, downloadLevelO);
-*/
+
 	patch *tmp = new patch();
 	tmp->addPatch("libcocos2dcpp.so", 0x26DB2E, "00 bf 00 bf");
 
@@ -1468,6 +1477,7 @@ void loader()
 	// playtest
 	NOP4(tms, 0x2BC876);
 	NOP4(tms, 0x2BC884);
+	
 	tms->addPatch("libcocos2dcpp.so", 0x2C0384, "01 22"); // fix bg
 	
 	tms->Modify();

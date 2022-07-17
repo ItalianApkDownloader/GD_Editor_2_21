@@ -14,7 +14,7 @@ public:
 public:
 
 CLASS_MEMBER(LevelEditorLayer*, levelEditor, 0x2F8);
-CLASS_MEMBER(CCMenu*, objectMenu, 0x298);
+CLASS_MEMBER(CCMenu*, objectMenu, 0x29C); 
 
 public:
     EditorUI();

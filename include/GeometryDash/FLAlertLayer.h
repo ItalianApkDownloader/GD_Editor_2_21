@@ -25,6 +25,10 @@ public:
     int m_nJoystickConnected;
     bool m_bBorder; //?
     bool m_bNoAction; //?
+	
+	
+	
+	CLASS_MEMBER(cocos2d::CCMenu*, btnMenu, 0x1B4)
 
 public:
     FLAlertLayer();
@@ -41,5 +45,6 @@ public:
     virtual void registerWithTouchDispatcher(void);
     virtual void keyBackClicked(void);
     virtual void keyDown(cocos2d::enumKeyCodes);
+	virtual void onBtn1(CCObject*);
     void show(void);
 };

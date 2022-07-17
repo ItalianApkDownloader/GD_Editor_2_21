@@ -11,7 +11,7 @@ public:
     virtual ~AccountLoginLayer();
 	
 	
-	CLASS_MEMBER(CCTextInputNode*, inputPassword, 0x1F8);
+	CLASS_MEMBER(CCTextInputNode*, inputPassword, 0x1FC);
 
 
 };
