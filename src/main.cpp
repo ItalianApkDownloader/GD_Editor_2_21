@@ -17,6 +17,15 @@
 #include "hooks/LevelEditorLayerExt.h"
 #include "hooks/EditorPauseLayerExt.h"
 #include "hooks/PauseLayerExt.h"
+#include "hooks/ShaderDebug.h"
+
+/*
+		FLAG USED FOR DEVELOPER MODE DEBUGGING LIKE SHADERS
+
+		!!!!!!!!!!!!!!!!!!!!!!!! COMMENT OUT BEFORE RELEASING APK !!!!!!!!!!!!!!!!!!!!!!!!
+*/
+#define DEVDEBUG
+
 
 #define FUNCTIONHOOK(returntype, name, ...) \
 returntype (*name##O)(__VA_ARGS__);			\
@@ -1263,11 +1272,15 @@ void EndLevelLayer::goEditFix() {
 FUNCTIONHOOK(bool, UILayer_init, CCLayer* self) {
 	if(!UILayer_initO(self)) return false;
 
-	if(MEMBERBYOFFSET(bool, self, 0x202)) {
-		auto dpad = MEMBERBYOFFSET(CCSprite*, self, 0x1D4);
+	//if(MEMBERBYOFFSET(bool, self, 0x202)) {
+	//	auto dpad = MEMBERBYOFFSET(CCSprite*, self, 0x1D4);
 
-		dpad->setVisible(true);
-	}
+	//	dpad->setVisible(true);
+	//}
+
+	#ifdef DEVDEBUG
+	reinterpret_cast<UILayerDebug*>(self)->doInit();
+	#endif
 
 	return true;
 }
@@ -1288,8 +1301,6 @@ FUNCTIONHOOK(void, GJBaseGameLayer_removeObjectFromSection, GJBaseGameLayer* sel
 FUNCTIONHOOK(void, PlayerObject_spawnDualCircle, PlayerObject* self) {
 	if(!GM->_inEditor()) PlayerObject_spawnDualCircleO(self);
 }
-
-
 
 // testing big levels
 FUNCTIONHOOK(bool, LevelInfoLayer_init, LevelInfoLayer* self, GJGameLevel* level, bool idk) {
@@ -1323,6 +1334,7 @@ FUNCTIONHOOK(GameObject*, LevelEditorLayer_addObjectFromVector, LevelEditorLayer
 	return GameObject::createWithKey(1);
 }
 
+
 void loader()
 {
 	auto cocos2d = dlopen(targetLibName != "" ? targetLibName : NULL, RTLD_LAZY);
@@ -1332,6 +1344,9 @@ void loader()
 	LevelEditorLayerExt::ApplyHooks();
 	EditorPauseLayerExt::ApplyHooks();
 
+	#ifdef DEVDEBUG
+	DevDebugHooks::ApplyHooks();
+	#endif
 
 	HOOK("_ZN16LevelEditorLayer19addObjectFromVectorERSt6vectorISsSaISsEE", LevelEditorLayer_addObjectFromVectorH, LevelEditorLayer_addObjectFromVectorO);
 	HOOK("_ZN11GameManager22shouldShowInterstitialEiii", shouldShowInterstitialH, shouldShowInterstitialO);
@@ -1339,7 +1354,7 @@ void loader()
 	HOOK("_ZN15GJBaseGameLayer12addToSectionEP10GameObject", GJBaseGameLayer_addToSectionH, GJBaseGameLayer_addToSectionO);
 	HOOK("_ZN15GJBaseGameLayer23removeObjectFromSectionEP10GameObject", GJBaseGameLayer_removeObjectFromSectionH, GJBaseGameLayer_removeObjectFromSectionO);
 
-	//HOOK("_ZN7UILayer4initEv", UILayer_initH, UILayer_initO);
+	HOOK("_ZN7UILayer4initEv", UILayer_initH, UILayer_initO);
 	HOOK("_ZN10PauseLayer6onEditEPN7cocos2d8CCObjectE", PauseLayer_onEditH, PauseLayer_onEditO);
 	HOOK("_ZN13EndLevelLayer6onEditEPN7cocos2d8CCObjectE", EndLevelLayer_onEditH, EndLevelLayer_onEditO);
 	
