@@ -196,6 +196,10 @@ bool MenuLayerExt::init_hk()
 {
 
 	auto ret = init_trp(this);
+	
+	#ifdef DEVDEBUG
+	FMOD->setBackgroundMusicVolume(0);
+	#endif
 /*
 	auto director = CCDirector::sharedDirector();
 	auto dir = CCDirector::sharedDirector();
@@ -284,18 +288,37 @@ bool MenuLayerExt::init_hk()
 	GDPS->setPlayerJetpack(m_nPlayerJetpack);
 
 */
+/*
+			CCLog("try request");
+		
+		this shit not worky
 			 cocos2d::extension::CCHttpRequest* request = new (std::nothrow) cocos2d::extension::CCHttpRequest();
-				request->setUrl(AY_OBFUSCATE("http://game.gdpseditor.com/server/game/version2.php"));
-				request->setRequestType(cocos2d::extension::CCHttpRequest::kHttpGet);
+				request->setUrl("http://game.gdpseditor.com/server/game/version2.php");
+				request->setRequestType(cocos2d::extension::CCHttpRequest::kHttpPost);
 
 
 				request->setResponseCallback(this,callfuncND_selector(MenuLayerExt::onRequestCompleted));
 				request->setTag("Post test2");
-				*((int *)request + 8) = 1;
+			//	*((int *)request + 8) = 1;
 				//*((int *)request + 16) = 0;
 				cocos2d::extension::CCHttpClient::getInstance()->send(request);
 				request->release();
 
+
+    auto http_client = cocos2d::extension::CCHttpClient::getInstance();
+    auto http_request = new cocos2d::extension::CCHttpRequest();
+
+	auto req_string = "222";
+    http_request->setUrl("http://game.gdpseditor.com/server/game/version2.php");
+    http_request->setRequestType(cocos2d::extension::CCHttpRequest::kHttpPost);
+    http_request->setResponseCallback(
+        this, static_cast<cocos2d::extension::SEL_HttpResponse>(&MenuLayerExt::onRequestCompleted));
+    http_request->setRequestData(req_string, strlen(req_string));
+
+    http_client->send(http_request);
+    http_request->release();
+	*/
+	
 				
 
 	return ret;
@@ -316,7 +339,7 @@ void MenuLayerExt::ApplyHooks() {
 	HOOK_STATIC("_ZN9MenuLayer7showTOSEv", 
 	MenuLayerExt::MenuLayer_showTOSH, MenuLayerExt::MenuLayer_showTOSO);
 	
-//	HOOK_STATIC("_ZN9MenuLayer4initEv",
-//	MenuLayerExt::init_hk, MenuLayerExt::init_trp);
+	HOOK_STATIC("_ZN9MenuLayer4initEv",
+	MenuLayerExt::init_hk, MenuLayerExt::init_trp);
 	
 }

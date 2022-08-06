@@ -24,7 +24,6 @@
 
 		!!!!!!!!!!!!!!!!!!!!!!!! COMMENT OUT BEFORE RELEASING APK !!!!!!!!!!!!!!!!!!!!!!!!
 */
-#define DEVDEBUG
 
 
 #define FUNCTIONHOOK(returntype, name, ...) \
@@ -590,7 +589,7 @@ bool(*LoadingLayer_initO)(LoadingLayer *, bool);
 bool LoadingLayer_initH(LoadingLayer *self, bool fromReload)
 {
 	if (!LoadingLayer_initO(self, fromReload)) return false;
-
+	
 	auto text = *reinterpret_cast< CCNode **>(reinterpret_cast<uintptr_t> (self) + 0x144);
 	text->setPositionY(text->getPositionY() - 10);
 
@@ -1310,13 +1309,16 @@ FUNCTIONHOOK(bool, LevelInfoLayer_init, LevelInfoLayer* self, GJGameLevel* level
 	auto menu = CCMenu::createWithItem(copyBtn); //LOL didnt know this existed...
 	self->addChild(menu, 1000);
 
-	
+		float a = FMOD->getBackgroundMusicTimeMilli();
+		CCLog("a: %f", a);
+		
 	auto sprite = CCSprite::createWithSpriteFrameName("GJ_optionsBtn_001.png");
 	sprite->setScale(.7);
 	auto optionsBtn = CCMenuItemSpriteExtra::create(sprite, nullptr, self, menu_selector(MenuLayer::onOptions));
 	auto bottomMenu2 = CCMenu::createWithItem(optionsBtn);
 	reinterpret_cast<CCSprite *>(bottomMenu2)->setPosition({CCLEFT + 80, CCTOP - 25});
 	self->addChild(bottomMenu2);
+	
 	
 
 	return true;
@@ -1334,6 +1336,93 @@ FUNCTIONHOOK(GameObject*, LevelEditorLayer_addObjectFromVector, LevelEditorLayer
 	return GameObject::createWithKey(1);
 }
 
+float z;
+FUNCTIONHOOK(void*, DrawGridLayer_update, DrawGridLayer* self, float dt) {
+	z += dt;
+	self->updateMusicGuideTime(z);
+	
+	return DrawGridLayer_updateO(self, dt);
+}
+
+
+FUNCTIONHOOK(void*, updateMusicGuideTime, DrawGridLayer* self, float a) {
+	z = a;
+	return updateMusicGuideTimeO(self, a);
+}
+
+FUNCTIONHOOK(void, triggerShader, void* a1, void* a2) {
+	
+	if(!GM->_inEditor())
+	return triggerShaderO(a1, a2);
+	
+	if(!GM->getGameVariable("69234"))
+	return triggerShaderO(a1, a2);
+
+		
+}
+FUNCTIONHOOK(bool, LevelSettingsLayer_init, LevelSettingsLayer* self, LevelSettingsObject* settings, LevelEditorLayer* levelEditor) {
+	
+	if(!LevelSettingsLayer_initO(self, settings, levelEditor))
+		return false;
+	
+	bool isStartPos = settings->_isStartPos();
+	
+	
+	auto layer = (CCLayer*)self->getChildren()->objectAtIndex(0);
+	auto menu = (CCMenu*)layer->getChildren()->objectAtIndex(1);
+	
+	
+	if(!isStartPos) {
+		
+		auto platformer_toggle = (CCMenuItemToggler*)menu->getChildren()->objectAtIndex(29);
+		auto label = CCLabelBMFont::create("Platformer", "goldFont.fnt");
+		label->setPosition(platformer_toggle->getPositionX() + 70, platformer_toggle->getPositionY());
+		label->setScale(.6);
+		menu->addChild(label);
+	}
+
+
+
+	//nothing works wtfff
+	int swingBtnIndex = !isStartPos ? 20 : 7;
+	auto swing_toggle = (CCMenuItemToggler*)menu->getChildren()->objectAtIndex(swingBtnIndex);
+	swing_toggle->setVisible(false);
+	
+	CCArray* togglerArray = MBO(CCArray*, self, 0x238);
+	
+	auto sprOff = CCSprite::createWithSpriteFrameName("gj_swingBtn_off_001.png");
+	auto sprOn = CCSprite::createWithSpriteFrameName("gj_swingBtn_on_001.png");
+	
+	auto newToggle = CCMenuItemToggler::create(sprOff, sprOn, self, menu_selector(LevelSettingsLayer::onSelectMode));
+	newToggle->setTag(7);
+	newToggle->toggle(MBO(int, settings, 0x108) == 7);
+	newToggle->setPosition(swing_toggle->getPosition());
+	newToggle->setSizeMult(1.5);
+	togglerArray->replaceObjectAtIndex(7, newToggle, false);
+	menu->getChildren()->replaceObjectAtIndex(swingBtnIndex, newToggle, false);
+	menu->addChild(newToggle);
+	#ifdef DEVDEBUG
+		GDPSHelper::createLabels(menu, menu->getChildren(), {0, 0}, true);
+		
+		int a = MBO(int, settings, 0x108);
+		CCLog("a: %d", a);
+		
+	#endif
+
+	return true;
+}
+
+FUNCTIONHOOK(void, onSelectMode, LevelSettingsLayer* self, CCObject* sender) {
+	
+	onSelectModeO(self, sender);
+	
+		
+		if(sender && sender->getTag() == 7) {
+			MBO(int, MBO(LevelSettingsObject*, self, 0x230), 0x108) = 7;
+		}
+	
+}
+
 
 void loader()
 {
@@ -1348,6 +1437,11 @@ void loader()
 	DevDebugHooks::ApplyHooks();
 	#endif
 
+	HOOK("_ZN18LevelSettingsLayer12onSelectModeEPN7cocos2d8CCObjectE", onSelectModeH, onSelectModeO)
+	HOOK("_ZN18LevelSettingsLayer4initEP19LevelSettingsObjectP16LevelEditorLayer", LevelSettingsLayer_initH, LevelSettingsLayer_initO);
+	HOOK("_ZN15GJBaseGameLayer20triggerShaderCommandEP16ShaderGameObject", triggerShaderH, triggerShaderO);
+	HOOK("_ZN13DrawGridLayer20updateMusicGuideTimeEf", updateMusicGuideTimeH, updateMusicGuideTimeO);
+	HOOK("_ZN13DrawGridLayer6updateEf", DrawGridLayer_updateH, DrawGridLayer_updateO);
 	HOOK("_ZN16LevelEditorLayer19addObjectFromVectorERSt6vectorISsSaISsEE", LevelEditorLayer_addObjectFromVectorH, LevelEditorLayer_addObjectFromVectorO);
 	HOOK("_ZN11GameManager22shouldShowInterstitialEiii", shouldShowInterstitialH, shouldShowInterstitialO);
 	HOOK("_ZN14LevelInfoLayer4initEP11GJGameLevelb", LevelInfoLayer_initH, LevelInfoLayer_initO);
@@ -1405,12 +1499,14 @@ void loader()
 		OptionsLayerInitH, OptionsLayerInitO);
 	HOOK("_ZNK7cocos2d8CCString10getCStringEv",
 		CCString_getCStringH, CCString_getCStringO);
+		
 	HOOK("_ZN16GameLevelManager18ProcessHttpRequestESsSsSs10GJHttpType",
 		LevelProcessH, LevelProcessO);
 	HOOK("_ZN20MusicDownloadManager18ProcessHttpRequestESsSsSs10GJHttpType",
 		MusicProcessH, MusicProcessO);
 	HOOK("_ZN16GJAccountManager18ProcessHttpRequestESsSsSs10GJHttpType",
 		AccountProcessH, AccountProcessO);
+		
 	HOOK("_ZN12CreatorLayer19canPlayOnlineLevelsEv",
 		canPlayOnlineLevelsH, canPlayOnlineLevelsO);
 	/*
@@ -1536,4 +1632,5 @@ JNIEXPORT jint JNI_OnLoad(JavaVM *vm, void *reserved)
 	return JNI_VERSION_1_6;
 }
 
-//0x40000
+//open with adb
+//call adb shell am start -n com.gdpsedi.geometrydashsubzero/com.robtopx.geometryjumplite.GeometryDashLite

@@ -32,6 +32,7 @@ void LevelEditorLayerExt::removeH(GameObject * obj,bool a1) {
 bool (*initO)( LevelEditorLayer* p, GJGameLevel* level );
 bool LevelEditorLayerExt::initH(GJGameLevel* level)
 {
+	CCLog("Editor Init!");
 	if (!dynamic_cast<GJBaseGameLayer*>(this)->init())
 		return false;
 

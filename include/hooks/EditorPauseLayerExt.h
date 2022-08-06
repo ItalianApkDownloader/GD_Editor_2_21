@@ -3,6 +3,9 @@
 class EditorPauseLayerExt : public EditorPauseLayer {
 public:
 
+	
+public:
+
 	static inline void (*UnlockAllLayersO)(EditorPauseLayer* self, CCObject* a2);
 	void UnlockAllLayersH(CCObject* a2);
 	
@@ -11,7 +14,10 @@ public:
 	void onResumeH(CCObject* a1);
 	
 	
-
+	static inline void* (*customSetupO)(EditorPauseLayer* self);
+	void* customSetupH();
+	
+	void onDisableShaders(CCObject* sender);
 
 	static void ApplyHooks();
 

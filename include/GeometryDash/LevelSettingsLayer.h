@@ -11,5 +11,7 @@ public:
     virtual ~LevelSettingsLayer();
 
     static LevelSettingsLayer* create( LevelSettingsObject* a1, LevelEditorLayer* a2 );
+	
+	void onSelectMode(CCObject*);
 	virtual bool init(void);
 };

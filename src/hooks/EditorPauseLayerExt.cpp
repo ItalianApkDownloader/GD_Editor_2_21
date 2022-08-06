@@ -2,29 +2,9 @@
 #include "cocos2d.h"
 #include "EditorPauseLayerExt.h"
 #include "hooking.h"
+#include "GDPSHelper.h"
 
-/*
-static inline void (*UnlockAllLayersO)(EditorPauseLayer* self, CCObject* a2);
-void EditorPauseLayerExt::UnlockAllLayersH(CCObject* a2) {
 
-	auto editor = this->_editorLayer();
-	auto ui = editor->editorUI_;
-
-	for(int i = 0; i < 1000; i++) {
-		CCLog("class member : %d", editor->_currentLayer());
-		
-		editor->_currentLayer()++;
-
-		if(editor->isLayerLocked(editor->_currentLayer()))
-		editor->toggleLockActiveLayer();
-	}
-	
-	CCLog("finish loop");
-	editor->_currentLayer() = 0xFFFFFFFF;
-	CCLog("reseting");
-	
-}
-*/
 static inline void (*onResumeO)(EditorPauseLayer* self,CCObject* a1);
 void EditorPauseLayerExt::onResumeH(CCObject* a1){
 	auto gm = GameManager::sharedState();
@@ -69,12 +49,48 @@ void EditorPauseLayerExt::onResumeH(CCObject* a1){
 	removeFromParentAndCleanup(true);
 }
 
+
+	
+	static inline void* (*customSetupO)(EditorPauseLayer* self);
+	void* EditorPauseLayerExt::customSetupH() {
+		
+		auto ret = customSetupO(this);
+		
+		auto menu = CCMenu::create();
+		menu->setPosition(0, 0);
+		
+		GDPSHelper::createToggleButton(
+		"Disable Shaders",
+		{CCMIDX - 200, CCBOTTOM + 24},
+		.55, 8,
+		this,
+		menu_selector(EditorPauseLayerExt::onDisableShaders),
+		menu,
+		GM->getGameVariable("69234"),
+		true);
+		
+		this->addChild(menu);
+		
+		return ret;
+	}
+	
+	
+void EditorPauseLayerExt::onDisableShaders(CCObject* sender) {
+	
+	GM->toggleGameVariable("69234");
+}
+	
+	
+	
 void EditorPauseLayerExt::ApplyHooks() {
-	/*
-	HOOK_STATIC("_ZN16EditorPauseLayer17onUnlockAllLayersEPN7cocos2d8CCObjectE", 
-	EditorPauseLayerExt::UnlockAllLayersH, EditorPauseLayerExt::UnlockAllLayersO);
-	*/
+
+
 	HOOK_STATIC("_ZN16EditorPauseLayer8onResumeEPN7cocos2d8CCObjectE", 
 	EditorPauseLayerExt::onResumeH, EditorPauseLayerExt::onResumeO);
+	
+	HOOK_STATIC("_ZN16EditorPauseLayer11customSetupEv", 
+	EditorPauseLayerExt::customSetupH, EditorPauseLayerExt::customSetupO);
+	
+	
 
 }

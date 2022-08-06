@@ -90,27 +90,28 @@ void GDPSHelper::createToggleButton(const char *text, CCPoint position, float bo
 }
 
 
-void GDPSHelper::createLabels(CCNode* base, CCPoint pos, bool logNames) {
+void GDPSHelper::createLabels(CCNode* layer, CCArray* objects, CCPoint pos, bool logNames) {
 	
-	CCArray* objects = base->getChildren();
+	
 	int count = objects->count();
 	auto menu = CCMenu::create();
 	
 	menu->setPosition(pos);
-	base->addChild(menu, 100);
+	layer->addChild(menu, 100);
 	
 	for(int i = 0 ; i < count; i++) {
 		
 		auto node = (CCNode*)objects->objectAtIndex(i);
-		if(logNames) {
-			const char* name = GDPSHelper::NameForNode(node).c_str();
-			CCLog("i: %d: | name: %s", i, name);
-		}
 		
 		auto label = CCLabelBMFont::create(FunctionHelper::itos(i).c_str(), "bigFont.fnt");
 		label->setPosition(node->getPosition());
 		label->setScale(.65);
 		menu->addChild(label);
+		
+		if(logNames) {
+			const char* name = GDPSHelper::NameForNode(node).c_str();
+			CCLog("i: %d: | name: %s", i, name);
+		}
 		
 	}
 	

@@ -39,3 +39,21 @@ public:
 	void onGoToBaseLayer(CCObject*);	
 	void replaceGroupID(GameObject* go, int old, int newgroup);
 };
+class FMODAudioEngine  
+{
+	public:
+		
+		static FMODAudioEngine * sharedEngine();
+		void playBackgroundMusic(std::string,bool,bool);
+		void playEffect(std::string, bool, float, float, float);
+		void stop();
+		void start();
+		void reloadEffects();
+		void resumeAllEffects();
+		int getBackgroundMusicTimeMilli();
+		float getBackgroundMusicTime();
+		bool isBackgroundMusicPlaying();
+		void setBackgroundMusicVolume(float);
+
+};
+

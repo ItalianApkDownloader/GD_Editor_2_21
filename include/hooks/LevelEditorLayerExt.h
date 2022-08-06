@@ -1,7 +1,10 @@
 
 
 class LevelEditorLayerExt : public LevelEditorLayer{
+
 public:
+
+
     static inline  bool (*initO)(LevelEditorLayer *,GJGameLevel *);
     bool initH(GJGameLevel *);
 	

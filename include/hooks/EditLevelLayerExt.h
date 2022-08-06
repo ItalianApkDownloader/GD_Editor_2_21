@@ -6,7 +6,9 @@
 class EditLevelLayerExt : public EditLevelLayer {
 	
     public:
-
+			
+		bool startedEditor;
+		
         static inline bool (*initO)(EditLevelLayer*, GJGameLevel* level);
         bool initH(GJGameLevel* level);
 		

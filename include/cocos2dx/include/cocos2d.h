@@ -29,10 +29,14 @@ static __TYPE__* create() \
 #define CCMIDY CCDirector::sharedDirector()->getScreenTop() / 2
 #define CCMIDL CCDirector::sharedDirector()->getScreenLeft() / 2
 
+#define FMOD FMODAudioEngine::sharedEngine()
+
 #define GPY() getPositionY()
 #define GPX() getPositionX()
 
 #define version2 2212
+#define DEVDEBUG true
+
 
 
 #define __STR_CAT___(str1, str2) str1##str2

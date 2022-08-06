@@ -13,4 +13,7 @@ public:
     static DrawGridLayer* create( CCNode* a1, LevelEditorLayer* a2 );
 
     void updateTimeMarkers( );
+	CCPoint posForTime(float);
+	int timeForPos(cocos2d::CCPoint, int, int, bool, bool, bool);
+	void updateMusicGuideTime(float);
 };
