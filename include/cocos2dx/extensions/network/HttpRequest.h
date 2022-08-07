@@ -220,6 +220,7 @@ public:
 
 public:
     // properties
+    PAD(16);
     HttpRequestType             _requestType;    /// kHttpRequestGet, kHttpRequestPost or other enums
     std::string                 _url;            /// target url that this request is sent to
     std::vector<char>           _requestData;    /// used for POST

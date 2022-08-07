@@ -169,7 +169,7 @@ public:
     
 protected:
     bool initWithRequest(CCHttpRequest* request);
-    
+    PAD(16);
     // properties
     CCHttpRequest*        _pHttpRequest;  /// the corresponding HttpRequest pointer who leads to this response 
     bool                _succeed;       /// to indecate if the http reqeust is successful simply
