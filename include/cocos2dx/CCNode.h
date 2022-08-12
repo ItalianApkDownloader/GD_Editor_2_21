@@ -39,9 +39,10 @@ enum
 //
 // size == 0xF8
 //
-class CC_DLL __attribute__( (aligned( 4 )) ) CCNode : public CCObject
+class CC_DLL CCNode : public CCObject
 {
 public:
+
 	float m_fRotationX;
 	float m_fRotationY;
 	float m_fScaleX;
@@ -83,9 +84,11 @@ public:
 	char field_E6;
 	char field_E7;
 	int field_E8;
+	int field_E9;
 	int m_nScriptHandler;
-	int m_eScriptType;
 	cocos2d::CCComponentContainer* m_pComponentContainer;
+	//PAD(12)
+	
 
 public:
 	CCNode();
@@ -232,6 +235,7 @@ public:
 	virtual bool removeComponent(CCComponent *);
 	virtual void removeAllComponents();
 	virtual void updateTweenAction(float, const char *);
+//	PAD(12)
 };
 
 class CC_DLL CCNodeRGBA : public CCNode, public CCRGBAProtocol

@@ -4,16 +4,16 @@
 #include "EditLevelLayerExt.h"
 #include "patch.h"
 #include "hooking.h"
+#include "MapSelectLayer.h"
 
 
 void EditLevelLayerExt::onClick(CCObject* sender){
 	
 	if(!this->startedEditor) {
 		
-		this->startedEditor = true;
 		
 		#ifdef DEVDEBUG
-			goto a;
+			goto skipDisclaimer;
 		#endif
 		
 		
@@ -23,20 +23,22 @@ void EditLevelLayerExt::onClick(CCObject* sender){
 		}
 		else {
 		
-			a:
+			skipDisclaimer:
 			this->closeTextInputs();
 			*reinterpret_cast<int*>(reinterpret_cast<uintptr_t>(GM) + 0x1BC) = 3;
 			this->verifyLevelName();
 			
 			
 			auto dir = cocos2d::CCDirector::sharedDirector( );
-			auto layer = LevelEditorLayer::create( this->_gameLevel(), false);
+			auto editorLayer = LevelEditorLayer::create( this->_gameLevel(), true);
+			//auto mapLayer = MapSelectLayer::scene();
 			auto sc = CCScene::create();
-			sc->addChild(layer);
+			sc->addChild(editorLayer);
 			
 			auto scene = cocos2d::CCTransitionFade::create(0.5, sc);
 			
 			dir->replaceScene( scene );
+			this->startedEditor = true;
 		}
 		
 	}

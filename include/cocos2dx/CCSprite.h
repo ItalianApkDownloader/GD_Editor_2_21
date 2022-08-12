@@ -4,6 +4,7 @@
 
 #include "CCNode.h"
 #include "CCTextureAtlas.h"
+//#include "../GDPSHelper.h"
 
 NS_CC_BEGIN
 
@@ -38,12 +39,10 @@ public:
 	bool _bDontDraw;
 	float _fTlVertexMod, _fTrVertexMod;
 	float _fBlVertexMod, _fBrVertexMod;
-	int _unk2[4];
-	char _unk1;
-	int _unk0;
+//	PAD(20)
 
 public:
-	CCSprite();
+	 CCSprite();
 	virtual ~CCSprite();
 
 	static CCSprite *create(const char *);
@@ -54,34 +53,14 @@ public:
 	static CCSprite *createWithTexture(CCTexture2D *);
 	static CCSprite *createWithTexture(CCTexture2D *, const CCRect &);
 
-	unsigned int getAtlasIndex();
-	float getBlVertexMod() const;
-	float getBrVertexMod() const;
-	bool getDontDraw() const;
-	const CCPoint &getOffsetPosition();
-	ccV3F_C4B_T2F_Quad getQuad();
-	CCTextureAtlas *getTextureAtlas();
-	const CCRect &getTextureRect();
-	float getTlVertexMod() const;
-	float getTrVertexMod() const;
-	const CCPoint &getUnflippedOffsetPosition();
-	bool isFlipX();
-	bool isFlipY();
-	bool isTextureRectRotated();
-	void setAtlasIndex(unsigned int);
-	void setBlVertexMod(float);
-	void setBrVertexMod(float);
-	void setDontDraw(bool);
-	void setFlipX(bool);
-	void setFlipY(bool);
-	void setTextureAtlas(CCTextureAtlas *);
-	void setTlVertexMod(float);
-	void setTrVertexMod(float);
+
 
 protected:
 	void updateColor();
 
 public:
+//0090BA70
+
 	virtual bool init();
 	virtual void setVertexZ(float);
 	virtual void setScaleX(float);
@@ -138,11 +117,15 @@ public:
 	virtual bool isDirty();
 	virtual void setDirty(bool);
 
-protected:
-	virtual void setTextureCoords(const CCRect &);
-	virtual void updateBlendFunc();
-	virtual void setReorderChildDirtyRecursively();
+	virtual void setTextureCoords(cocos2d::CCRect const&);
+	virtual void updateBlendFunc(void);
+	virtual void setReorderChildDirtyRecursively(void);
 	virtual void setDirtyRecursively(bool);
+	
+public: //custom
+
+	void setColorFix(const _ccColor3B & color);
+
 };
 
 class CC_DLL CCSpriteExtra : public CCSprite

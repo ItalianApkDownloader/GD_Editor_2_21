@@ -31,10 +31,15 @@ static __TYPE__* create() \
 
 #define FMOD FMODAudioEngine::sharedEngine()
 
+#define FUNCTIONHOOK(returntype, name, ...) \
+returntype (*name##O)(__VA_ARGS__);			\
+returntype name##H(__VA_ARGS__)
+
+
 #define GPY() getPositionY()
 #define GPX() getPositionX()
 
-#define version2 2212
+#define version2 12
 #define DEVDEBUG true
 
 

@@ -15,8 +15,9 @@
 //#include "../obfuscate.h"
 //#include "../layers/advancedOptionsLayer.h"
 //#include "../layers/CreditsLayer.h"
+#include "../layers/ToolsLayer.h"
 
-
+#include "BoomListView.h"
 
 class MenuLayerExt : public MenuLayer {
 public:
@@ -34,6 +35,7 @@ void onRequestCompleted(cocos2d::extension::CCHttpClient *sender, cocos2d::exten
 
 		
 	
+    void onTest(CCObject* sender);
     void onDownload(CCObject* sender);
     void onJoinDiscord(CCObject* sender);
 	void onUpdate(float dt) {
@@ -77,12 +79,8 @@ void onRequestCompleted(cocos2d::extension::CCHttpClient *sender, cocos2d::exten
 	
 	static void ApplyHooks();
 	
-	
-	
-	
-
-
 };
+
 
 
 

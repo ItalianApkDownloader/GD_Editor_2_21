@@ -27,6 +27,7 @@ public:
 class CC_DLL CCObject : public CCCopying
 {
 public:
+
 	int m_uID;
 	unsigned int m_nLuaID;
 	int m_tag;
@@ -35,7 +36,7 @@ public:
 	int m_unk;
 	unsigned int m_uAutoReleaseCount;
 
-
+//	PAD(44)
 public:
 	CCObject();
 	virtual ~CCObject();

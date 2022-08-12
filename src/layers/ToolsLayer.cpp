@@ -5,9 +5,10 @@
 #include "ToolsLayer.h"
 #include <cocos2dx_bak/extensions/GUI/CCControlExtension/CCScale9Sprite.h>
 
+
 bool ToolsLayer::init()
 {
-
+        
     auto director = CCDirector::sharedDirector();
     auto winSize = director->getWinSize();
 
@@ -17,7 +18,7 @@ bool ToolsLayer::init()
     bg->setScaleX(winSize.width);
     bg->setScaleY(winSize.height / bg->getContentSize().height);
 
-    bg->setColor(ccc3(0, 0x66, 0xFF));
+    bg->CCSprite::setColor(ccc3(0, 0x66, 0xFF));
 
     this->addChild(bg, -2);
 
@@ -47,7 +48,7 @@ bool ToolsLayer::init()
         winSize.width / 2 - list->getContentSize().width / 2,
         winSize.height / 2 - list->getContentSize().height / 2));
     this->addChild(list);
-
+    return true;
     float scale = 0.85;
 
     auto tool = CCSprite::createWithSpriteFrameName("GJ_usernameBtn_001.png");

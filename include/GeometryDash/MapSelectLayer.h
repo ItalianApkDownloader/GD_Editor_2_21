@@ -12,6 +12,6 @@ public:
 public:
     MapSelectLayer();
     virtual ~MapSelectLayer();
-	  static cocos2d::CCScene* scene(int);
+	  static cocos2d::CCScene* scene();
     bool init();
 };

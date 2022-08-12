@@ -1,0 +1,14 @@
+Subzero 1.2
+
+- Fixed music line
+- Added disable shaders option (in editor pause)
+- Fixed crash/bugs caused by clicking the editor button more than once
+- Fixed swing texture in level settings
+- Added platformer label in level settings
+
+- Fixed BG selection menu
+- Fixed G selection menu
+- Fixed fonts crashing after 11
+- Added level name to pause menu
+- Show restart button option on by default
+- Smooth fix option off by default

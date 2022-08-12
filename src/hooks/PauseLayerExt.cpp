@@ -16,9 +16,35 @@ public:
 bool PauseLayerExt::init_hk()
 {
 
-    auto ret = init_trp(this);
+	auto ret = init_trp(this);
 
-    this->firstLayer = CCLayer::create();
+    return ret;
+}
+
+
+void PauseLayerExt::onPlatformOpacity(CCObject *sender)
+{
+    auto value = reinterpret_cast<SliderThumb *>(sender)->getValue();
+    GDPSManager::sharedState()->opacity = 255 * value;
+}
+
+void PauseLayerExt::onToggleTimer(CCObject *sender)
+{
+    auto toggle = reinterpret_cast<CCMenuItemToggler*>(sender);
+	GM->setGameVariable("100008", toggle->_isToggled());
+	
+	extern CCLabelBMFont* timerLabel;
+	timerLabel->setVisible(toggle->_isToggled());
+}
+
+void PauseLayerExt::onTimerOpacity(CCObject *sender)
+{
+    auto value = reinterpret_cast<SliderThumb *>(sender)->getValue();
+    GDPSManager::sharedState()->opacityTimer = 255 * value;
+}
+
+/*
+	    this->firstLayer = CCLayer::create();
 
     for (int k = 0; k < this->getChildrenCount(); k++)
     {
@@ -117,53 +143,4 @@ bool PauseLayerExt::init_hk()
 		this->addChild(this->secondLayer);
 		
 
-
-    return ret;
-}
-
-void PauseLayerExt::onNextPage(CCObject *sender)
-{
-//	this->removeAllChildren();
-	//	auto bg = reinterpret_cast<CCNode*>(this->firstLayer->getChildren()->objectAtIndex(0));
-//	this->addChild(bg);
-	
-	this->firstLayer->setVisible(false);
-	//this->addChild(secondLayer);
-	this->secondLayer->setVisible(true);
-}
-
-
-void PauseLayerExt::onPrevPage(CCObject *sender)
-{
-//this->removeAllChildren();
-//	auto bg = reinterpret_cast<CCNode*>(this->firstLayer->getChildren()->objectAtIndex(0));
-	//this->addChild(bg);
-//this->addChild(firstLayer);
-	this->firstLayer->setVisible(true);
-	
-	this->secondLayer->setVisible(false);
-
-}
-
-
-void PauseLayerExt::onPlatformOpacity(CCObject *sender)
-{
-    auto value = reinterpret_cast<SliderThumb *>(sender)->getValue();
-    GDPSManager::sharedState()->opacity = 255 * value;
-}
-
-void PauseLayerExt::onToggleTimer(CCObject *sender)
-{
-    auto toggle = reinterpret_cast<CCMenuItemToggler*>(sender);
-	GM->setGameVariable("100008", toggle->_isToggled());
-	
-	extern CCLabelBMFont* timerLabel;
-	timerLabel->setVisible(toggle->_isToggled());
-}
-
-void PauseLayerExt::onTimerOpacity(CCObject *sender)
-{
-    auto value = reinterpret_cast<SliderThumb *>(sender)->getValue();
-    GDPSManager::sharedState()->opacityTimer = 255 * value;
-}
-
+*/

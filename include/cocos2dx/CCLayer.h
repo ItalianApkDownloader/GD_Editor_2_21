@@ -45,6 +45,7 @@ public:
 	cocos2d::CCScriptHandlerEntry* m_ScriptAccelerateHandlerEntry;
 	int m_touchPriority;
 	ccTouchesMode m_eTouchMode;
+//	PAD(4)
 
 public:
 	CCLayer();
@@ -65,20 +66,21 @@ private:
 	int excuteScriptTouchHandler(int, CCTouch *);
 
 public:
+
 	virtual bool init();
 	virtual void onEnter();
 	virtual void onEnterTransitionDidFinish();
 	virtual void onExit();
-
-	virtual bool ccTouchBegan(CCTouch *pTouch, CCEvent *pEvent);
-	virtual void ccTouchMoved(CCTouch *pTouch, CCEvent *pEvent);
-	virtual void ccTouchEnded(CCTouch *pTouch, CCEvent *pEvent);
-	virtual void ccTouchCancelled(CCTouch *pTouch, CCEvent *pEvent);
-	virtual void ccTouchesBegan(CCSet *pTouches, CCEvent *pEvent);
-	virtual void ccTouchesMoved(CCSet *pTouches, CCEvent *pEvent);
-	virtual void ccTouchesEnded(CCSet *pTouches, CCEvent *pEvent);
-	virtual void ccTouchesCancelled(CCSet *pTouches, CCEvent *pEvent);
-	virtual void didAccelerate(CCAcceleration *pAccelerationValue);
+	
+	virtual	bool ccTouchBegan(CCTouch *pTouch, CCEvent *pEvent);
+	virtual	 void ccTouchMoved(CCTouch *pTouch, CCEvent *pEvent);
+	virtual	 void ccTouchEnded(CCTouch *pTouch, CCEvent *pEvent);
+	virtual	 void ccTouchCancelled(CCTouch *pTouch, CCEvent *pEvent);
+	virtual	 void ccTouchesBegan(CCSet *pTouches, CCEvent *pEvent);
+	virtual	 void ccTouchesMoved(CCSet *pTouches, CCEvent *pEvent);
+	virtual	 void ccTouchesEnded(CCSet *pTouches, CCEvent *pEvent);
+	virtual	 void ccTouchesCancelled(CCSet *pTouches, CCEvent *pEvent);
+	virtual	 void didAccelerate(CCAcceleration *pAccelerationValue);
 
 	virtual void registerWithTouchDispatcher();
 	virtual void registerScriptTouchHandler(int, bool, int, bool);
@@ -101,6 +103,8 @@ public:
 	virtual void keyBackClicked();
 	virtual void keyMenuClicked();
 	virtual void keyDown(enumKeyCodes);
+	virtual void setPreviousPriority(int);
+	virtual int getPreviousPriority();
 };
 
 class CC_DLL CCLayerRGBA : public CCLayer, public CCRGBAProtocol

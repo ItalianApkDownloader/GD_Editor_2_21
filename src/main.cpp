@@ -12,6 +12,7 @@
 #include "GDPSHelper.h"
 #include "FunctionHelper.h"
 
+#include "hooks/MultiplayerLayerExt.h"
 #include "hooks/MenuLayerExt.h"
 #include "hooks/EditLevelLayerExt.h"
 #include "hooks/LevelEditorLayerExt.h"
@@ -26,9 +27,7 @@
 */
 
 
-#define FUNCTIONHOOK(returntype, name, ...) \
-returntype (*name##O)(__VA_ARGS__);			\
-returntype name##H(__VA_ARGS__)
+
 
 string passwordTemp = "";
 bool colorPopup = true;
@@ -174,7 +173,8 @@ const char *getStringH(LoadingLayer *self)
 	}
 
 	GM->setGameVariable("0122", false);
-	CCLog("Loading Init");
+	GM->setGameVariable("0023", false); //smooth fix
+	GM->setGameVariable("0074", true);  //show restart button
 	return "Italian APK Downloader\nCatto_\niAndy_HD3\nTr1NgleBoss";
 }
 
@@ -666,7 +666,92 @@ bool SelectArtLayer_initH(SelectArtLayer *self, SelectArtType type)
 {
 	if (!SelectArtLayer_initO(self, type))
 		return false;
+	
+	auto menu = self->_bgSelectMenu();
+	auto array = self->_someArray();
+	/*
+	if(type == ground) {
+		
+		//move buttons
+		for(int i = 30; i < 34; i++) {
+			
+		auto btn = (CCNode*)menu->getChildren()->objectAtIndex(i);
+		if(i == 30)
+			btn->setPositionY(btn->GPY() - 30);
+		else
+			btn->setPositionX(btn->GPX() + 100);
+		}
+		
+	}
+	*/
+	
+	//setting
+	
+	int toRemove;
+	int maxTextures;
+	
+	if(type == background) {
+		toRemove = 45;
+		maxTextures = 24;
+	}
+	if(type == ground) {
+		toRemove = 30;
+		maxTextures = 17;
+	}
+	
+	if(type == mg) {
+		toRemove = 2;
+		maxTextures = 2;
+	}
+	
+	for(int i = 0; i < toRemove; i++) {
+	
+		auto node = (CCNode*)menu->getChildren()->objectAtIndex(0);
+		auto node2 = (CCNode*)array->objectAtIndex(0);
+		
+		if(i <= maxTextures) {
+		
+		
+			const char *frameSprStr;
 
+				if (type == ground)
+					frameSprStr = "gIcon_%02d_001.png";
+				else if(type == background)
+					frameSprStr = "bgIcon_%02d_001.png";
+				else
+					frameSprStr = "bgIcon_01_001.png";
+
+
+				auto frameStr = CCString::createWithFormat(frameSprStr, i + 1)->getCString();
+				
+			
+			auto spr = CCSprite::createWithSpriteFrameName(frameStr);
+			auto btn = CCMenuItemSpriteExtra::create(spr, spr, self, menu_selector(SelectArtLayer::selectArt));
+			if(type == background) {
+			btn->setPosition(node->GPX(), node->GPY() - (20 *  (i / 10)));
+			spr->setScale(.8);
+			}
+			else
+			btn->setPosition(node->getPosition());
+			
+			btn->setTag(type != mg ? i + 1 : i);
+			menu->addChild(btn);
+			array->addObject(btn);
+			
+		}	
+		
+		
+		menu->getChildren()->removeObjectAtIndex(0, false);
+		array->removeObjectAtIndex(0, false);
+	}
+	
+	self->selectArt(0);
+	
+	
+	
+	
+//	GDPSHelper::createLabels(menu, array, {0, 0}, true);
+/*
 	auto bgSelect = self->_bgSelectMenu();
 	bgSelect->getChildren()->removeAllObjects();
 
@@ -683,7 +768,7 @@ bool SelectArtLayer_initH(SelectArtLayer *self, SelectArtType type)
 	test2->setPositionY(test2->GPY() + 30);
 	bgArray->addObject(test2);
 	bgSelect->addChild(test2);
-
+*/
 	/*
 		int maxTextures = 25;	// not sure if this is right but even if its too much it won't crash
 
@@ -1305,12 +1390,13 @@ FUNCTIONHOOK(void, PlayerObject_spawnDualCircle, PlayerObject* self) {
 FUNCTIONHOOK(bool, LevelInfoLayer_init, LevelInfoLayer* self, GJGameLevel* level, bool idk) {
 	if(!LevelInfoLayer_initO(self, level, idk)) return false;
 
-	auto copyBtn = CCMenuItemSpriteExtra::create(CCSprite::create("GJ_button_06-hd.png"), nullptr, self, menu_selector(LevelInfoLayer::onClone));
+	#ifdef DEVDEBUG
+	auto copyBtn = CCMenuItemSpriteExtra::create(CCSprite::createWithSpriteFrameName("bgIcon_01_001.png"), nullptr, self, menu_selector(LevelInfoLayer::onClone));
 	auto menu = CCMenu::createWithItem(copyBtn); //LOL didnt know this existed...
 	self->addChild(menu, 1000);
+	#endif
 
-		float a = FMOD->getBackgroundMusicTimeMilli();
-		CCLog("a: %f", a);
+
 		
 	auto sprite = CCSprite::createWithSpriteFrameName("GJ_optionsBtn_001.png");
 	sprite->setScale(.7);
@@ -1402,12 +1488,30 @@ FUNCTIONHOOK(bool, LevelSettingsLayer_init, LevelSettingsLayer* self, LevelSetti
 	menu->getChildren()->replaceObjectAtIndex(swingBtnIndex, newToggle, false);
 	menu->addChild(newToggle);
 	#ifdef DEVDEBUG
-		GDPSHelper::createLabels(menu, menu->getChildren(), {0, 0}, true);
+	//	GDPSHelper::createLabels(menu, menu->getChildren(), {0, 0}, true);
 		
 		int a = MBO(int, settings, 0x108);
 		CCLog("a: %d", a);
 		
 	#endif
+
+	auto miniToggle = (CCMenuItemToggler*)menu->getChildren()->objectAtIndex(!isStartPos ? 24 : 8);
+
+		
+			auto mini = MBO(bool, settings, 0x110);
+	
+		GDPSHelper::createToggleButton(
+		"",
+		miniToggle->getPosition(),
+		.80, 8,
+		self,
+		menu_selector(LevelSettingsLayer::onMini),
+		menu,
+		mini,
+		true);
+		
+		miniToggle->setPositionY(11111111);
+
 
 	return true;
 }
@@ -1423,6 +1527,90 @@ FUNCTIONHOOK(void, onSelectMode, LevelSettingsLayer* self, CCObject* sender) {
 	
 }
 
+#include "SelectFontLayer.h"
+FUNCTIONHOOK(void, updateFontLabel, SelectFontLayer* self, CCObject* a2) {
+	
+	
+	auto editor = MBO(LevelEditorLayer*, self, 0x1F0);
+	void* unk = MBO(void*, editor, 0x33C);
+	int font = MBO(int, unk, 0x124);
+	
+	int tag = a2->getTag();
+		
+		/*
+		CCLog("font: %d", font);
+		CCLog("tag : %d", tag);
+		*/
+		
+		if(tag == 0)
+		return updateFontLabelO(self, a2);
+	
+		if(font != 10)
+		return updateFontLabelO(self, a2);
+
+}
+
+FUNCTIONHOOK(bool, validGroup, GameObject* obj, int group) {
+	
+	return true;
+}
+#include <random>
+
+
+FUNCTIONHOOK(bool, MPL_init, CCLayer* self) {
+	
+	    std::random_device dev;
+    std::mt19937 rng(dev());
+    std::uniform_int_distribution<std::mt19937::result_type> dist6(1,7); // distribution in range [1, 6]
+	
+	int n = dist6(rng);
+	
+	std::string desc = "";
+	
+	switch(n) {
+	
+	case 1:
+		desc = "What did you expect to happen?";
+	break;
+	case 2:
+	desc = "RubRub won't like this...";
+	break;
+	case 3:
+	desc = "Are you sure this is a good idea?";
+	break;
+	case 4:
+	desc = "Mutliplayer is not available... <cr>(?)</c>";
+	break;
+	case 5:
+	desc = "Nice weather outside";
+	break;
+	case 6: 
+	desc = "Multiplayer does not exist, stop trying!";
+	break;
+	case 7:
+	desc = "Go play with the new editor while you wait for... <cr>(?)</c>";
+	break;
+	case 8:
+	desc = "Test your luck?";
+
+	
+	}
+	
+
+    std::uniform_int_distribution<std::mt19937::result_type> dist4(1,50); // distribution in range [1, 6]
+	
+	int z = dist4(rng);
+	CCLog("z: %d / n: %d", z, n);
+	if(z == 25)
+	desc = AY_OBFUSCATE("I might try to add this but don't tell anyone ok?\n :)");
+	
+	
+		FLAlertLayer::create(nullptr, "It's a secret...", desc, "OK", nullptr, 400, false, 200)->show();
+		
+
+	return true;
+
+}
 
 void loader()
 {
@@ -1432,11 +1620,25 @@ void loader()
 	EditLevelLayerExt::ApplyHooks();
 	LevelEditorLayerExt::ApplyHooks();
 	EditorPauseLayerExt::ApplyHooks();
+	
+
+	
+	#ifdef DEVDEBUG
+	MultiplayerLayerExt::ApplyHooks();
+	#else
+	HOOK("_ZN16MultiplayerLayer4initEv", MPL_initH, MPL_initO);
+	#endif
+	
 
 	#ifdef DEVDEBUG
 	DevDebugHooks::ApplyHooks();
 	#endif
 
+
+	//HOOK("_ZN16LevelEditorLayer14recreateGroupsEv", recreateGroupsH, recreateGroupsO);
+	HOOK("_ZN16LevelEditorLayer10validGroupEP10GameObjectb", validGroupH, validGroupO);
+	HOOK("_ZN14SelectArtLayer4initE13SelectArtType", SelectArtLayer_initH, SelectArtLayer_initO);
+	HOOK("_ZN15SelectFontLayer12onChangeFontEPN7cocos2d8CCObjectE", updateFontLabelH, updateFontLabelO);
 	HOOK("_ZN18LevelSettingsLayer12onSelectModeEPN7cocos2d8CCObjectE", onSelectModeH, onSelectModeO)
 	HOOK("_ZN18LevelSettingsLayer4initEP19LevelSettingsObjectP16LevelEditorLayer", LevelSettingsLayer_initH, LevelSettingsLayer_initO);
 	HOOK("_ZN15GJBaseGameLayer20triggerShaderCommandEP16ShaderGameObject", triggerShaderH, triggerShaderO);
@@ -1466,7 +1668,7 @@ void loader()
 	HOOK("_ZN17SetupTriggerPopup4initEP16EffectGameObjectPN7cocos2d7CCArrayEff", SetupTriggerPopupH, SetupTriggerPopupO);
 	HOOK("_ZN23SetupPickupTriggerPopup4initEP16EffectGameObjectPN7cocos2d7CCArrayE", SetupPickupTriggerH, SetupPickupTriggerO);
 	HOOK("_ZN20AccountRegisterLayer4initEv", AccountRegisterLayer_InitH, AccountRegisterLayer_InitO);
-	HOOK("_ZN11GameManager18toggleGameVariableEPKc", hook_onToggle, onToggleTrampoline);
+//	HOOK("_ZN11GameManager18toggleGameVariableEPKc", hook_onToggle, onToggleTrampoline);
 	
 	HOOK("_ZN13ObjectToolbox13intKeyToFrameEi", keyToFrameH, keyToFrameO);
 	HOOK("_ZN8EditorUI4initEP16LevelEditorLayer", EditorUI_InitH, EditorUI_InitO);
@@ -1608,17 +1810,20 @@ void loader()
 	NOP4(tms, 0x27FDCE);
 	NOP4(tms, 0x27FE9E);
 	NOP4(tms, 0x27FE9E);
+	
 
 	// playtest
 	NOP4(tms, 0x2BC876);
 	NOP4(tms, 0x2BC884);
 	
 	
-	NOP4(tms, 0x2EDA9E); //versus
+	//NOP4(tms, 0x2EDA9E); //versus
 	NOP4(tms, 0x2EDA74); //gauntlets
 	
 	tms->addPatch("libcocos2dcpp.so", 0x2C0384, "01 22"); // fix bg
 	
+	tms->addPatch("libcocos2dcpp.so", 0x2EB9EE, "01 21"); // fix level name in pause
+
 	tms->Modify();
 }
 

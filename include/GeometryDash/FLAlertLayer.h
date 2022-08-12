@@ -36,7 +36,8 @@ public:
 
     static FLAlertLayer* create( FLAlertLayerProtocol* protocol, const char* title, std::string caption, const char* button_title, const char* button2_title );
     static FLAlertLayer* create( FLAlertLayerProtocol* protocol, const char* title, std::string caption, const char* b1_title, const char* b2_title, float x_size, bool add_border, float y_size );
-
+    static CCLayerColor* init(int);
+    
     virtual void onEnter(void);
     virtual bool ccTouchBegan(cocos2d::CCTouch *,cocos2d::CCEvent *);
     virtual void ccTouchMoved(cocos2d::CCTouch *,cocos2d::CCEvent *);
