@@ -7,6 +7,10 @@ class LevelEditorLayer;
 class DrawGridLayer : public cocos2d::CCLayer
 {
 public:
+    CLASS_MEMBER(float, musicTime, 0x144);
+    CLASS_MEMBER(float, anotherTime, 0x148);
+
+public:
     DrawGridLayer();
     virtual ~DrawGridLayer();
 

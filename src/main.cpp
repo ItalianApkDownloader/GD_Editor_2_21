@@ -1422,18 +1422,29 @@ FUNCTIONHOOK(GameObject*, LevelEditorLayer_addObjectFromVector, LevelEditorLayer
 	return GameObject::createWithKey(1);
 }
 
-float z;
-FUNCTIONHOOK(void*, DrawGridLayer_update, DrawGridLayer* self, float dt) {
-	z += dt;
-	self->updateMusicGuideTime(z);
-	
-	return DrawGridLayer_updateO(self, dt);
-}
+FUNCTIONHOOK(void, DrawGridLayer_update, DrawGridLayer* self, float delta) {
+	auto editor = MEMBERBYOFFSET(LevelEditorLayer*, self, 0x15C);
 
+	if(MBO(bool, editor->_editorUI(), 0x18C)) {
+		auto fmod = FMODAudioEngine::sharedEngine();
 
-FUNCTIONHOOK(void*, updateMusicGuideTime, DrawGridLayer* self, float a) {
-	z = a;
-	return updateMusicGuideTimeO(self, a);
+		if(self->_musicTime() == -1) self->_musicTime() = MBO(float, editor->_editorUI(), 0x28F4);
+
+		float bgMusicTime;
+		if(fmod->isBackgroundMusicPlaying()) {
+			bgMusicTime = fmod->getBackgroundMusicTime();
+		}
+		else {
+			bgMusicTime = self->_musicTime() + delta;
+		}
+
+		if(self->_musicTime() == -1 || fabsf(bgMusicTime - self->_musicTime()) >= 100) {
+			self->_anotherTime() = bgMusicTime;
+		}
+		else self->_anotherTime() = self->_anotherTime() + delta;
+
+		self->_musicTime() = bgMusicTime;
+	}
 }
 
 FUNCTIONHOOK(void, triggerShader, void* a1, void* a2) {
@@ -1642,7 +1653,6 @@ void loader()
 	HOOK("_ZN18LevelSettingsLayer12onSelectModeEPN7cocos2d8CCObjectE", onSelectModeH, onSelectModeO)
 	HOOK("_ZN18LevelSettingsLayer4initEP19LevelSettingsObjectP16LevelEditorLayer", LevelSettingsLayer_initH, LevelSettingsLayer_initO);
 	HOOK("_ZN15GJBaseGameLayer20triggerShaderCommandEP16ShaderGameObject", triggerShaderH, triggerShaderO);
-	HOOK("_ZN13DrawGridLayer20updateMusicGuideTimeEf", updateMusicGuideTimeH, updateMusicGuideTimeO);
 	HOOK("_ZN13DrawGridLayer6updateEf", DrawGridLayer_updateH, DrawGridLayer_updateO);
 	HOOK("_ZN16LevelEditorLayer19addObjectFromVectorERSt6vectorISsSaISsEE", LevelEditorLayer_addObjectFromVectorH, LevelEditorLayer_addObjectFromVectorO);
 	HOOK("_ZN11GameManager22shouldShowInterstitialEiii", shouldShowInterstitialH, shouldShowInterstitialO);
