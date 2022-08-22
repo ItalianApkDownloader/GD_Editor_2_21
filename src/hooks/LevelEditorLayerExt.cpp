@@ -137,6 +137,9 @@ bool LevelEditorLayerExt::initH(GJGameLevel* level)
 
 	this->createPlayer();
 
+	// collision shit
+	this->createPlayerCollisionBlock();
+
 	// questionmark
 	MBO(bool, this->_player1(), 0x609) = true;
 	MBO(bool, this->_player2(), 0x609) = true;

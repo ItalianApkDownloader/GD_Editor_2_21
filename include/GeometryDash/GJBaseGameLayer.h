@@ -83,6 +83,7 @@ public:
     void enableHighCapacityMode( void );
     void resetGroupCounters( bool reset );
     void createPlayer();
+    void createPlayerCollisionBlock();
 
     void createGroundLayer( int,int);
 	void createBackground(int );
