@@ -54,18 +54,15 @@ LOCAL_C_INCLUDES += $(LOCAL_PATH)/include/layers \
 LOCAL_SRC_FILES := 	src/main.cpp \
 					src/GDPSHelper.cpp \
 					src/FunctionHelper.cpp \
-					src/hooks/MultiplayerLayerExt.cpp \
+					src/hooks/MenuLayerExt.cpp \
 					src/hooks/EditorPauseLayerExt.cpp \
 					src/hooks/EditLevelLayerExt.cpp \
 					src/hooks/LevelEditorLayerExt.cpp \
-					src/hooks/MenuLayerExt.cpp \
 					src/hooks/ShaderDebug.cpp \
 					src/KittyMemory/KittyMemory.cpp \
 					src/KittyMemory/KittyUtils.cpp \
 					src/KittyMemory/MemoryBackup.cpp \
 					src/KittyMemory/MemoryPatch.cpp \
-				#	src/layers/ToolsLayer.cpp \
-				#	src/layers/MPCreateLobbyPopup.cpp \
 
 
 LOCAL_LDLIBS := -llog \

@@ -6,6 +6,8 @@
 enum PlayerButton 
 {
     Jump = 1,
+    Left = 2,
+    Right = 3
 };
 
 class PlayerObject : public cocos2d::CCSprite  // GameObject->CCSpritePlus
@@ -35,6 +37,7 @@ public:
     void pushButton(PlayerButton btn);
     void releaseButton(PlayerButton btn);
     void switchedDirTo(PlayerButton btn);
+    int getActiveMode();
     
     // virtual void setVisible( bool visible ); // 0xA8
 

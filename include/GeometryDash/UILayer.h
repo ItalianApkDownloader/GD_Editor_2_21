@@ -34,12 +34,12 @@ public:
   
   CLASS_MEMBER(bool, platformer, 0x206);
   CLASS_MEMBER(int, touchID, 0x1D0);
-  CLASS_MEMBER(CCRect, leftBtn, 0x1E0);
-  CLASS_MEMBER(CCRect, rightBtn, 0x1F0);
+  CLASS_MEMBER(CCRect, Lmain, 0x1E0);
+  CLASS_MEMBER(CCRect, Lsep, 0x1F0);
+
+            
+
   
-
-
-    CLASS_MEMBER(CCSprite*, objTEST, 117*4);
 
 public:
     UILayer( );
@@ -47,6 +47,12 @@ public:
 
     virtual bool init( );
     virtual void draw( );
+    
+    bool isTwoPlayer() { return GameManager::sharedState()->_playLayer()->_lvlSettingsObject()->_isTwoPlayer(); }
+    bool isDual() {  return GameManager::sharedState()->_playLayer()->_isDual(); }
+    bool isLeftDpadPressed(CCPoint pos) { return this->_Lmain().containsPoint(pos); }
+    bool isPlatformer() { return this->_platformer(); }
+
 
     virtual bool ccTouchBegan( cocos2d::CCTouch*, cocos2d::CCEvent* );
     virtual void ccTouchMoved( cocos2d::CCTouch*, cocos2d::CCEvent* );

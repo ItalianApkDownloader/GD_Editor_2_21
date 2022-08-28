@@ -59,6 +59,8 @@ public:
 public:
     CLASS_MEMBER(PlayerObject*, player1, 0x334);
     CLASS_MEMBER(PlayerObject*, player2, 0x338);
+	
+    CLASS_MEMBER(bool, isDual, 0x4C1);
 
     CLASS_MEMBER(GJGameLevel*, gameLevel, 0x13C);
 

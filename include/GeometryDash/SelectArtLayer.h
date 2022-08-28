@@ -8,7 +8,8 @@
 enum SelectArtType {
     background,
     ground,
-    mg
+    mg,
+    smartTemplate
 };
 
 class SelectArtLayer : public FLAlertLayer {

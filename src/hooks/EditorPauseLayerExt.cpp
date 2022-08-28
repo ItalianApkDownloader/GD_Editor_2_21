@@ -45,6 +45,8 @@ void EditorPauseLayerExt::onResumeH(CCObject* a1){
 
 		parent->reorderChild(editor->_gridLayer(), zOrder);
 	}
+	
+
 
 	removeFromParentAndCleanup(true);
 }
@@ -70,7 +72,14 @@ void EditorPauseLayerExt::onResumeH(CCObject* a1){
 		true);
 		
 		this->addChild(menu);
+		/*
+	extern bool play;
 		
+	if(play) {
+		play = false;
+		this->runAction(CCCallFuncO::create(this, callfuncO_selector(EditorPauseLayer::onSaveAndPlay), this));
+	}
+		*/
 		return ret;
 	}
 	

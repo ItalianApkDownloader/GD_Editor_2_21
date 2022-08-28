@@ -40,67 +40,304 @@ bool test = false;
 
 void *(*GameObjectSetOpacityO)(GameObject *self, unsigned char opacity);
 void *GameObjectSetOpacityH(GameObject *self, unsigned char opacity)
-{
-	//CCLog("GameObjectSetOpacityH");
+{ return GameObjectSetOpacityO(self, opacity); }
 
-	return GameObjectSetOpacityO(self, opacity);
 
-}
-/*
-void(*GJBaseGameLayer_removeObjectFromSectionO)(GJBaseGameLayer *self, GameObject *obj);
-void GJBaseGameLayer_removeObjectFromSectionH(GJBaseGameLayer *self, GameObject *obj)
-{
-	if (obj)
-	{
-		GJBaseGameLayer_removeObjectFromSectionO(self, obj);
-		if (GM->_inEditor())
-			obj->removeFromParent();
+	CCRect Rmain = {0, 0, 240, 100};
+	CCRect Rsep = {0, 0, 240, 100};
+
+	
+	bool p1Jumping;
+	bool p2Jumping;
+	
+	// make platformer dpad visible
+	#include "CCDrawNode.h"
+	
+FUNCTIONHOOK(void, GJBaseGameLayer_toggleDual, GJBaseGameLayer* self, void* a1, void* a2, void* a3, void* a4) {
+	
+  
+	GJBaseGameLayer_toggleDualO(self, a1, a2, a3, a4);
+	if(GM->_inEditor()) return ;
+	
+	auto uilayer = MBO(UILayer*, GM->_playLayer(), 0x2CA0);
+	bool platformerBtns_visible = self->_isDual();
+	
+	if(uilayer->_platformer() && uilayer->isTwoPlayer()) {
+	
+		auto dpad = (CCSprite*)uilayer->getChildByTag(100);
+		auto dpad_dwn = (CCSprite*)uilayer->getChildByTag(101);
+	
+		dpad->CCSprite::setOpacity(platformerBtns_visible ? 255 : 0);
+		dpad_dwn->CCSprite::setOpacity(platformerBtns_visible ? 255 : 0);
 	}
-}*/
+	
+					
+	
+	
+}
+FUNCTIONHOOK(bool, UILayer_init, UILayer* self) {
+	if(!UILayer_initO(self)) return false;
+	
 
+	
+	if(!MEMBERBYOFFSET(bool, self, 0x206)) return true;
+	
+		auto dpad = MEMBERBYOFFSET(CCSprite*, self, 0x1D8);
+		bool platformerBtns_visible = !GM->getGameVariable("10007");
+		dpad->setVisible(platformerBtns_visible);
+
+		auto node = cocos2d::CCDrawNode::create();
+		cocos2d::CCPoint m_points[4];
+	
+		auto Lmain = self->_Lmain();
+		auto Lsep = self->_Lsep();
+		
+		
+	  if(self->isTwoPlayer()) {
+
+		
+		auto dpadRight_Dwn = CCSprite::createWithSpriteFrameName("Dpad_Btn_Dwn.png"); //Left default!!
+		dpadRight_Dwn->setPositionY(dpad->GPY());
+		dpadRight_Dwn->setPositionX(CCRIGHT - (dpad->GPX() - CCLEFT));
+		dpadRight_Dwn->setTag(101);
+		dpadRight_Dwn->setVisible(platformerBtns_visible);
+		self->addChild(dpadRight_Dwn);
+		
+		auto dpadRight = CCSprite::createWithSpriteFrameName("Dpad_Btn.png");
+		dpadRight->setPositionY(dpad->GPY());
+		dpadRight->setPositionX(CCRIGHT - (dpad->GPX() - CCLEFT));
+		dpadRight->setTag(100);
+		dpadRight->setVisible(platformerBtns_visible);
+		self->addChild(dpadRight);
+		
+		
+
+		Rsep = Lsep;
+		Rmain = Lmain;
+		
+		Rsep.origin.x += 525;
+		Rmain.origin.x += 470;
+				
+				
+			if(GM->getGameVariable("100009"))
+			{
+				m_points[0] = ccp(Rsep.getMinX(),Rsep.getMinY());
+				m_points[1] = ccp(Rsep.getMaxX(),Rsep.getMinY());
+				m_points[2] = ccp(Rsep.getMaxX(),Rsep.getMaxY());
+				m_points[3] = ccp(Rsep.getMinX(),Rsep.getMaxY());
+				node->drawPolygon(m_points, 4, ccc4f(0, 0, 0, 0), 1, ccc4f(1, 1, 0, 1));
+	
+				m_points[0] = ccp(Rmain.getMinX(),Rmain.getMinY());
+				m_points[1] = ccp(Rmain.getMaxX(),Rmain.getMinY());
+				m_points[2] = ccp(Rmain.getMaxX(),Rmain.getMaxY());
+				m_points[3] = ccp(Rmain.getMinX(),Rmain.getMaxY());
+				node->drawPolygon(m_points, 4, ccc4f(0, 0, 0, 0), 1, ccc4f(1, 0, 0, 1));
+			}
+		
+		}
+		
+	if(GM->getGameVariable("100009")) 
+	{
+	  m_points[0] = ccp(Lmain.getMinX(),Lmain.getMinY());
+	  m_points[1] = ccp(Lmain.getMaxX(),Lmain.getMinY());
+	  m_points[2] = ccp(Lmain.getMaxX(),Lmain.getMaxY());
+	  m_points[3] = ccp(Lmain.getMinX(),Lmain.getMaxY());
+	  node->drawPolygon(m_points, 4, ccc4f(0, 0, 0, 0), 1, ccc4f(1, 0, 0, 1));
+	
+	  m_points[0] = ccp(Lsep.getMinX(),Lsep.getMinY());
+	  m_points[1] = ccp(Lsep.getMaxX(),Lsep.getMinY());
+	  m_points[2] = ccp(Lsep.getMaxX(),Lsep.getMaxY());
+	  m_points[3] = ccp(Lsep.getMinX(),Lsep.getMaxY());
+	  node->drawPolygon(m_points, 4, ccc4f(0, 0, 0, 0), 1, ccc4f(1, 1, 0, 1));
+	
+	  self->addChild(node);
+	}
+
+
+
+	#ifdef SHADERDEBUG
+	reinterpret_cast<UILayerDebug*>(self)->doInit();
+	#endif
+
+	return true;
+}
+
+
+//take a look at 2p-p bad implementation.cpp i guess 
 bool(*UILayer_ccTouchBeganO)(UILayer *self, CCTouch *touch, CCEvent *event);
 bool UILayer_ccTouchBeganH(UILayer *self, CCTouch *touch, CCEvent *event)
 {
+	CCLog("------ BEGAN ------");
 	bool ret = UILayer_ccTouchBeganO(self, touch, event);
 
-	// println("touch {} {}", touch->getID(), from < int>(touch, 0x30));
 
 	bool is_platformer = self->_platformer();
-	if (is_platformer)
-	{
-		auto &touch_id = self->_touchID();
-		// already a touch going on, ignore multiple
-		if (touch_id != -1) return ret;
+	if (!is_platformer) return ret;
+	
+	auto &touch_id = self->_touchID();
+	if (touch_id != -1) return ret;
 
-		auto touch_pos = touch->getLocation();
-		touch_pos = self->convertToNodeSpace(touch_pos);
-
-		// dont know if the order is right but doesnt matter
-		auto left_btn = self->_leftBtn();
-		auto right_btn = self->_rightBtn();
-		if (!left_btn.containsPoint(touch_pos) && !right_btn.containsPoint(touch_pos))
-		{
-			touch_id = touch->_touchID();
-			GameManager::sharedState()->_playLayer()->queueButton(1, true, false);
-		}
+	auto touch_pos = touch->getLocation();
+	touch_pos = self->convertToNodeSpace(touch_pos);
+		
+	
+	if (!self->isLeftDpadPressed(touch_pos))
+	{	
+		CCLog("normal jump");
+		touch_id = touch->_touchID();
+		GameManager::sharedState()->_playLayer()->queueButton(1, true, false);
 	}
+	//normal jump done
+	
+	
 
-	return ret;
+
+	if(!self->isDual() || !self->isTwoPlayer()) return ret;
+
+	//do platformer 2p stuff
+	
+	auto Lmain = self->_Lmain();
+	auto Lsep = self->_Lsep();
+	
+
+		return ret;
 }
 
 void(*UILayer_ccTouchEndedO)(UILayer *self, CCTouch *touch, CCEvent *event);
 void UILayer_ccTouchEnded(UILayer *self, CCTouch *touch, CCEvent *event)
 {
+	CCLog("------ END   ------");
 	UILayer_ccTouchEndedO(self, touch, event);
 
-	bool is_platformer = self->_platformer();
+	if(!self->isPlatformer()) return;
+	
 	auto &touch_id = self->_touchID();
-	if (is_platformer && touch_id == touch->_touchID())
+	if (touch_id == touch->_touchID())
 	{
 		touch_id = -1;
 		GameManager::sharedState()->_playLayer()->queueButton(1, false, false);
 	}
+	
+	if(!self->isDual() || !self->isTwoPlayer()) return;
+	
 }
+
+
+void(*UILayer_ccTouchMovedO)(UILayer *self, CCTouch *touch, CCEvent *event);
+void UILayer_ccTouchMoved(UILayer *self, CCTouch *touch, CCEvent *event)
+{
+	
+	UILayer_ccTouchMovedO(self, touch, event);
+
+}
+
+int playtest_touchID = -1;
+
+	CCRect right_btn = {100, 0, 240, 100};
+	CCRect left_btn = {0, 0, 240, 100};
+	
+bool(*EditorUI_ccTouchBeganO)(EditorUI *self, CCTouch *touch, CCEvent *event);
+bool EditorUI_ccTouchBeganH(EditorUI *self, CCTouch *touch, CCEvent *event)
+{
+	//bool ret = EditorUI_ccTouchBeganO(self, touch, event);
+
+void* unk = MBO(void*, self->_levelEditor(), 0x344);
+bool is_platformer = MBO(bool, self->_levelEditor(), 0x344);
+
+
+	
+	CCLog("enter began");
+	if (is_platformer)
+	{
+	CCLog("enter is Platformer");
+		auto &touch_id = playtest_touchID;
+		// already a touch going on, ignore multiple
+		if (touch_id != -1) return EditorUI_ccTouchBeganO(self, touch, event);;
+
+		auto touch_pos = touch->getLocation();
+		touch_pos = self->convertToNodeSpace(touch_pos);
+
+		// dont know if the order is right but doesnt matter
+		
+		CCLog("x: %f", touch_pos.x);
+		CCLog("y: %f", touch_pos.y);
+		
+
+				if(right_btn.containsPoint(touch_pos)) {
+				CCLog("enter right");
+
+			touch_id = touch->_touchID();
+			self->_levelEditor()->queueButton(3, true, false);
+			return true;
+		}
+		
+		if (left_btn.containsPoint(touch_pos))
+		{
+		CCLog("enter left");
+
+			touch_id = touch->_touchID();
+			self->_levelEditor()->queueButton(2, true, false);
+			return true;
+		} 
+
+
+	}
+	CCLog("finish began");
+	return EditorUI_ccTouchBeganO(self, touch, event);
+}
+
+void(*EditorUI_ccTouchEndedO)(EditorUI *self, CCTouch *touch, CCEvent *event);
+void EditorUI_ccTouchEnded(EditorUI *self, CCTouch *touch, CCEvent *event)
+{
+		CCLog("enter end");
+
+
+void* unk = MBO(void*, self->_levelEditor(), 0x344);
+bool is_platformer = MBO(bool, self->_levelEditor(), 0x344);
+
+auto &touch_id = playtest_touchID;
+
+
+	if (is_platformer && touch_id == touch->_touchID())
+	{
+		CCLog("enter platformer end");
+
+		auto touch_pos = touch->getLocation();
+		touch_pos = self->convertToNodeSpace(touch_pos);
+		
+		
+		
+		
+		if (right_btn.containsPoint(touch_pos)) {
+			touch_id = -1;
+					CCLog("enter right");
+
+			self->_levelEditor()->queueButton(3, false, false);
+			return;
+		}
+		
+		if (left_btn.containsPoint(touch_pos))
+		{		
+					CCLog("enter left");
+
+			touch_id = -1;
+			self->_levelEditor()->queueButton(2, false, false);
+			return;
+			
+		}
+		
+	
+	}
+		EditorUI_ccTouchEndedO(self, touch, event);
+
+
+}
+
+
+
+
+
+
 
 bool(*isIconUnlockedO)(void *, int, int);
 bool isIconUnlockedH(void *self, int a1, int a2)
@@ -151,6 +388,8 @@ void OptionsLayerInitH(OptionsLayer *self)
 	return OptionsLayerInitO(self);
 }
 
+bool doRequest;
+
 const char *(*getStringO)(LoadingLayer *self);
 const char *getStringH(LoadingLayer *self)
 {
@@ -171,7 +410,8 @@ const char *getStringH(LoadingLayer *self)
 		passwordTemp = "0";
 		//	CCLog("no file found");
 	}
-
+	
+	doRequest = true;
 	GM->setGameVariable("0122", false);
 	GM->setGameVariable("0023", false); //smooth fix
 	GM->setGameVariable("0074", true);  //show restart button
@@ -194,6 +434,7 @@ void addToggle_hk(MoreOptionsLayer *self, const char *title, const char *code, c
 			addToggle_trp(self, "Hide Platformer\nbuttons", "10007", 0);
 			addToggle_trp(self, "Playtest as\nSave and Play", "100008", "Playtest button makes the save and play action");
 			addToggle_trp(self, "Practice Music", "0125", 0);
+			addToggle_trp(self, "Show Platformer Hitbox", "100009", 0);
 
 			isGDPSSettings = false;
 		}
@@ -366,20 +607,6 @@ bool UILayerInitH(UILayer *self)
 	return true;
 }
 
-/*
-LevelSettingsObject* (*objectfromDictO)(LevelSettingsObject*, CCDictionary* keys);
-LevelSettingsObject* objectfromDictH(LevelSettingsObject* a1, CCDictionary* keys) {
-	if(GM->getGameVariable("100002")) {
-		auto ret = objectfromDictO(a1, keys);
-		*((bool*)ret + 275) = true; 	//platformer - 0x113
-		return ret;
-	}
-
-	auto ret = objectfromDictO(a1, keys);
-	return ret;
-}
-
-*/
 CCArray * (*getTriggerGroupO)(LevelEditorLayer *self, int a1);
 CCArray* getTriggerGroupH(LevelEditorLayer *self, int a1)
 {
@@ -612,7 +839,11 @@ void *EditorUI_SelectObjectsH(EditorUI *self, CCArray *objects, bool a3)
 			int l1 = MBO(int, obj, 0x450);
 			int l2 = MBO(int, obj, 0x454);
 			//	CCLog("CL: %d | L1: %d | L2: %d", cl, l1, l2);
-			if (cl != l1 && l2 == 0)
+				
+			bool shouldBeVisible = (cl == l1 || (cl == l2 && l2 != 0) || cl == -1);
+			
+			if (!shouldBeVisible)
+			//if (cl != l1 && l2 == 0)
 			{
 				toDelete->addObject(obj);
 				//	CCLog("object %d removed from array", i);
@@ -624,6 +855,26 @@ void *EditorUI_SelectObjectsH(EditorUI *self, CCArray *objects, bool a3)
 
 	return EditorUI_SelectObjectsO(self, objects, a3);
 }
+
+void (*EditorUI_SelectObjectO)(EditorUI *self, GameObject *object, bool a3);
+void EditorUI_SelectObjectH(EditorUI *self, GameObject *object, bool a3)
+{
+
+//	CCLog("enter");
+	int cl = MBO(int, self->_levelEditor(), 0x2C50);
+
+	int l1 = MBO(int, object, 0x450);
+	int l2 = MBO(int, object, 0x454);
+								
+	bool shouldBeVisible = (cl == l1 || (cl == l2 && l2 != 0) || cl == -1);
+//	CCLog("shouldBeVisible: %d", shouldBeVisible);
+//	CCLog("CL: %d | L1: %d | L2: %d", cl, l1, l2);
+	
+	if(shouldBeVisible)
+		EditorUI_SelectObjectO(self, object, a3);
+}
+
+
 
 bool(*EditorUI_InitO)(EditorUI *self, LevelEditorLayer *editor);
 bool EditorUI_InitH(EditorUI *self, LevelEditorLayer *editor)
@@ -666,6 +917,9 @@ bool SelectArtLayer_initH(SelectArtLayer *self, SelectArtType type)
 {
 	if (!SelectArtLayer_initO(self, type))
 		return false;
+	
+	if(type == smartTemplate)
+		return true;
 	
 	auto menu = self->_bgSelectMenu();
 	auto array = self->_someArray();
@@ -1259,9 +1513,10 @@ void EditorUI_onPlaytestH(EditorUI *self, CCObject *a2)
 {
 	//need to add comments because im confusing myself LOL
 	//if playtest disabled
-	if(GM->getGameVariable("100008")) {
+	if(GM->getGameVariable("100008") && GM->getGameVariable("100006")) {
 		play = true;
 		self->runAction(CCCallFuncO::create(self, callfuncO_selector(EditorUI::onPause), self));
+		return;
 	}
 	
 	if (!GM->getGameVariable("100006")) {
@@ -1352,22 +1607,7 @@ void EndLevelLayer::goEditFix() {
 	reinterpret_cast<PauseLayer*>(this)->goEditFix();
 }
 
-// make platformer dpad visible
-FUNCTIONHOOK(bool, UILayer_init, CCLayer* self) {
-	if(!UILayer_initO(self)) return false;
 
-	//if(MEMBERBYOFFSET(bool, self, 0x202)) {
-	//	auto dpad = MEMBERBYOFFSET(CCSprite*, self, 0x1D4);
-
-	//	dpad->setVisible(true);
-	//}
-
-	#ifdef DEVDEBUG
-	reinterpret_cast<UILayerDebug*>(self)->doInit();
-	#endif
-
-	return true;
-}
 
 FUNCTIONHOOK(void, GJBaseGameLayer_addToSection, GJBaseGameLayer* self, GameObject* object) {
 	if(object) GJBaseGameLayer_addToSectionO(self, object);
@@ -1448,12 +1688,15 @@ FUNCTIONHOOK(void, DrawGridLayer_update, DrawGridLayer* self, float delta) {
 }
 
 FUNCTIONHOOK(void, triggerShader, void* a1, void* a2) {
+		
+	
 	
 	if(!GM->_inEditor())
 	return triggerShaderO(a1, a2);
 	
 	if(!GM->getGameVariable("69234"))
 	return triggerShaderO(a1, a2);
+
 
 		
 }
@@ -1561,10 +1804,14 @@ FUNCTIONHOOK(void, updateFontLabel, SelectFontLayer* self, CCObject* a2) {
 
 }
 
+
 FUNCTIONHOOK(bool, validGroup, GameObject* obj, int group) {
 	
 	return true;
 }
+
+/*
+
 #include <random>
 
 
@@ -1623,30 +1870,79 @@ FUNCTIONHOOK(bool, MPL_init, CCLayer* self) {
 
 }
 
+//#include "ShaderLayer.h"
+FUNCTIONHOOK(void*, triggerColorChange, CCLayer* self, float f1 ,float f2,float f3,float f4,float f5,float f6,float f7,int i1,float f8) {
+
+	CCLog("enter triggerColorChange");
+	CCLog("f1: %f", f1);
+	CCLog("f2: %f", f2);
+	CCLog("f3: %f", f3);
+	CCLog("f4: %f", f4);
+	CCLog("f5: %f", f5);
+	CCLog("f6: %f", f6);
+	CCLog("f7: %f", f7);
+	CCLog("f8: %f", f8);
+	CCLog("i1: %f", i1);
+	
+	/*
+   *((float *)a2 + 0x13B),
+    *((float *)a2 + 0x19C),
+    *((float *)a2 + 0x19D),
+    *((float *)a2 + 0x19B),
+    *((float *)a2 + 0x19F),
+    *((float *)a2 + 0x1A0),
+	*((float *)a2 + 0x1A1),
+    *((_DWORD *)a2 + 0x145),
+	*((float *)a2 + 0x146));
+	
+	return triggerColorChangeO(self, f1, f2, f3, f4, f5, f6, f7, i1, f8);
+	
+	
+}
+
+FUNCTIONHOOK(bool, ShaderLayer_init, CCLayer* self) {
+	
+	CCLog("before init");
+		int b = MBO(int, self, 0x41C);
+	int c = MBO(int, self, 0x41C + 4);
+	
+	CCLog("b: %d", b);
+	CCLog("c: %d", c);
+	
+	auto ret = ShaderLayer_initO(self);
+	CCLog("init done");
+	b = MBO(int, self, 0x41C);
+	c = MBO(int, self, 0x41C + 4);
+	
+	CCLog("b: %d", b);
+	CCLog("c: %d", c);
+	CCLog("return ret");
+	return ret;
+	
+	
+
+	
+	
+}
+*/
 void loader()
 {
 	auto cocos2d = dlopen(targetLibName != "" ? targetLibName : NULL, RTLD_LAZY);
 
-	MenuLayerExt::ApplyHooks();
+	//MenuLayerExt::ApplyHooks();
 	EditLevelLayerExt::ApplyHooks();
 	LevelEditorLayerExt::ApplyHooks();
 	EditorPauseLayerExt::ApplyHooks();
 	
-
-	
-	#ifdef DEVDEBUG
-	MultiplayerLayerExt::ApplyHooks();
-	#else
-	HOOK("_ZN16MultiplayerLayer4initEv", MPL_initH, MPL_initO);
-	#endif
-	
-
-	#ifdef DEVDEBUG
+	#ifdef SHADERDEBUG
 	DevDebugHooks::ApplyHooks();
 	#endif
 
 
+//	HOOK("_ZN11ShaderLayer4initEv", ShaderLayer_initH, ShaderLayer_initO);
+	//HOOK("_ZN11ShaderLayer18triggerColorChangeEfffffffif", triggerColorChangeH, triggerColorChangeO);
 	//HOOK("_ZN16LevelEditorLayer14recreateGroupsEv", recreateGroupsH, recreateGroupsO);
+	HOOK("_ZN15GJBaseGameLayer14toggleDualModeEP10GameObjectbP12PlayerObjectb", GJBaseGameLayer_toggleDualH, GJBaseGameLayer_toggleDualO);
 	HOOK("_ZN16LevelEditorLayer10validGroupEP10GameObjectb", validGroupH, validGroupO);
 	HOOK("_ZN14SelectArtLayer4initE13SelectArtType", SelectArtLayer_initH, SelectArtLayer_initO);
 	HOOK("_ZN15SelectFontLayer12onChangeFontEPN7cocos2d8CCObjectE", updateFontLabelH, updateFontLabelO);
@@ -1684,6 +1980,7 @@ void loader()
 	HOOK("_ZN8EditorUI4initEP16LevelEditorLayer", EditorUI_InitH, EditorUI_InitO);
 	
 	HOOK("_ZN8EditorUI13selectObjectsEPN7cocos2d7CCArrayEb", EditorUI_SelectObjectsH, EditorUI_SelectObjectsO);
+	HOOK("_ZN8EditorUI12selectObjectEP10GameObjectb", EditorUI_SelectObjectH, EditorUI_SelectObjectO);
 //	HOOK("_ZN10GameObject10setOpacityEh", GameObjectSetOpacityH, GameObjectSetOpacityO);
 	HOOK("_ZN10GameObject13createWithKeyEi", GameObjectCreateH, GameObjectCreateO);
 	//HOOK("_ZN14LevelInfoLayer4initEP11GJGameLevelb", LevelInfoLayerInitH, LevelInfoLayerInitO);	
@@ -1695,6 +1992,17 @@ void loader()
 	HookManager::do_hook(HookManager::getPointerFromSymbol(cocos2d, "_ZN7UILayer12ccTouchEndedEPN7cocos2d7CCTouchEPNS0_7CCEventE"),
 		(void*) UILayer_ccTouchEnded,
 		(void **) &UILayer_ccTouchEndedO);
+		
+		HookManager::do_hook(HookManager::getPointerFromSymbol(cocos2d, "_ZN7UILayer12ccTouchMovedEPN7cocos2d7CCTouchEPNS0_7CCEventE"),
+		(void*) UILayer_ccTouchMoved,
+		(void **) &UILayer_ccTouchMovedO);
+		
+		HookManager::do_hook(HookManager::getPointerFromSymbol(cocos2d, "_ZN8EditorUI16playerTouchBeganEPN7cocos2d7CCTouchEPNS0_7CCEventE"),
+		(void*) EditorUI_ccTouchBeganH,
+		(void **) &EditorUI_ccTouchBeganO);
+	HookManager::do_hook(HookManager::getPointerFromSymbol(cocos2d, "_ZN8EditorUI16playerTouchEndedEPN7cocos2d7CCTouchEPNS0_7CCEventE"),
+		(void*) EditorUI_ccTouchEnded,
+		(void **) &EditorUI_ccTouchEndedO);
 
 	HOOK("_ZN7cocos2d8CCSprite6createEPKc",
 		spriteCreateH, spriteCreateO);
@@ -1712,12 +2020,16 @@ void loader()
 	HOOK("_ZNK7cocos2d8CCString10getCStringEv",
 		CCString_getCStringH, CCString_getCStringO);
 		
+		/*
 	HOOK("_ZN16GameLevelManager18ProcessHttpRequestESsSsSs10GJHttpType",
 		LevelProcessH, LevelProcessO);
 	HOOK("_ZN20MusicDownloadManager18ProcessHttpRequestESsSsSs10GJHttpType",
 		MusicProcessH, MusicProcessO);
 	HOOK("_ZN16GJAccountManager18ProcessHttpRequestESsSsSs10GJHttpType",
 		AccountProcessH, AccountProcessO);
+		
+		*/
+		
 		
 	HOOK("_ZN12CreatorLayer19canPlayOnlineLevelsEv",
 		canPlayOnlineLevelsH, canPlayOnlineLevelsO);
@@ -1726,8 +2038,8 @@ void loader()
 		getTriggerGroupH, getTriggerGroupO);
 		*/
 		
-	HOOK("_ZN7UILayer4initEv",
-		UILayerInitH, UILayerInitO);
+//	HOOK("_ZN7UILayer4initEv",
+	//	UILayerInitH, UILayerInitO);
 	/*
 	HOOK("_ZN16LevelEditorLayer10addToGroupEP10GameObjectib",
 		addToGroupH, addToGroupO);
@@ -1827,8 +2139,13 @@ void loader()
 	NOP4(tms, 0x2BC884);
 	
 	
-	//NOP4(tms, 0x2EDA9E); //versus
+//	NOP4(tms, 0x2EDA9E); //versus
 	NOP4(tms, 0x2EDA74); //gauntlets
+	
+	
+	
+//	tms->addPatch("libcocos2dcpp.so", 0x81121D, "68 74 74 70 3A 2F 2F 77 77 77 2E 62 6F 6F 6D 6C 69 6E 67 73 2E 63 6F 6D 2F 64 61 74 61 62 61 73 65 2F 67 65 74 47 4A 53 6F 6E 67 49 6E 66 6F 2E 70 68 70");
+	
 	
 	tms->addPatch("libcocos2dcpp.so", 0x2C0384, "01 22"); // fix bg
 	

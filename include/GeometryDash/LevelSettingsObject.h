@@ -43,6 +43,7 @@ public:
 public:
     CLASS_MEMBER(GJGameLevel*, gameLevel, 0x138);
 	CLASS_MEMBER(bool, isStartPos, 0x12C);
+	CLASS_MEMBER(bool, isTwoPlayer, 0x112);
 
 public:
     LevelSettingsObject();

@@ -41,6 +41,7 @@ returntype name##H(__VA_ARGS__)
 
 #define version2 12
 #define DEVDEBUG true
+//#define SHADERDEBUG true
 
 
 

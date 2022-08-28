@@ -15,6 +15,8 @@ public:
 
 	    CLASS_MEMBER(bool, practiceMode, 0x675);
 		CLASS_MEMBER(GJGameLevel*, level, 0x13C);
+		CLASS_MEMBER(LevelSettingsObject*, lvlSettingsObject, 0x33C);
+		//CLASS_MEMBER(CCLayer*, UILayer, 0x2CA0);
 
 public:
     PlayLayer();

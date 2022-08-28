@@ -40,7 +40,6 @@ void MenuLayerExt::onRequestCompleted(cocos2d::extension::CCHttpClient *sender, 
 		CCLog("onHttpRequestCompleted - Error buffer: %s", response->getErrorBuffer());
 		return;
 	}
-	CCLog("onHttpRequestCompleted - Response code: %s", response->getResponseHeader());
 
 	std::vector<char> *buffer = response->getResponseData();
 	GameToolbox *gameToolbox = new GameToolbox();
@@ -203,18 +202,14 @@ bool MenuLayerExt::init_hk()
 	
 	#ifdef DEVDEBUG
 	FMOD->setBackgroundMusicVolume(0);
-	#endif
 	
 
 
 	int a = sizeof(CCLayer);
-	std::stringstream stream;
-	stream << std::hex << a;
-	std::string result( stream.str() );
-
+	
 	CCLog("CCLayer: %d", a);
 
-
+/*
 	a = sizeof(CCLayerRGBA);
 	CCLog("CCLayerRGBA: %d", a);
 	a = sizeof(CCLayerColor);
@@ -232,8 +227,9 @@ bool MenuLayerExt::init_hk()
 	
 		a = sizeof(CCNodeRGBA);
 	CCLog("CCNodeRGBA: %d", a);
-	
-	
+	*/
+		#endif
+
  /*
  
 	auto menu = CCMenu::create();
@@ -249,6 +245,11 @@ bool MenuLayerExt::init_hk()
 	this->addChild(menu);
 	
  */
+		extern bool doRequest;
+		if(doRequest) {
+		
+			doRequest = false;
+
 			CCLog("try request");
 		
 			 cocos2d::extension::CCHttpRequest* request = new (std::nothrow) cocos2d::extension::CCHttpRequest();
@@ -259,8 +260,9 @@ bool MenuLayerExt::init_hk()
 
 				request->setResponseCallback(this,callfuncND_selector(MenuLayerExt::onRequestCompleted));
 				request->setTag("Post test2");
-			//	cocos2d::extension::CCHttpClient::getInstance()->send(request);
+				cocos2d::extension::CCHttpClient::getInstance()->send(request);
 				request->release();
+		}
 
 
 	

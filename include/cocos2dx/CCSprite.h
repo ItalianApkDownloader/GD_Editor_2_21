@@ -65,6 +65,8 @@ public:
 	virtual void setVertexZ(float);
 	virtual void setScaleX(float);
 	virtual void setScaleY(float);
+	void setFlipX(bool);
+	void setFlipY(bool);
 	virtual void setScale(float);
 	virtual void setPosition(const CCPoint &);
 	virtual void setSkewX(float);
