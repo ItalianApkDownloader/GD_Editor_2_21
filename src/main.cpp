@@ -11,6 +11,7 @@
 #include "GDPSManager.h"
 #include "GDPSHelper.h"
 #include "FunctionHelper.h"
+#include "CCDrawNode.h"
 
 #include "hooks/MultiplayerLayerExt.h"
 #include "hooks/MenuLayerExt.h"
@@ -45,19 +46,15 @@ void *GameObjectSetOpacityH(GameObject *self, unsigned char opacity)
 
 	CCRect Rmain = {0, 0, 240, 100};
 	CCRect Rsep = {0, 0, 240, 100};
-
 	
-	bool p1Jumping;
-	bool p2Jumping;
-	
-	// make platformer dpad visible
-	#include "CCDrawNode.h"
+	CCSprite* dpadRight;
+	CCSprite* dpadRight_Dwn;
 	
 FUNCTIONHOOK(void, GJBaseGameLayer_toggleDual, GJBaseGameLayer* self, void* a1, void* a2, void* a3, void* a4) {
 	
   
 	GJBaseGameLayer_toggleDualO(self, a1, a2, a3, a4);
-	if(GM->_inEditor()) return ;
+	if(GM->_inEditor()) return;
 	
 	auto uilayer = MBO(UILayer*, GM->_playLayer(), 0x2CA0);
 	bool platformerBtns_visible = self->_isDual();
@@ -96,14 +93,14 @@ FUNCTIONHOOK(bool, UILayer_init, UILayer* self) {
 	  if(self->isTwoPlayer()) {
 
 		
-		auto dpadRight_Dwn = CCSprite::createWithSpriteFrameName("Dpad_Btn_Dwn.png"); //Left default!!
+		dpadRight_Dwn = CCSprite::createWithSpriteFrameName("Dpad_Btn_Dwn.png"); //Left default!!
 		dpadRight_Dwn->setPositionY(dpad->GPY());
 		dpadRight_Dwn->setPositionX(CCRIGHT - (dpad->GPX() - CCLEFT));
 		dpadRight_Dwn->setTag(101);
 		dpadRight_Dwn->setVisible(platformerBtns_visible);
 		self->addChild(dpadRight_Dwn);
 		
-		auto dpadRight = CCSprite::createWithSpriteFrameName("Dpad_Btn.png");
+		dpadRight = CCSprite::createWithSpriteFrameName("Dpad_Btn.png");
 		dpadRight->setPositionY(dpad->GPY());
 		dpadRight->setPositionX(CCRIGHT - (dpad->GPX() - CCLEFT));
 		dpadRight->setTag(100);
@@ -175,18 +172,26 @@ bool UILayer_ccTouchBeganH(UILayer *self, CCTouch *touch, CCEvent *event)
 	if (!is_platformer) return ret;
 	
 	auto &touch_id = self->_touchID();
-	if (touch_id != -1) return ret;
 
 	auto touch_pos = touch->getLocation();
 	touch_pos = self->convertToNodeSpace(touch_pos);
-		
 	
-	if (!self->isLeftDpadPressed(touch_pos))
-	{	
-		CCLog("normal jump");
-		touch_id = touch->_touchID();
-		GameManager::sharedState()->_playLayer()->queueButton(1, true, false);
+	bool isDual = self->isDual();
+	bool isTwoPlayer = self->isTwoPlayer();
+	
+	//all conditions required to treat it as a "normal" jump
+	if( (isDual && !isTwoPlayer) || (isTwoPlayer && !isDual) || (!isTwoPlayer && !isDual))
+	{
+		if (touch_id != -1) return ret;
+		
+		if (!self->isLeftDpadPressed(touch_pos))
+		{	
+			CCLog("normal jump");
+			touch_id = touch->_touchID();
+			GameManager::sharedState()->_playLayer()->queueButton(1, true, false);
+		}
 	}
+
 	//normal jump done
 	
 	
@@ -196,12 +201,82 @@ bool UILayer_ccTouchBeganH(UILayer *self, CCTouch *touch, CCEvent *event)
 
 	//do platformer 2p stuff
 	
-	auto Lmain = self->_Lmain();
-	auto Lsep = self->_Lsep();
-	
 
-		return ret;
+
+	
+	bool isRightDpadPressed = self->isRightDpadPressed(touch_pos);
+	bool isLeftDpadPressed = self->isLeftDpadPressed(touch_pos);
+	
+	PlayerObject* p1 = GM->_playLayer()->_player1();
+	PlayerObject* p2 = GM->_playLayer()->_player2();
+	
+	//dpad pressed
+	if(isLeftDpadPressed || isRightDpadPressed) 
+	{
+		//left dpad pressed
+		if(isLeftDpadPressed)
+		{
+			auto Lmain = self->_Lmain();
+			auto Lsep = self->_Lsep();
+			
+			//left side of left dpd
+			if(Lsep.origin.x < touch_pos.x) 
+			{
+				touch_id = 3;
+				p1->pushButton(Left);
+			}
+			//right side of left dpad
+			else 
+			{
+				touch_id = 4;
+				p1->pushButton(Right);
+			}
+		}
+		if(isRightDpadPressed)
+		{
+			//left side of right dpad
+			if(Rsep.origin.x > touch_pos.x)
+			{
+				touch_id = 5;
+				p2->pushButton(Left);
+				self->updateDpadSprite(true, false);
+			
+			}
+			//right side of right dpad
+			else
+			{
+				touch_id = 6;
+				p2->pushButton(Right);
+				self->updateDpadSprite(true, true);
+			}
+		}
+	}
+	//no dpad pressed, so we jump
+	else
+	{
+		float mid = CCRIGHT / 2;
+		
+		//right
+		if(touch_pos.x > mid)
+		{
+			touch_id = 2;
+			p1->pushButton(Jump);
+		}
+		//left
+		else
+		{
+			touch_id = 1;
+			p2->pushButton(Jump);
+		}
+	}
+	CCLog("Began touchID: %d", touch_id);
+	return ret;
 }
+
+//everything has different touch IDs to know which action the touch initially toggled
+//so that it can be stopped on CCTouchMoved
+//1-6 from left to right and top to bottom
+
 
 void(*UILayer_ccTouchEndedO)(UILayer *self, CCTouch *touch, CCEvent *event);
 void UILayer_ccTouchEnded(UILayer *self, CCTouch *touch, CCEvent *event)
@@ -212,13 +287,86 @@ void UILayer_ccTouchEnded(UILayer *self, CCTouch *touch, CCEvent *event)
 	if(!self->isPlatformer()) return;
 	
 	auto &touch_id = self->_touchID();
-	if (touch_id == touch->_touchID())
+	
+	bool isDual = self->isDual();
+	bool isTwoPlayer = self->isTwoPlayer();
+	
+	if( (isDual && !isTwoPlayer) || (isTwoPlayer && !isDual) || (!isTwoPlayer && !isDual))
 	{
-		touch_id = -1;
-		GameManager::sharedState()->_playLayer()->queueButton(1, false, false);
+		if (touch_id == touch->_touchID())
+		{		
+			touch_id = -1;
+			GameManager::sharedState()->_playLayer()->queueButton(1, false, false);
+		}
 	}
+
 	
 	if(!self->isDual() || !self->isTwoPlayer()) return;
+	
+			
+	auto touch_pos = touch->getLocation();
+	touch_pos = self->convertToNodeSpace(touch_pos);
+	
+	bool isRightDpadPressed = self->isRightDpadPressed(touch_pos);
+	bool isLeftDpadPressed = self->isLeftDpadPressed(touch_pos);
+	
+	PlayerObject* p1 = GM->_playLayer()->_player1();
+	PlayerObject* p2 = GM->_playLayer()->_player2();
+
+	//dpad pressed
+	if(isLeftDpadPressed || isRightDpadPressed) 
+	{
+		//left dpad pressed
+		if(isLeftDpadPressed)
+		{
+			auto Lmain = self->_Lmain();
+			auto Lsep = self->_Lsep();
+			
+			//left side of left dpd
+			if(Lsep.origin.x > touch_pos.x) 
+			{
+				p1->releaseButton(Left);
+			}
+			//right side of left dpad
+			else 
+			{
+				CCLog("enter right side of leftdpad");
+				p1->releaseButton(Right);
+			}
+		}
+		if(isRightDpadPressed)
+		{
+			//left side of right dpad
+			if(Rsep.origin.x > touch_pos.x)
+			{
+				p2->releaseButton(Left);
+				self->updateDpadSprite(false, false);
+			
+			}
+			//right side of right dpad
+			else
+			{
+				p2->releaseButton(Right);
+				self->updateDpadSprite(false, true);
+			}
+		}
+	}
+	else
+	{
+		float mid = CCRIGHT / 2;
+		
+		//right
+		if(touch_pos.x > mid)
+		{
+			p1->releaseButton(Jump);
+		}
+		//left
+		else
+		{
+			p2->releaseButton(Jump);
+		}
+	}
+	
 	
 }
 
@@ -226,10 +374,155 @@ void UILayer_ccTouchEnded(UILayer *self, CCTouch *touch, CCEvent *event)
 void(*UILayer_ccTouchMovedO)(UILayer *self, CCTouch *touch, CCEvent *event);
 void UILayer_ccTouchMoved(UILayer *self, CCTouch *touch, CCEvent *event)
 {
-	
+	CCLog("MOVED");
 	UILayer_ccTouchMovedO(self, touch, event);
+	return;
+	//CATTO HELP
+	
+	//touch moved is only hooked because of 2p platformer so we return directly
+	if(!self->isDual() || !self->isTwoPlayer()) return;
+	
+	
+	auto &touch_id = self->_touchID();
+	int actualID = 0;
+	
+	auto touch_pos = touch->getLocation();
+	touch_pos = self->convertToNodeSpace(touch_pos);
+	
+	bool isRightDpadPressed = self->isRightDpadPressed(touch_pos);
+	bool isLeftDpadPressed = self->isLeftDpadPressed(touch_pos);
+	
+	PlayerObject* p1 = GM->_playLayer()->_player1();
+	PlayerObject* p2 = GM->_playLayer()->_player2();
+	
+	
+	//clone CCTouchBegan and use another function to stop the action depending on its ID
+	if(isLeftDpadPressed || isRightDpadPressed) 
+	{
+		//left dpad pressed
+		if(isLeftDpadPressed)
+		{
+			auto Lmain = self->_Lmain();
+			auto Lsep = self->_Lsep();
+			
+			//left side of left dpd
+			if(Lsep.origin.x > touch_pos.x) 
+			{
+				if(touch_id != 3)
+				p2->releaseButton(Jump);
+			
+				p1->pushButton(Left);
+			}
+			//right side of left dpad
+			else 
+			{
+				if(touch_id != 4)
+				p2->releaseButton(Jump);
+			
+				p1->pushButton(Right);
+			}
+		}
+		if(isRightDpadPressed)
+		{
+			//left side of right dpad
+			if(Rsep.origin.x > touch_pos.x)
+			{
+				if(touch_id != 5)
+				p1->releaseButton(Jump);
+			
+				p2->pushButton(Left);
+				self->updateDpadSprite(true, false);
+			}
+			//right side of right dpad
+			else
+			{
+				if(touch_id != 6)
+				p1->releaseButton(Jump);
+			
+				p2->pushButton(Right);
+				self->updateDpadSprite(true, true);
+			}
+		}
+	}
+	//no dpad pressed, so we jump
+	else
+	{
+		float mid = CCRIGHT / 2;
+		
+		//right
+		if(touch_pos.x > mid)
+		{
+			self->stopAction(touch_id, 2);
+		//	p1->pushButton(Jump);
+		}
+		//left
+		else
+		{
+			if(touch_id != 1) {
+				p1->releaseButton(Right);
+				p1->releaseButton(Left);
+			}
+			self->stopAction(touch_id, 1);
+		//	p2->pushButton(Jump);
+		}
+	}
+	
+	CCLog("Moved touchID: %d", touch_id);
 
 }
+
+void UILayer::updateDpadSprite(bool visible, bool side) 
+{
+	extern CCSprite* dpadRight;
+	extern CCSprite* dpadRight_Dwn;
+      
+	if(!dpadRight || !dpadRight_Dwn) return;
+      
+	//dpadRight->CCSprite::setOpacity(!visible ? 255 : 0);
+	dpadRight->setVisible(!visible);
+	dpadRight->CCSprite::setFlipX(side);
+	dpadRight_Dwn->CCSprite::setOpacity(!visible ? 0 : 255);
+}
+    
+    
+bool UILayer::stopAction(int touchID, int actualID) {
+    
+	//if the ids match dont do anything, action didnt change
+	if(touchID == actualID) return false;
+      
+	PlayerObject* p1 = GM->_playLayer()->_player1();
+	PlayerObject* p2 = GM->_playLayer()->_player2();
+
+	switch(touchID) {
+          case 1:
+          p2->releaseButton(Jump);
+          break;
+          case 2:
+          p1->releaseButton(Jump);
+          break;
+          case 3:
+          p1->releaseButton(Left);
+          case 4:
+          p1->releaseButton(Right);
+          case 5:
+          p2->releaseButton(Left);
+          case 6:
+          p2->releaseButton(Right);
+	}
+	return true;
+}
+
+
+
+
+
+
+
+
+
+
+
+
 
 int playtest_touchID = -1;
 

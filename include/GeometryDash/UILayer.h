@@ -47,16 +47,24 @@ public:
 
     virtual bool init( );
     virtual void draw( );
+  
+    
+    virtual bool ccTouchBegan( cocos2d::CCTouch*, cocos2d::CCEvent* );
+    virtual void ccTouchMoved( cocos2d::CCTouch*, cocos2d::CCEvent* );
+    virtual void ccTouchEnded( cocos2d::CCTouch*, cocos2d::CCEvent* );
+    virtual void ccTouchCancelled( cocos2d::CCTouch*, cocos2d::CCEvent* );
+    
+    
+    //custom
     
     bool isTwoPlayer() { return GameManager::sharedState()->_playLayer()->_lvlSettingsObject()->_isTwoPlayer(); }
     bool isDual() {  return GameManager::sharedState()->_playLayer()->_isDual(); }
     bool isLeftDpadPressed(CCPoint pos) { return this->_Lmain().containsPoint(pos); }
     bool isPlatformer() { return this->_platformer(); }
-
-
-    virtual bool ccTouchBegan( cocos2d::CCTouch*, cocos2d::CCEvent* );
-    virtual void ccTouchMoved( cocos2d::CCTouch*, cocos2d::CCEvent* );
-    virtual void ccTouchEnded( cocos2d::CCTouch*, cocos2d::CCEvent* );
-    virtual void ccTouchCancelled( cocos2d::CCTouch*, cocos2d::CCEvent* );
+    bool isRightDpadPressed(CCPoint pos) { extern CCRect Rmain; return Rmain.containsPoint(pos);}
+    
+    
+    void updateDpadSprite(bool visible, bool side);
+    bool stopAction(int touchID, int actualID);
     
 };
