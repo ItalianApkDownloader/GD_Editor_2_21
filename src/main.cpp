@@ -377,7 +377,8 @@ void UILayer_ccTouchMoved(UILayer *self, CCTouch *touch, CCEvent *event)
 	CCLog("MOVED");
 	UILayer_ccTouchMovedO(self, touch, event);
 	return;
-	//CATTO HELP
+	//HERE
+
 	
 	//touch moved is only hooked because of 2p platformer so we return directly
 	if(!self->isDual() || !self->isTwoPlayer()) return;
