@@ -177,16 +177,27 @@ bool UILayer_ccTouchBeganH(UILayer *self, CCTouch *touch, CCEvent *event)
 	auto &touch_id = self->_touchID();
 	if (touch_id != -1) return ret;
 
+	auto p1 = GM->_playLayer()->_player1();
+	auto p2 = GM->_playLayer()->_player2();
 	auto touch_pos = touch->getLocation();
-	touch_pos = self->convertToNodeSpace(touch_pos);
-		
 	
-	if (!self->isLeftDpadPressed(touch_pos))
-	{	
-		CCLog("normal jump");
-		touch_id = touch->_touchID();
-		GameManager::sharedState()->_playLayer()->queueButton(1, true, false);
+
+
+	//touch_pos = self->convertToNodeSpace(touch_pos);
+
+	if (touch_pos.x < 285 && touch_pos.y > 100){
+			p1->pushButton(Jump);
 	}
+
+	if( touch_pos.x > 285 && touch_pos.y > 100){
+			p2->pushButton(Jump);
+	} 
+	
+	if(touch_pos.x < 500 && touch_pos.y < 100){
+			p2->pushButton(Left);
+	} else if(touch_pos.x > 500 && touch_pos.y < 100){
+			p2->pushButton(Right);
+	} 
 	//normal jump done
 	
 	
@@ -208,16 +219,16 @@ void UILayer_ccTouchEnded(UILayer *self, CCTouch *touch, CCEvent *event)
 {
 	CCLog("------ END   ------");
 	UILayer_ccTouchEndedO(self, touch, event);
+	
+	auto p2 = GM->_playLayer()->_player2();
+	auto p1 = GM->_playLayer()->_player1();
 
-	if(!self->isPlatformer()) return;
-	
-	auto &touch_id = self->_touchID();
-	if (touch_id == touch->_touchID())
-	{
-		touch_id = -1;
-		GameManager::sharedState()->_playLayer()->queueButton(1, false, false);
-	}
-	
+	p2->releaseButton(Jump);
+	p2->releaseButton(Right);
+	p2->releaseButton(Left);
+
+	p1->releaseButton(Jump);
+
 	if(!self->isDual() || !self->isTwoPlayer()) return;
 	
 }
@@ -1957,6 +1968,7 @@ void loader()
 	HOOK("_ZN15GJBaseGameLayer23removeObjectFromSectionEP10GameObject", GJBaseGameLayer_removeObjectFromSectionH, GJBaseGameLayer_removeObjectFromSectionO);
 
 	HOOK("_ZN7UILayer4initEv", UILayer_initH, UILayer_initO);
+	
 	HOOK("_ZN10PauseLayer6onEditEPN7cocos2d8CCObjectE", PauseLayer_onEditH, PauseLayer_onEditO);
 	HOOK("_ZN13EndLevelLayer6onEditEPN7cocos2d8CCObjectE", EndLevelLayer_onEditH, EndLevelLayer_onEditO);
 	
