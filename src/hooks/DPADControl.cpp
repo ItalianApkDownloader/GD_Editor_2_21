@@ -84,7 +84,7 @@ FUNCTIONHOOK(bool, UILayer_ccTouchBegan, UILayer* self, CCTouch *touch, CCEvent 
                     return true;
                 }
 
-                // since virtuals are misaigned im calling the function like this
+                // since virtuals are misaligned im calling the function like this
                 auto setDisplayFrame = *(void (__fastcall **)(CCSprite*, CCSpriteFrame*))(*(int *)dpad2 + 572);
                 setDisplayFrame(dpad2, CCSpriteFrameCache::sharedSpriteFrameCache()->spriteFrameByName("Dpad_Btn_Dwn.png"));
                 
@@ -142,7 +142,7 @@ FUNCTIONHOOK(void, UILayer_ccTouchEnded, UILayer* self, CCTouch *touch, CCEvent 
                 
                 auto dpad2 = (CCSprite*)self->getChildByTag(0xBAE);
 
-                // since virtuals are misaigned im calling the function like this
+                // since virtuals are misaligned im calling the function like this
                 auto setDisplayFrame = *(void (__fastcall **)(CCSprite*, CCSpriteFrame*))(*(int *)dpad2 + 572);
                 setDisplayFrame(dpad2, CCSpriteFrameCache::sharedSpriteFrameCache()->spriteFrameByName("Dpad_Btn.png"));
                 gm->_playLayer()->queueButton(5, false, true);
@@ -175,7 +175,7 @@ FUNCTIONHOOK(void, UILayer_ccTouchMoved, UILayer* self, CCTouch *touch, CCEvent 
 
             if(touch1ID == MBO(int, touch, 0x30)) {
                 if(touchPos.x < dpad2->getPositionX()) {
-                    if(!thisShitDoesSomething || thisShitDoesSomething) {
+                    if(!whatDoesThisDoTho || thisShitDoesSomething) {
                         whatDoesThisDoTho = true;
                         dpad2->setFlipX(false);
                         thisShitDoesSomething = false;
@@ -228,6 +228,12 @@ FUNCTIONHOOK(void, EditorUI_playerTouchBegan, EditorUI *self, CCTouch *touch, CC
         else goto PLAYERJUMP;
     }
 
+    /*
+        So here I am recreating the player jump function
+        Now, you might be asking, why the fuck would you do that?
+        Because apparently patching anything in this function is hard
+        Its easier to just straight up recreate it
+    */
 PLAYERJUMP:
     bool p2jump = false;
 
