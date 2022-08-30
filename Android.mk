@@ -59,6 +59,7 @@ LOCAL_SRC_FILES := 	src/main.cpp \
 					src/hooks/EditLevelLayerExt.cpp \
 					src/hooks/LevelEditorLayerExt.cpp \
 					src/hooks/ShaderDebug.cpp \
+					src/hooks/DPADControl.cpp \
 					src/KittyMemory/KittyMemory.cpp \
 					src/KittyMemory/KittyUtils.cpp \
 					src/KittyMemory/MemoryBackup.cpp \

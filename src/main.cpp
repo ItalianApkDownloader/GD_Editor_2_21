@@ -20,6 +20,7 @@
 #include "hooks/EditorPauseLayerExt.h"
 #include "hooks/PauseLayerExt.h"
 #include "hooks/ShaderDebug.h"
+#include "hooks/DPADControl.h"
 
 /*
 		FLAG USED FOR DEVELOPER MODE DEBUGGING LIKE SHADERS
@@ -42,13 +43,6 @@ bool test = false;
 void *(*GameObjectSetOpacityO)(GameObject *self, unsigned char opacity);
 void *GameObjectSetOpacityH(GameObject *self, unsigned char opacity)
 { return GameObjectSetOpacityO(self, opacity); }
-
-
-	CCRect Rmain = {0, 0, 240, 100};
-	CCRect Rsep = {0, 0, 240, 100};
-	
-	CCSprite* dpadRight;
-	CCSprite* dpadRight_Dwn;
 	
 FUNCTIONHOOK(void, GJBaseGameLayer_toggleDual, GJBaseGameLayer* self, void* a1, void* a2, void* a3, void* a4) {
 	
@@ -59,432 +53,29 @@ FUNCTIONHOOK(void, GJBaseGameLayer_toggleDual, GJBaseGameLayer* self, void* a1, 
 	auto uilayer = MBO(UILayer*, GM->_playLayer(), 0x2CA0);
 	bool platformerBtns_visible = self->_isDual();
 	
-	if(uilayer->_platformer() && uilayer->isTwoPlayer()) {
+	/*if(uilayer->_platformer() && uilayer->isTwoPlayer()) {
 	
 		auto dpad = (CCSprite*)uilayer->getChildByTag(100);
 		auto dpad_dwn = (CCSprite*)uilayer->getChildByTag(101);
 	
 		dpad->CCSprite::setOpacity(platformerBtns_visible ? 255 : 0);
 		dpad_dwn->CCSprite::setOpacity(platformerBtns_visible ? 255 : 0);
-	}
-	
-					
-	
-	
+	}*/
 }
+
 FUNCTIONHOOK(bool, UILayer_init, UILayer* self) {
 	if(!UILayer_initO(self)) return false;
 	
-
-	
 	if(!MEMBERBYOFFSET(bool, self, 0x206)) return true;
 	
-		auto dpad = MEMBERBYOFFSET(CCSprite*, self, 0x1D8);
-		bool platformerBtns_visible = !GM->getGameVariable("10007");
-		dpad->setVisible(platformerBtns_visible);
-
-		auto node = cocos2d::CCDrawNode::create();
-		cocos2d::CCPoint m_points[4];
-	
-		auto Lmain = self->_Lmain();
-		auto Lsep = self->_Lsep();
-		
-		
-	  if(self->isTwoPlayer()) {
-
-		
-		dpadRight_Dwn = CCSprite::createWithSpriteFrameName("Dpad_Btn_Dwn.png"); //Left default!!
-		dpadRight_Dwn->setPositionY(dpad->GPY());
-		dpadRight_Dwn->setPositionX(CCRIGHT - (dpad->GPX() - CCLEFT));
-		dpadRight_Dwn->setTag(101);
-		dpadRight_Dwn->setVisible(platformerBtns_visible);
-		self->addChild(dpadRight_Dwn);
-		
-		dpadRight = CCSprite::createWithSpriteFrameName("Dpad_Btn.png");
-		dpadRight->setPositionY(dpad->GPY());
-		dpadRight->setPositionX(CCRIGHT - (dpad->GPX() - CCLEFT));
-		dpadRight->setTag(100);
-		dpadRight->setVisible(platformerBtns_visible);
-		self->addChild(dpadRight);
-		
-		
-
-		Rsep = Lsep;
-		Rmain = Lmain;
-		
-		Rsep.origin.x += 525;
-		Rmain.origin.x += 470;
-				
-				
-			if(GM->getGameVariable("100009"))
-			{
-				m_points[0] = ccp(Rsep.getMinX(),Rsep.getMinY());
-				m_points[1] = ccp(Rsep.getMaxX(),Rsep.getMinY());
-				m_points[2] = ccp(Rsep.getMaxX(),Rsep.getMaxY());
-				m_points[3] = ccp(Rsep.getMinX(),Rsep.getMaxY());
-				node->drawPolygon(m_points, 4, ccc4f(0, 0, 0, 0), 1, ccc4f(1, 1, 0, 1));
-	
-				m_points[0] = ccp(Rmain.getMinX(),Rmain.getMinY());
-				m_points[1] = ccp(Rmain.getMaxX(),Rmain.getMinY());
-				m_points[2] = ccp(Rmain.getMaxX(),Rmain.getMaxY());
-				m_points[3] = ccp(Rmain.getMinX(),Rmain.getMaxY());
-				node->drawPolygon(m_points, 4, ccc4f(0, 0, 0, 0), 1, ccc4f(1, 0, 0, 1));
-			}
-		
-		}
-		
-	if(GM->getGameVariable("100009")) 
-	{
-	  m_points[0] = ccp(Lmain.getMinX(),Lmain.getMinY());
-	  m_points[1] = ccp(Lmain.getMaxX(),Lmain.getMinY());
-	  m_points[2] = ccp(Lmain.getMaxX(),Lmain.getMaxY());
-	  m_points[3] = ccp(Lmain.getMinX(),Lmain.getMaxY());
-	  node->drawPolygon(m_points, 4, ccc4f(0, 0, 0, 0), 1, ccc4f(1, 0, 0, 1));
-	
-	  m_points[0] = ccp(Lsep.getMinX(),Lsep.getMinY());
-	  m_points[1] = ccp(Lsep.getMaxX(),Lsep.getMinY());
-	  m_points[2] = ccp(Lsep.getMaxX(),Lsep.getMaxY());
-	  m_points[3] = ccp(Lsep.getMinX(),Lsep.getMaxY());
-	  node->drawPolygon(m_points, 4, ccc4f(0, 0, 0, 0), 1, ccc4f(1, 1, 0, 1));
-	
-	  self->addChild(node);
-	}
-
-
+	DPADHooks::UILayerInit(self);
 
 	#ifdef SHADERDEBUG
 	reinterpret_cast<UILayerDebug*>(self)->doInit();
 	#endif
 
 	return true;
-}
-
-
-//take a look at 2p-p bad implementation.cpp i guess 
-bool(*UILayer_ccTouchBeganO)(UILayer *self, CCTouch *touch, CCEvent *event);
-bool UILayer_ccTouchBeganH(UILayer *self, CCTouch *touch, CCEvent *event)
-{
-	CCLog("------ BEGAN ------");
-	bool ret = UILayer_ccTouchBeganO(self, touch, event);
-
-
-	bool is_platformer = self->_platformer();
-	if (!is_platformer) return ret;
-	
-	auto &touch_id = self->_touchID();
-
-	auto touch_pos = touch->getLocation();
-	touch_pos = self->convertToNodeSpace(touch_pos);
-	
-	bool isDual = self->isDual();
-	bool isTwoPlayer = self->isTwoPlayer();
-	
-	//all conditions required to treat it as a "normal" jump
-	if( (isDual && !isTwoPlayer) || (isTwoPlayer && !isDual) || (!isTwoPlayer && !isDual))
-	{
-		if (touch_id != -1) return ret;
-		
-		if (!self->isLeftDpadPressed(touch_pos))
-		{	
-			CCLog("normal jump");
-			touch_id = touch->_touchID();
-			GameManager::sharedState()->_playLayer()->queueButton(1, true, false);
-		}
-	}
-
-	//normal jump done
-	
-	
-
-
-	if(!self->isDual() || !self->isTwoPlayer()) return ret;
-
-	//do platformer 2p stuff
-	
-
-
-	
-	bool isRightDpadPressed = self->isRightDpadPressed(touch_pos);
-	bool isLeftDpadPressed = self->isLeftDpadPressed(touch_pos);
-	
-	PlayerObject* p1 = GM->_playLayer()->_player1();
-	PlayerObject* p2 = GM->_playLayer()->_player2();
-	
-	//dpad pressed
-	if(isLeftDpadPressed || isRightDpadPressed) 
-	{
-		//left dpad pressed
-		if(isLeftDpadPressed)
-		{
-			auto Lmain = self->_Lmain();
-			auto Lsep = self->_Lsep();
-			
-			//left side of left dpd
-			if(Lsep.origin.x < touch_pos.x) 
-			{
-				touch_id = 3;
-				p1->pushButton(Left);
-			}
-			//right side of left dpad
-			else 
-			{
-				touch_id = 4;
-				p1->pushButton(Right);
-			}
-		}
-		if(isRightDpadPressed)
-		{
-			//left side of right dpad
-			if(Rsep.origin.x > touch_pos.x)
-			{
-				touch_id = 5;
-				p2->pushButton(Left);
-				self->updateDpadSprite(true, false);
-			
-			}
-			//right side of right dpad
-			else
-			{
-				touch_id = 6;
-				p2->pushButton(Right);
-				self->updateDpadSprite(true, true);
-			}
-		}
-	}
-	//no dpad pressed, so we jump
-	else
-	{
-		float mid = CCRIGHT / 2;
-		
-		//right
-		if(touch_pos.x > mid)
-		{
-			touch_id = 2;
-			p1->pushButton(Jump);
-		}
-		//left
-		else
-		{
-			touch_id = 1;
-			p2->pushButton(Jump);
-		}
-	}
-	CCLog("Began touchID: %d", touch_id);
-	return ret;
-}
-
-//everything has different touch IDs to know which action the touch initially toggled
-//so that it can be stopped on CCTouchMoved
-//1-6 from left to right and top to bottom
-
-
-void(*UILayer_ccTouchEndedO)(UILayer *self, CCTouch *touch, CCEvent *event);
-void UILayer_ccTouchEnded(UILayer *self, CCTouch *touch, CCEvent *event)
-{
-	CCLog("------ END   ------");
-	UILayer_ccTouchEndedO(self, touch, event);
-
-	if(!self->isPlatformer()) return;
-	
-	auto &touch_id = self->_touchID();
-	
-	bool isDual = self->isDual();
-	bool isTwoPlayer = self->isTwoPlayer();
-	
-	if( (isDual && !isTwoPlayer) || (isTwoPlayer && !isDual) || (!isTwoPlayer && !isDual))
-	{
-		if (touch_id == touch->_touchID())
-		{		
-			touch_id = -1;
-			GameManager::sharedState()->_playLayer()->queueButton(1, false, false);
-		}
-	}
-
-	
-	if(!self->isDual() || !self->isTwoPlayer()) return;
-	
-			
-	auto touch_pos = touch->getLocation();
-	touch_pos = self->convertToNodeSpace(touch_pos);
-	
-	bool isRightDpadPressed = self->isRightDpadPressed(touch_pos);
-	bool isLeftDpadPressed = self->isLeftDpadPressed(touch_pos);
-	
-	PlayerObject* p1 = GM->_playLayer()->_player1();
-	PlayerObject* p2 = GM->_playLayer()->_player2();
-
-	//dpad pressed
-	if(isLeftDpadPressed || isRightDpadPressed) 
-	{
-		//left dpad pressed
-		if(isLeftDpadPressed)
-		{
-			auto Lmain = self->_Lmain();
-			auto Lsep = self->_Lsep();
-			
-			//left side of left dpd
-			if(Lsep.origin.x > touch_pos.x) 
-			{
-				p1->releaseButton(Left);
-			}
-			//right side of left dpad
-			else 
-			{
-				CCLog("enter right side of leftdpad");
-				p1->releaseButton(Right);
-			}
-		}
-		if(isRightDpadPressed)
-		{
-			//left side of right dpad
-			if(Rsep.origin.x > touch_pos.x)
-			{
-				p2->releaseButton(Left);
-				self->updateDpadSprite(false, false);
-			
-			}
-			//right side of right dpad
-			else
-			{
-				p2->releaseButton(Right);
-				self->updateDpadSprite(false, true);
-			}
-		}
-	}
-	else
-	{
-		float mid = CCRIGHT / 2;
-		
-		//right
-		if(touch_pos.x > mid)
-		{
-			p1->releaseButton(Jump);
-		}
-		//left
-		else
-		{
-			p2->releaseButton(Jump);
-		}
-	}
-	
-	
-}
-
-
-void(*UILayer_ccTouchMovedO)(UILayer *self, CCTouch *touch, CCEvent *event);
-void UILayer_ccTouchMoved(UILayer *self, CCTouch *touch, CCEvent *event)
-{
-	CCLog("MOVED");
-	UILayer_ccTouchMovedO(self, touch, event);
-	return;
-	//HERE
-
-	
-	//touch moved is only hooked because of 2p platformer so we return directly
-	if(!self->isDual() || !self->isTwoPlayer()) return;
-	
-	
-	auto &touch_id = self->_touchID();
-	int actualID = 0;
-	
-	auto touch_pos = touch->getLocation();
-	touch_pos = self->convertToNodeSpace(touch_pos);
-	
-	bool isRightDpadPressed = self->isRightDpadPressed(touch_pos);
-	bool isLeftDpadPressed = self->isLeftDpadPressed(touch_pos);
-	
-	PlayerObject* p1 = GM->_playLayer()->_player1();
-	PlayerObject* p2 = GM->_playLayer()->_player2();
-	
-	
-	//clone CCTouchBegan and use another function to stop the action depending on its ID
-	if(isLeftDpadPressed || isRightDpadPressed) 
-	{
-		//left dpad pressed
-		if(isLeftDpadPressed)
-		{
-			auto Lmain = self->_Lmain();
-			auto Lsep = self->_Lsep();
-			
-			//left side of left dpd
-			if(Lsep.origin.x > touch_pos.x) 
-			{
-				if(touch_id != 3)
-				p2->releaseButton(Jump);
-			
-				p1->pushButton(Left);
-			}
-			//right side of left dpad
-			else 
-			{
-				if(touch_id != 4)
-				p2->releaseButton(Jump);
-			
-				p1->pushButton(Right);
-			}
-		}
-		if(isRightDpadPressed)
-		{
-			//left side of right dpad
-			if(Rsep.origin.x > touch_pos.x)
-			{
-				if(touch_id != 5)
-				p1->releaseButton(Jump);
-			
-				p2->pushButton(Left);
-				self->updateDpadSprite(true, false);
-			}
-			//right side of right dpad
-			else
-			{
-				if(touch_id != 6)
-				p1->releaseButton(Jump);
-			
-				p2->pushButton(Right);
-				self->updateDpadSprite(true, true);
-			}
-		}
-	}
-	//no dpad pressed, so we jump
-	else
-	{
-		float mid = CCRIGHT / 2;
-		
-		//right
-		if(touch_pos.x > mid)
-		{
-			self->stopAction(touch_id, 2);
-		//	p1->pushButton(Jump);
-		}
-		//left
-		else
-		{
-			if(touch_id != 1) {
-				p1->releaseButton(Right);
-				p1->releaseButton(Left);
-			}
-			self->stopAction(touch_id, 1);
-		//	p2->pushButton(Jump);
-		}
-	}
-	
-	CCLog("Moved touchID: %d", touch_id);
-
-}
-
-void UILayer::updateDpadSprite(bool visible, bool side) 
-{
-	extern CCSprite* dpadRight;
-	extern CCSprite* dpadRight_Dwn;
-      
-	if(!dpadRight || !dpadRight_Dwn) return;
-      
-	//dpadRight->CCSprite::setOpacity(!visible ? 255 : 0);
-	dpadRight->setVisible(!visible);
-	dpadRight->CCSprite::setFlipX(side);
-	dpadRight_Dwn->CCSprite::setOpacity(!visible ? 0 : 255);
-}
-    
+}   
     
 bool UILayer::stopAction(int touchID, int actualID) {
     
@@ -512,126 +103,6 @@ bool UILayer::stopAction(int touchID, int actualID) {
 	}
 	return true;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-int playtest_touchID = -1;
-
-	CCRect right_btn = {100, 0, 240, 100};
-	CCRect left_btn = {0, 0, 240, 100};
-	
-bool(*EditorUI_ccTouchBeganO)(EditorUI *self, CCTouch *touch, CCEvent *event);
-bool EditorUI_ccTouchBeganH(EditorUI *self, CCTouch *touch, CCEvent *event)
-{
-	//bool ret = EditorUI_ccTouchBeganO(self, touch, event);
-
-void* unk = MBO(void*, self->_levelEditor(), 0x344);
-bool is_platformer = MBO(bool, self->_levelEditor(), 0x344);
-
-
-	
-	CCLog("enter began");
-	if (is_platformer)
-	{
-	CCLog("enter is Platformer");
-		auto &touch_id = playtest_touchID;
-		// already a touch going on, ignore multiple
-		if (touch_id != -1) return EditorUI_ccTouchBeganO(self, touch, event);;
-
-		auto touch_pos = touch->getLocation();
-		touch_pos = self->convertToNodeSpace(touch_pos);
-
-		// dont know if the order is right but doesnt matter
-		
-		CCLog("x: %f", touch_pos.x);
-		CCLog("y: %f", touch_pos.y);
-		
-
-				if(right_btn.containsPoint(touch_pos)) {
-				CCLog("enter right");
-
-			touch_id = touch->_touchID();
-			self->_levelEditor()->queueButton(3, true, false);
-			return true;
-		}
-		
-		if (left_btn.containsPoint(touch_pos))
-		{
-		CCLog("enter left");
-
-			touch_id = touch->_touchID();
-			self->_levelEditor()->queueButton(2, true, false);
-			return true;
-		} 
-
-
-	}
-	CCLog("finish began");
-	return EditorUI_ccTouchBeganO(self, touch, event);
-}
-
-void(*EditorUI_ccTouchEndedO)(EditorUI *self, CCTouch *touch, CCEvent *event);
-void EditorUI_ccTouchEnded(EditorUI *self, CCTouch *touch, CCEvent *event)
-{
-		CCLog("enter end");
-
-
-void* unk = MBO(void*, self->_levelEditor(), 0x344);
-bool is_platformer = MBO(bool, self->_levelEditor(), 0x344);
-
-auto &touch_id = playtest_touchID;
-
-
-	if (is_platformer && touch_id == touch->_touchID())
-	{
-		CCLog("enter platformer end");
-
-		auto touch_pos = touch->getLocation();
-		touch_pos = self->convertToNodeSpace(touch_pos);
-		
-		
-		
-		
-		if (right_btn.containsPoint(touch_pos)) {
-			touch_id = -1;
-					CCLog("enter right");
-
-			self->_levelEditor()->queueButton(3, false, false);
-			return;
-		}
-		
-		if (left_btn.containsPoint(touch_pos))
-		{		
-					CCLog("enter left");
-
-			touch_id = -1;
-			self->_levelEditor()->queueButton(2, false, false);
-			return;
-			
-		}
-		
-	
-	}
-		EditorUI_ccTouchEndedO(self, touch, event);
-
-
-}
-
-
-
-
-
-
 
 bool(*isIconUnlockedO)(void *, int, int);
 bool isIconUnlockedH(void *self, int a1, int a2)
@@ -726,9 +197,10 @@ void addToggle_hk(MoreOptionsLayer *self, const char *title, const char *code, c
 			addToggle_trp(self, "Enable pixel blocks\nin the editor", "100005", 0);
 			addToggle_trp(self, "Enable Playtest", "100006", 0);
 			addToggle_trp(self, "Hide Platformer\nbuttons", "10007", 0);
+			addToggle_trp(self, "Swap platformer\njump sides", "100011", 0);
 			addToggle_trp(self, "Playtest as\nSave and Play", "100008", "Playtest button makes the save and play action");
 			addToggle_trp(self, "Practice Music", "0125", 0);
-			addToggle_trp(self, "Show Platformer Hitbox", "100009", 0);
+			//addToggle_trp(self, "Show Platformer Hitbox", "100009", 0);
 
 			isGDPSSettings = false;
 		}
@@ -884,20 +356,6 @@ const char *CCString_getCStringH(CCString *self)
 bool(*canPlayOnlineLevelsO)(CreatorLayer *self);
 bool canPlayOnlineLevelsH(CreatorLayer *self)
 {
-	return true;
-}
-
-bool(*UILayerInitO)(UILayer *self);
-bool UILayerInitH(UILayer *self)
-{
-	if(!UILayerInitO(self)) return false;
-
-	if(MEMBERBYOFFSET(bool, self, 0x206)) {
-		auto dpad = MEMBERBYOFFSET(CCSprite*, self, 0x1D8);
-
-		dpad->setVisible(!GM->getGameVariable("10007"));
-	}
-
 	return true;
 }
 
@@ -1175,6 +633,8 @@ bool EditorUI_InitH(EditorUI *self, LevelEditorLayer *editor)
 {
 	if (!EditorUI_InitO(self, editor))
 		return false;
+
+	DPADHooks::EditorUIInit(self);
 
 	if (!GM->getGameVariable("100005"))
 	{
@@ -2227,6 +1687,7 @@ void loader()
 	EditLevelLayerExt::ApplyHooks();
 	LevelEditorLayerExt::ApplyHooks();
 	EditorPauseLayerExt::ApplyHooks();
+	DPADHooks::ApplyHooks();
 	
 	#ifdef SHADERDEBUG
 	DevDebugHooks::ApplyHooks();
@@ -2279,24 +1740,6 @@ void loader()
 	HOOK("_ZN10GameObject13createWithKeyEi", GameObjectCreateH, GameObjectCreateO);
 	//HOOK("_ZN14LevelInfoLayer4initEP11GJGameLevelb", LevelInfoLayerInitH, LevelInfoLayerInitO);	
 	HOOK("_ZN12LoadingLayer4initEb", LoadingLayer_initH, LoadingLayer_initO);
-		
-	HookManager::do_hook(HookManager::getPointerFromSymbol(cocos2d, "_ZN7UILayer12ccTouchBeganEPN7cocos2d7CCTouchEPNS0_7CCEventE"),
-		(void*) UILayer_ccTouchBeganH,
-		(void **) &UILayer_ccTouchBeganO);
-	HookManager::do_hook(HookManager::getPointerFromSymbol(cocos2d, "_ZN7UILayer12ccTouchEndedEPN7cocos2d7CCTouchEPNS0_7CCEventE"),
-		(void*) UILayer_ccTouchEnded,
-		(void **) &UILayer_ccTouchEndedO);
-		
-		HookManager::do_hook(HookManager::getPointerFromSymbol(cocos2d, "_ZN7UILayer12ccTouchMovedEPN7cocos2d7CCTouchEPNS0_7CCEventE"),
-		(void*) UILayer_ccTouchMoved,
-		(void **) &UILayer_ccTouchMovedO);
-		
-		HookManager::do_hook(HookManager::getPointerFromSymbol(cocos2d, "_ZN8EditorUI16playerTouchBeganEPN7cocos2d7CCTouchEPNS0_7CCEventE"),
-		(void*) EditorUI_ccTouchBeganH,
-		(void **) &EditorUI_ccTouchBeganO);
-	HookManager::do_hook(HookManager::getPointerFromSymbol(cocos2d, "_ZN8EditorUI16playerTouchEndedEPN7cocos2d7CCTouchEPNS0_7CCEventE"),
-		(void*) EditorUI_ccTouchEnded,
-		(void **) &EditorUI_ccTouchEndedO);
 
 	HOOK("_ZN7cocos2d8CCSprite6createEPKc",
 		spriteCreateH, spriteCreateO);
@@ -2331,9 +1774,7 @@ void loader()
 	HOOK("_ZN16LevelEditorLayer15getTriggerGroupEi",
 		getTriggerGroupH, getTriggerGroupO);
 		*/
-		
-//	HOOK("_ZN7UILayer4initEv",
-	//	UILayerInitH, UILayerInitO);
+
 	/*
 	HOOK("_ZN16LevelEditorLayer10addToGroupEP10GameObjectib",
 		addToGroupH, addToGroupO);
