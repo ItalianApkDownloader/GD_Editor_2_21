@@ -194,6 +194,41 @@ void MenuLayerExt::updateUserProfileButtonH() {
 
 }
 
+
+#include <fstream>
+
+void MenuLayerExt::onStackTrace(CCObject* s) {
+	
+	auto path = "/data/user/0/com.gdpsedi.geometrydashsubzero/files/crash.txt";
+
+    std::ifstream ifs( path );
+    std::string content = "File not found.";
+
+    std::stringstream ss;
+
+    if ( ifs.good() )
+    {
+        std::string sLine;
+
+        int i = 0;
+        while ( i < 19 )
+        {
+            getline(ifs, sLine);
+            ss << sLine << std::endl;
+            i++;
+        }
+    }
+    else 
+        ss << "File not found.";
+
+    ifs.close( );
+
+    // saber::logging::log( "%s ALL DATA", content.c_str() );
+    FLAlertLayer::create( nullptr, "Stack Trace", ss.str(), "Exit", nullptr, 450., true, 300. )->show( );
+
+}
+
+
 static inline bool (*init_trp)(MenuLayer *self);
 bool MenuLayerExt::init_hk()
 {
@@ -230,7 +265,7 @@ bool MenuLayerExt::init_hk()
 	*/
 		#endif
 
- /*
+ 
  
 	auto menu = CCMenu::create();
 	menu->setPositionY(menu->getPositionY() + 100);
@@ -239,12 +274,12 @@ bool MenuLayerExt::init_hk()
 		btn3,
 		btn3,
 		this,
-	menu_selector(ToolsLayer::create));
+	menu_selector(MenuLayerExt::onStackTrace));
 	//menu_selector(MenuLayerExt::onTest));
 	menu->addChild(myButton3);
 	this->addChild(menu);
 	
- */
+ 
 		extern bool doRequest;
 		if(doRequest) {
 		

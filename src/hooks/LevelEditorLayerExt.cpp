@@ -92,7 +92,7 @@ bool LevelEditorLayerExt::initH(GJGameLevel* level)
 	CreateAndRetainArray(this, 0x2C74);
 	CreateAndRetainArray(this, 0x2C78);
 	CreateAndRetainArray(this, 0x2D50);
-
+	
 	CreateAndRetainDict(this, 0x46C);
 	CreateAndRetainDict(this, 0x43C);
 	CreateAndRetainDict(this, 0x2CB4);
@@ -124,7 +124,6 @@ bool LevelEditorLayerExt::initH(GJGameLevel* level)
 
 		this->_something()[i] = 0;
 	}
-
 	this->_obb2d() = OBB2D::create( CCPoint( 1, 1 ), 1.0, 1.0, 0.0 );
 	this->_obb2d()->retain( );
 

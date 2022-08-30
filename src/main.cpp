@@ -13,6 +13,11 @@
 #include "FunctionHelper.h"
 #include "CCDrawNode.h"
 
+
+#include <unwind.h>
+#include <sys/stat.h>
+
+
 #include "hooks/MultiplayerLayerExt.h"
 #include "hooks/MenuLayerExt.h"
 #include "hooks/EditLevelLayerExt.h"
@@ -27,8 +32,6 @@
 
 		!!!!!!!!!!!!!!!!!!!!!!!! COMMENT OUT BEFORE RELEASING APK !!!!!!!!!!!!!!!!!!!!!!!!
 */
-
-
 
 
 string passwordTemp = "";
@@ -66,6 +69,7 @@ FUNCTIONHOOK(void, GJBaseGameLayer_toggleDual, GJBaseGameLayer* self, void* a1, 
 FUNCTIONHOOK(bool, UILayer_init, UILayer* self) {
 	if(!UILayer_initO(self)) return false;
 	
+	
 	if(!MEMBERBYOFFSET(bool, self, 0x206)) return true;
 	
 	DPADHooks::UILayerInit(self);
@@ -76,37 +80,11 @@ FUNCTIONHOOK(bool, UILayer_init, UILayer* self) {
 
 	return true;
 }   
-    
-bool UILayer::stopAction(int touchID, int actualID) {
-    
-	//if the ids match dont do anything, action didnt change
-	if(touchID == actualID) return false;
-      
-	PlayerObject* p1 = GM->_playLayer()->_player1();
-	PlayerObject* p2 = GM->_playLayer()->_player2();
-
-	switch(touchID) {
-          case 1:
-          p2->releaseButton(Jump);
-          break;
-          case 2:
-          p1->releaseButton(Jump);
-          break;
-          case 3:
-          p1->releaseButton(Left);
-          case 4:
-          p1->releaseButton(Right);
-          case 5:
-          p2->releaseButton(Left);
-          case 6:
-          p2->releaseButton(Right);
-	}
-	return true;
-}
-
+   
 bool(*isIconUnlockedO)(void *, int, int);
 bool isIconUnlockedH(void *self, int a1, int a2)
 {
+
 	return true;
 
 }
@@ -161,6 +139,7 @@ const char *getStringH(LoadingLayer *self)
 	auto m_sFileName = "password.dat";
 
 	auto path = CCFileUtils::sharedFileUtils()->getWritablePath() + m_sFileName;
+	CCLog("%s", path.c_str());
 
 	std::ifstream infile(path.c_str());
 	if (infile.good())
@@ -175,7 +154,7 @@ const char *getStringH(LoadingLayer *self)
 		passwordTemp = "0";
 		//	CCLog("no file found");
 	}
-	
+
 	doRequest = true;
 	GM->setGameVariable("0122", false);
 	GM->setGameVariable("0023", false); //smooth fix
@@ -256,6 +235,7 @@ bool MenuLayerInitH(MenuLayer *self)
 CCSprite * (*spriteCreateFrameNameO)(const char *textureName);
 CCSprite* spriteCreateFrameNameH(const char *textureName)
 {
+	
 	auto ret = spriteCreateFrameNameO(textureName);
 
 	if (contains(textureName, "GJ_fullBtn_001.png"))
@@ -1679,11 +1659,17 @@ FUNCTIONHOOK(bool, ShaderLayer_init, CCLayer* self) {
 	
 }
 */
+//#include <signal.h>
+
+#include "handler.h"
+
 void loader()
 {
 	auto cocos2d = dlopen(targetLibName != "" ? targetLibName : NULL, RTLD_LAZY);
-
-	//MenuLayerExt::ApplyHooks();
+	
+	Crash_Handler();
+	
+	MenuLayerExt::ApplyHooks();
 	EditLevelLayerExt::ApplyHooks();
 	LevelEditorLayerExt::ApplyHooks();
 	EditorPauseLayerExt::ApplyHooks();

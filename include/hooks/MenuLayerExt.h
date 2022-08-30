@@ -34,7 +34,7 @@ void onRequestCompleted(cocos2d::extension::CCHttpClient *sender, cocos2d::exten
 
 
 		
-	
+	void onStackTrace(CCObject*);
     void onTest(CCObject* sender);
     void onDownload(CCObject* sender);
     void onJoinDiscord(CCObject* sender);
