@@ -135,7 +135,7 @@ public:
 
     void createBackground2( );
 
-
+    void addPlayerCollisionBlock();
 
     void updateVisibility( float a1 );
     void updateGround( float a1 );
