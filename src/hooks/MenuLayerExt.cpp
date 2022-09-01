@@ -199,7 +199,7 @@ void MenuLayerExt::updateUserProfileButtonH() {
 
 void MenuLayerExt::onStackTrace(CCObject* s) {
 	
-	auto path = "/data/user/0/com.gdpsedi.geometrydashsubzero/files/crash.txt";
+        auto path = CCFileUtils::sharedFileUtils()->getWritablePath() + "crash.txt";
 
     std::ifstream ifs( path );
     std::string content = "File not found.";
@@ -237,33 +237,8 @@ bool MenuLayerExt::init_hk()
 	
 	#ifdef DEVDEBUG
 	FMOD->setBackgroundMusicVolume(0);
-	
 
-
-	int a = sizeof(CCLayer);
-	
-	CCLog("CCLayer: %d", a);
-
-/*
-	a = sizeof(CCLayerRGBA);
-	CCLog("CCLayerRGBA: %d", a);
-	a = sizeof(CCLayerColor);
-	CCLog("CCLayerColor: %d ", a);
-	a = sizeof(CCNode);
-	CCLog("CCNode: %d", a);
-		a = sizeof(CCObject);
-	CCLog("CCObject: %d", a);
-	a = sizeof(CCSprite);
-	CCLog("CCSprite: %d", a);
-//	static_assert(sizeof(CCSprite) == 504);
-
-	//static_assert(sizeof(CCNode) == 248);
-//	static_assert(sizeof(CCNode) == 260);
-	
-		a = sizeof(CCNodeRGBA);
-	CCLog("CCNodeRGBA: %d", a);
-	*/
-		#endif
+	#endif
 
  
  

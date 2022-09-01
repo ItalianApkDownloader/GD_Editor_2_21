@@ -23,6 +23,8 @@ public:
 	static std::string base64_decode(std::string const& encoded_string);
 	static std::string base64_encode(unsigned char const* bytes_to_encode, unsigned int in_len);
 	static std::string gjp(std::string plainText_password);
+	static std::string itohex(int i);
+
 	
 
 

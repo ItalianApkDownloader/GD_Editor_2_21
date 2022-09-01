@@ -115,7 +115,6 @@ const char *getStringH(LoadingLayer *self)
 	auto m_sFileName = "password.dat";
 
 	auto path = CCFileUtils::sharedFileUtils()->getWritablePath() + m_sFileName;
-	CCLog("%s", path.c_str());
 
 	std::ifstream infile(path.c_str());
 	if (infile.good())
@@ -220,7 +219,8 @@ CCSprite* spriteCreateFrameNameH(const char *textureName)
 	if (ret != nullptr)
 		return ret;
 
-	return spriteCreateFrameNameO("GJ_optionsTxt_001.png");
+	//return spriteCreateFrameNameO("GJ_optionsTxt_001.png");
+	return spriteCreateFrameNameO("GJ_checkOff_001.png");
 }
 
 #include "cocos2dx/extensions/network/HttpClient.h"
@@ -273,11 +273,14 @@ const char *CCString_getCStringH(CCString *self)
 			toAdd = CCString::createWithFormat("&password=%s&gjp=%s&", passwordTemp.c_str(), FunctionHelper::gjp(passwordTemp).c_str())->getCString();
 		else
 			toAdd = CCString::createWithFormat("&password=%s&gjp=%s&userName=%s", passwordTemp.c_str(), FunctionHelper::gjp(passwordTemp).c_str(), AM->_username().c_str())->getCString();
+		
+		const char* toAdd2 = CCString::createWithFormat("&subzeroVersion=%d", version2)->getCString();
 
 		//char *s = new char[strlen(ret) + strlen(toAdd) + strlen(toAdd2) + 1];
-		char *s = new char[strlen(ret) + strlen(toAdd) + 1];
+		char *s = new char[strlen(ret) + strlen(toAdd) + strlen(toAdd2) + 1];
 		strcpy(s, ret);
 		strcat(s, toAdd);
+		strcat(s, toAdd2);
 		//strcat(s, toAdd2);
 
 		//	CCLog(s);
@@ -285,6 +288,9 @@ const char *CCString_getCStringH(CCString *self)
 		ret = s;
 
 	}
+	
+	
+	
 
 	/*
 			auto m_sFileName = "password.dat";
@@ -365,7 +371,6 @@ void *LoginFinishedH(AccountLoginLayer *self, void *a2, void *a3)
 	auto m_sFileName = "password.dat";
 
 	auto path = CCFileUtils::sharedFileUtils()->getWritablePath() + m_sFileName;
-
 	ofstream MyFile(path.c_str());
 
 	MyFile << passwordTemp;
@@ -1634,16 +1639,123 @@ FUNCTIONHOOK(bool, ShaderLayer_init, CCLayer* self) {
 	
 }
 */
-//#include <signal.h>
 
+FUNCTIONHOOK(void*, keyForIcon, void* self, int a1, int a2) {
+	
+		CCLog("a1: %d | a2: %d", a1, a2);
+
+	auto ret = keyForIconO(self, a1, a2);
+	CCLog("a1: %d | a2: %d", a1, a2);
+	
+	
+	return ret;
+}
 #include "handler.h"
+
+
+//https://cdn.discordapp.com/attachments/997593414684135485/1014791808666042438/icons.rar
+void patchIcons(int gameMode, int amountt) {
+	
+	if(amountt > 255) //2 bytes limit
+		amountt = 255;
+		
+	patch* tms = new patch();
+	
+	string amount = FunctionHelper::itohex(amountt);
+	
+	uintptr_t countForType;
+	uintptr_t updatePlayerFrame;
+	uintptr_t updatePlayerFrameExtra;
+	uintptr_t baseKey;
+	
+	
+	switch(gameMode) {
+			
+		case 1: //cube
+			 countForType = 0x2802B2;
+			 updatePlayerFrame = 0x2991DC;
+			 baseKey = 0x28649A;	
+		break;
+		
+		case 2: //ship
+			 countForType = 0x280264;
+			 updatePlayerFrame = 0x2997B0;
+			 baseKey = 0x28649E;
+		break;
+		
+		case 3: //ball
+			countForType = 0x280292;
+			updatePlayerFrame = 0x299320;
+			baseKey = 0x2864A2;
+		break;
+		
+		case 4: //ufo
+			countForType = 0x280296;
+			updatePlayerFrame = 0x299A44;
+			baseKey = 0x2864A6;
+		break;
+		
+		case 5: //wave
+			countForType = 0x280270;
+			updatePlayerFrame = 0x2995C0;
+			baseKey = 0x2864AA;
+	
+		break;
+		
+		case 6: //robot
+			countForType = 0x28029A;
+			updatePlayerFrame = 0x299108;
+			updatePlayerFrameExtra = 0x3AAC42;
+			baseKey = 0x2864AE;
+		break;
+		
+		case 7: //spider
+			countForType = 0x2802A2;
+			updatePlayerFrame = 0x29911A;
+			updatePlayerFrameExtra = 0x3AAC3A;
+			baseKey = 0x2864B2;
+		break;
+		
+	}
+	
+	tms->addPatch("libcocos2dcpp.so", countForType, amount + "20"); //GameManager::countForType
+	tms->addPatch("libcocos2dcpp.so", updatePlayerFrame, amount + "29"); //PlayerObjet::updatePlayer(gamemode)Frame
+	tms->addPatch("libcocos2dcpp.so", baseKey, amount + "34"); // GameManager::calculateBaseKeyForIcons
+	
+	if(gameMode == 6 || gameMode == 7)
+	tms->addPatch("libcocos2dcpp.so", updatePlayerFrameExtra, amount + "29"); // GJRobotSprite::updateFrame
+	
+	tms->Modify();
+	
+}
+
+
+FUNCTIONHOOK(void*, GJItemIcon_Init, int type, int key) {
+	
+	if(type == 11 && key > 17)
+		return nullptr;
+	
+	return GJItemIcon_InitO(type, key);
+	
+}
+
+//TODO: test the p1 platformer, fix p2 platformer texture with p1 and shit, collision blocks(?),  swing selection, port over mod badges
+
+
+FUNCTIONHOOK(void, GJBaseGameLayer_toggleDual, GJBaseGameLayer* self, void* a1, void* a2, void* a3, void* a4) {
+
+	GJBaseGameLayer_toggleDualO(self, a1, a2, a3, a4);
+	
+	//...
+}
+
 
 void loader()
 {
 	auto cocos2d = dlopen(targetLibName != "" ? targetLibName : NULL, RTLD_LAZY);
-	
+
 	Crash_Handler();
-	
+
 	MenuLayerExt::ApplyHooks();
 	EditLevelLayerExt::ApplyHooks();
 	LevelEditorLayerExt::ApplyHooks();
@@ -1658,6 +1770,10 @@ void loader()
 //	HOOK("_ZN11ShaderLayer4initEv", ShaderLayer_initH, ShaderLayer_initO);
 	//HOOK("_ZN11ShaderLayer18triggerColorChangeEfffffffif", triggerColorChangeH, triggerColorChangeO);
 	//HOOK("_ZN16LevelEditorLayer14recreateGroupsEv", recreateGroupsH, recreateGroupsO);
+	HOOK("_ZN10GJItemIcon17createBrowserItemE10UnlockTypei", GJItemIcon_InitH, GJItemIcon_InitO);
+	HOOK("_ZN12SimplePlayer17updatePlayerFrameEi8IconType", keyForIconH, keyForIconO);
+	HOOK("_ZN15GJBaseGameLayer14toggleDualModeEP10GameObjectbP12PlayerObjectb", GJBaseGameLayer_toggleDualH, GJBaseGameLayer_toggleDualO);
+
 	HOOK("_ZN16LevelEditorLayer10validGroupEP10GameObjectb", validGroupH, validGroupO);
 	HOOK("_ZN14SelectArtLayer4initE13SelectArtType", SelectArtLayer_initH, SelectArtLayer_initO);
 	HOOK("_ZN15SelectFontLayer12onChangeFontEPN7cocos2d8CCObjectE", updateFontLabelH, updateFontLabelO);
@@ -1715,7 +1831,7 @@ void loader()
 	HOOK("_ZNK7cocos2d8CCString10getCStringEv",
 		CCString_getCStringH, CCString_getCStringO);
 		
-		/*
+		
 	HOOK("_ZN16GameLevelManager18ProcessHttpRequestESsSsSs10GJHttpType",
 		LevelProcessH, LevelProcessO);
 	HOOK("_ZN20MusicDownloadManager18ProcessHttpRequestESsSsSs10GJHttpType",
@@ -1723,7 +1839,7 @@ void loader()
 	HOOK("_ZN16GJAccountManager18ProcessHttpRequestESsSsSs10GJHttpType",
 		AccountProcessH, AccountProcessO);
 		
-		*/
+		
 		
 		
 	HOOK("_ZN12CreatorLayer19canPlayOnlineLevelsEv",
@@ -1752,7 +1868,7 @@ void loader()
 	
 	#define NOP4(a, b) a->addPatch("libcocos2dcpp.so", b, "00 BF 00 BF")
 	#define NOP2(a, b) a->addPatch("libcocos2dcpp.so", b, "00 BF")
-	
+
 	//ads
 	NOP4(tms, 0x2726A6);
 	NOP4(tms, 0x2EAE24);
@@ -1765,12 +1881,33 @@ void loader()
 	NOP4(tms, 0x27FE9E);
 	NOP4(tms, 0x27FE9E);
 	
-//	NOP4(tms, 0x2EDA9E); //versus
+
+	NOP4(tms, 0x2EDA9E); //versus
 	NOP4(tms, 0x2EDA74); //gauntlets
 	
+	//https://cdn.discordapp.com/attachments/997593414684135485/1014791808666042438/icons.rar
+	
+	patchIcons(2, 168); //ship
+	patchIcons(3, 114); //ball
+	patchIcons(4, 146); //ufo
+	patchIcons(5, 68); //wave
+	patchIcons(6, 67); //robot
+	patchIcons(7, 67); //spider
+	
+	
+	
+	
+//	tms->addPatch("libcocos2dcpp.so", 0x81121D, "68 74 74 70 3A 2F 2F 77 77 77 2E 62 6F 6F 6D 6C 69 6E 67 73 2E 63 6F 6D 2F 64 61 74 61 62 61 73 65 2F 67 65 74 47 4A 53 6F 6E 67 49 6E 66 6F 2E 70 68 70");
+	
 	tms->addPatch("libcocos2dcpp.so", 0x2C0384, "01 22"); // fix bg
+
+
+	tms->addPatch("libcocos2dcpp.so", 0x332442, "002D"); // general icon limit bypass
+	tms->addPatch("libcocos2dcpp.so", 0x2803D0, "1421"); // general icon limit bypass
 	
 	tms->addPatch("libcocos2dcpp.so", 0x2EB9EE, "01 21"); // fix level name in pause
+	
+
 
 	tms->Modify();
 }

@@ -145,6 +145,7 @@ bool LevelEditorLayerExt::initH(GJGameLevel* level)
 		}
     }
 
+
 	// collision shit
 	this->createPlayerCollisionBlock();
 	this->addPlayerCollisionBlock();

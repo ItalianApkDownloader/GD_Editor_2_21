@@ -8,6 +8,12 @@
 #include <sstream>
 
 
+std::string FunctionHelper::itohex(int i)
+{
+  std::stringstream stream;
+  stream << std::hex << i;
+  return stream.str();
+}
 
 
 std::string FunctionHelper::itos(int Number)

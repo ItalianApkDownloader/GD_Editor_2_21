@@ -39,7 +39,7 @@ returntype name##H(__VA_ARGS__)
 #define GPY() getPositionY()
 #define GPX() getPositionX()
 
-#define version2 12
+#define version2 13
 #define DEVDEBUG true
 //#define SHADERDEBUG true
 

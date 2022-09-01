@@ -69,8 +69,7 @@ namespace idk {
 
     static void dump()
     {
-		if(!GM) exit(0);
-        auto path = "/data/user/0/com.gdpsedi.geometrydashsubzero/files/crash.txt";
+        auto path = CCFileUtils::sharedFileUtils()->getWritablePath() + "crash.txt";
         std::ofstream outfile;
 
 		outfile.open( path, std::ios::out );
@@ -96,6 +95,7 @@ namespace idk {
                 symbol = info.dli_sname;
 
             int status = 0; 
+
             char *demangled = __cxxabiv1::__cxa_demangle(symbol, 0, 0, &status); 
 
             auto data = string_format( "[ <cg>%02d</c> ] PC: <cr>%p</c>\nS: <cy>%s</c>", idx, addr, (NULL != demangled && 0 == status) ? demangled : symbol );

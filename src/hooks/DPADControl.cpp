@@ -102,6 +102,7 @@ FUNCTIONHOOK(bool, UILayer_ccTouchBegan, UILayer* self, CCTouch *touch, CCEvent 
         }
 
         // platformer jump
+
         auto dpad1rect = MBO(CCRect, self, 0x1E0);
         if(!dpad1rect.containsPoint(touchPos) && !rightBtnRect.containsPoint(touchPos)) {
             // dual mode
@@ -109,7 +110,7 @@ FUNCTIONHOOK(bool, UILayer_ccTouchBegan, UILayer* self, CCTouch *touch, CCEvent 
                 // now this shit i dont understand, why do people wanna have jump on opposite sides
                 bool p2jump = false;
 
-                if(gm->getGameVariable("100011")) p2jump = touchPos.x < winSize.width / 2;
+                if(!gm->getGameVariable("100011")) p2jump = touchPos.x < winSize.width / 2;
                 else p2jump = touchPos.x > winSize.width / 2;
 
                 if(p2jump) {
@@ -126,6 +127,12 @@ FUNCTIONHOOK(bool, UILayer_ccTouchBegan, UILayer* self, CCTouch *touch, CCEvent 
                 MBO(int, self, 0x1CC) = MBO(int, touch, 0x30);
                 gm->_playLayer()->queueButton(1, true, false);
             }
+        }
+        
+        if(!self->isTwoPlayer() && !dpad1rect.containsPoint(touchPos))
+        {
+            MBO(int, self, 0x1CC) = MBO(int, touch, 0x30);
+            gm->_playLayer()->queueButton(1, true, false);
         }
     }
 
@@ -238,7 +245,7 @@ PLAYERJUMP:
     bool p2jump = false;
 
     // swap jumps
-    if(gm->getGameVariable("100011")) p2jump = touchPos.x < winSize.width / 2;
+    if(!gm->getGameVariable("100011")) p2jump = touchPos.x < winSize.width / 2;
     else p2jump = touchPos.x > winSize.width / 2;
 
     if((MBO(bool, self->_levelEditor(), 0x4C1) || gm->getGameVariable("0011")) && p2jump) {
