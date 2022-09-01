@@ -100,7 +100,7 @@ public:
 
     CLASS_MEMBER(int*, drawNodes, 0x2C98);
 
-    CLASS_MEMBER(CCArray*, objectsToUpdate, 0x2C08);
+    CLASS_MEMBER(CCArray*, objectsToUpdate, 0x2C04);
 
     // vectors
     CLASS_MEMBER(std::vector<GameObject*>, objectsVector, 0x2C9C);

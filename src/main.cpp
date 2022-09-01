@@ -43,40 +43,16 @@ void GameManager_tryShowAdH() {}
 
 bool test = false;
 
-void *(*GameObjectSetOpacityO)(GameObject *self, unsigned char opacity);
-void *GameObjectSetOpacityH(GameObject *self, unsigned char opacity)
-{ return GameObjectSetOpacityO(self, opacity); }
-	
-FUNCTIONHOOK(void, GJBaseGameLayer_toggleDual, GJBaseGameLayer* self, void* a1, void* a2, void* a3, void* a4) {
-	
-  
-	GJBaseGameLayer_toggleDualO(self, a1, a2, a3, a4);
-	if(GM->_inEditor()) return;
-	
-	auto uilayer = MBO(UILayer*, GM->_playLayer(), 0x2CA0);
-	bool platformerBtns_visible = self->_isDual();
-	
-	/*if(uilayer->_platformer() && uilayer->isTwoPlayer()) {
-	
-		auto dpad = (CCSprite*)uilayer->getChildByTag(100);
-		auto dpad_dwn = (CCSprite*)uilayer->getChildByTag(101);
-	
-		dpad->CCSprite::setOpacity(platformerBtns_visible ? 255 : 0);
-		dpad_dwn->CCSprite::setOpacity(platformerBtns_visible ? 255 : 0);
-	}*/
-}
-
 FUNCTIONHOOK(bool, UILayer_init, UILayer* self) {
 	if(!UILayer_initO(self)) return false;
 	
-	
-	if(!MEMBERBYOFFSET(bool, self, 0x206)) return true;
-	
-	DPADHooks::UILayerInit(self);
-
 	#ifdef SHADERDEBUG
 	reinterpret_cast<UILayerDebug*>(self)->doInit();
 	#endif
+
+	if(!MEMBERBYOFFSET(bool, self, 0x206)) return true;
+	
+	DPADHooks::UILayerInit(self);
 
 	return true;
 }   
@@ -421,27 +397,26 @@ inline long mid_num(const std::string &s)
 	return std::strtol(&s[s.find('_') + 1], nullptr, 10);
 }
 
-GameObject * (*GameObjectCreateO)(int key);
-GameObject* GameObjectCreateH(int key)
+FUNCTIONHOOK(GameObject*, GameObject_create, int key)
 {
 	auto tb = ObjectToolbox::sharedState()->intKeyToFrame(key);
 	
-	if(key == 2013) return GameObjectCreateO(1);
+	if(key == 2013) return GameObject_createO(1);
 	
 	if(contains(tb, "pixelb"))
-		return GameObjectCreateO(1);
+		return GameObject_createO(1);
 
 	if(contains(tb, "pixel")) {
 		
 		if(contains(tb, "b_"))
-			return GameObjectCreateO(1);
+			return GameObject_createO(1);
 
 		auto pixelKey = mid_num(tb);
 //
-		return GameObjectCreateO(pixelKey > 140 ? 1 : key);
+		return GameObject_createO(pixelKey > 140 ? 1 : key);
 	}
 
-	return GameObjectCreateO(key);
+	return GameObject_createO(key);
 }
 
 const char *(*keyToFrameO)(ObjectToolbox *self, int key);
@@ -1683,7 +1658,6 @@ void loader()
 //	HOOK("_ZN11ShaderLayer4initEv", ShaderLayer_initH, ShaderLayer_initO);
 	//HOOK("_ZN11ShaderLayer18triggerColorChangeEfffffffif", triggerColorChangeH, triggerColorChangeO);
 	//HOOK("_ZN16LevelEditorLayer14recreateGroupsEv", recreateGroupsH, recreateGroupsO);
-	HOOK("_ZN15GJBaseGameLayer14toggleDualModeEP10GameObjectbP12PlayerObjectb", GJBaseGameLayer_toggleDualH, GJBaseGameLayer_toggleDualO);
 	HOOK("_ZN16LevelEditorLayer10validGroupEP10GameObjectb", validGroupH, validGroupO);
 	HOOK("_ZN14SelectArtLayer4initE13SelectArtType", SelectArtLayer_initH, SelectArtLayer_initO);
 	HOOK("_ZN15SelectFontLayer12onChangeFontEPN7cocos2d8CCObjectE", updateFontLabelH, updateFontLabelO);
@@ -1694,14 +1668,13 @@ void loader()
 	HOOK("_ZN16LevelEditorLayer19addObjectFromVectorERSt6vectorISsSaISsEE", LevelEditorLayer_addObjectFromVectorH, LevelEditorLayer_addObjectFromVectorO);
 	HOOK("_ZN11GameManager22shouldShowInterstitialEiii", shouldShowInterstitialH, shouldShowInterstitialO);
 	HOOK("_ZN14LevelInfoLayer4initEP11GJGameLevelb", LevelInfoLayer_initH, LevelInfoLayer_initO);
-	HOOK("_ZN15GJBaseGameLayer12addToSectionEP10GameObject", GJBaseGameLayer_addToSectionH, GJBaseGameLayer_addToSectionO);
-	HOOK("_ZN15GJBaseGameLayer23removeObjectFromSectionEP10GameObject", GJBaseGameLayer_removeObjectFromSectionH, GJBaseGameLayer_removeObjectFromSectionO);
+	//HOOK("_ZN15GJBaseGameLayer12addToSectionEP10GameObject", GJBaseGameLayer_addToSectionH, GJBaseGameLayer_addToSectionO);
+	//HOOK("_ZN15GJBaseGameLayer23removeObjectFromSectionEP10GameObject", GJBaseGameLayer_removeObjectFromSectionH, GJBaseGameLayer_removeObjectFromSectionO);
 
 	HOOK("_ZN7UILayer4initEv", UILayer_initH, UILayer_initO);
 	HOOK("_ZN10PauseLayer6onEditEPN7cocos2d8CCObjectE", PauseLayer_onEditH, PauseLayer_onEditO);
 	HOOK("_ZN13EndLevelLayer6onEditEPN7cocos2d8CCObjectE", EndLevelLayer_onEditH, EndLevelLayer_onEditO);
 	
-//	HOOK("_ZN12PlayerObject15spawnDualCircleEv", PlayerObject_spawnDualCircleH, PlayerObject_spawnDualCircleO);
 	HOOK("_ZN9PlayLayer18togglePracticeModeEb", togglePracticeModeH, togglePracticeModeO);
 	HOOK("_ZN8EditorUI10onPlaytestEPN7cocos2d8CCObjectE", EditorUI_onPlaytestH, EditorUI_onPlaytestO);
 	HOOK("_ZN25SetupAreaTintTriggerPopup4initEP17EnterEffectObjectPN7cocos2d7CCArrayE", SetupAreaTintTriggerPopupH, SetupAreaTintTriggerPopupO);
@@ -1722,8 +1695,7 @@ void loader()
 	
 	HOOK("_ZN8EditorUI13selectObjectsEPN7cocos2d7CCArrayEb", EditorUI_SelectObjectsH, EditorUI_SelectObjectsO);
 	HOOK("_ZN8EditorUI12selectObjectEP10GameObjectb", EditorUI_SelectObjectH, EditorUI_SelectObjectO);
-//	HOOK("_ZN10GameObject10setOpacityEh", GameObjectSetOpacityH, GameObjectSetOpacityO);
-	HOOK("_ZN10GameObject13createWithKeyEi", GameObjectCreateH, GameObjectCreateO);
+	HOOK("_ZN10GameObject13createWithKeyEi", GameObject_createH, GameObject_createO);
 	//HOOK("_ZN14LevelInfoLayer4initEP11GJGameLevelb", LevelInfoLayerInitH, LevelInfoLayerInitO);	
 	HOOK("_ZN12LoadingLayer4initEb", LoadingLayer_initH, LoadingLayer_initO);
 
@@ -1775,69 +1747,8 @@ void loader()
 	HOOK("_ZN17AccountLoginLayer8onSubmitEPN7cocos2d8CCObjectE", AccountSubmitH, AccountSubmitO);
 	HOOK("_ZN17AccountLoginLayer20loginAccountFinishedEii", LoginFinishedH, LoginFinishedO);
 	HOOK("_ZN12LoadingLayer16getLoadingStringEv", getStringH, getStringO);
-
-	patch *tmp = new patch();
-	tmp->addPatch("libcocos2dcpp.so", 0x26DB2E, "00 bf 00 bf");
-
-	//playtest
-	tmp->addPatch("libcocos2dcpp.so", 0x2B8896, "00 bf 00 bf");
-	tmp->addPatch("libcocos2dcpp.so", 0x2B88A4, "00 bf 00 bf");
-	tmp->addPatch("libcocos2dcpp.so", 0x2B893C, "00 bf");
-
-	//gradient bypass
-	tmp->addPatch("libcocos2dcpp.so", 0x385134, "FF");
 	
-	
-//	tried to fix colors and opacity
-    tmp->addPatch("libcocos2dcpp.so", 0x2A8AD2, "00 bf");
-    tmp->addPatch("libcocos2dcpp.so", 0x2A8AD8, "00 bf");
-    tmp->addPatch("libcocos2dcpp.so", 0x2A88EC, "00 bf 00 bf");
-	
-
-
-	//test fix colors
-	tmp->addPatch("libcocos2dcpp.so", 0x2CA80E, "00 bf");
-	tmp->addPatch("libcocos2dcpp.so", 0x2CA81A, "00 bf");
-	tmp->addPatch("libcocos2dcpp.so", 0x2CA758, "00 bf");
-
-	tmp->addPatch("libcocos2dcpp.so", 0x2CA7D6, "11 e0");
-	
-	tmp->addPatch("libcocos2dcpp.so", 0x37BB72, "00 bf 00 bf");
-
-	//testing editor shit
-	//tmp->addPatch("libcocos2dcpp.so", 0x2C2D84, "00 bf 00 bf");
-
-	//ads
-	tmp->addPatch("libcocos2dcpp.so", 0x26E970, "00 BF 00 BF");
-	tmp->addPatch("libcocos2dcpp.so", 0x34478C, "00 BF 00 BF");
-	tmp->addPatch("libcocos2dcpp.so", 0x346CC4, "00 BF 00 BF");
-	tmp->addPatch("libcocos2dcpp.so", 0x26E976, "00 BF 00 BF");
-	tmp->addPatch("libcocos2dcpp.so", 0x2E6960, "00 BF 00 BF");
-	tmp->addPatch("libcocos2dcpp.so", 0x2E7968, "00 BF 00 BF");
-	tmp->addPatch("libcocos2dcpp.so", 0x27BEB0, "00 BF 00 BF");
-	tmp->addPatch("libcocos2dcpp.so", 0x27BF7E, "00 BF 00 BF");
-
-	//gauntlets (crash after exiting)
-	tmp->addPatch("libcocos2dcpp.so", 0x2E95A8, "00 BF 00 BF");
-
-	// versus button shit
-	tmp->addPatch("libcocos2dcpp.so", 0x2E95D2, "00 BF 00 BF");
-
-	//shit
-	//	tmp->addPatch("libcocos2dcpp.so", 0x2B8828, "00 BF 00 BF");
-
-	//remove tos popup
-	//tmp->addPatch("libcocos2dcpp.so", 0x26C15C, "00 BF 00 BF");
-
-	// make sure playtest background doesn't move
-	tmp->addPatch("libcocos2dcpp.so", 0x2BC360, "01 22");
-
-	//tmp->Modify();
-	
-	
-	
-	
-		patch *tms = new patch();
+	patch *tms = new patch();
 	
 	#define NOP4(a, b) a->addPatch("libcocos2dcpp.so", b, "00 BF 00 BF")
 	#define NOP2(a, b) a->addPatch("libcocos2dcpp.so", b, "00 BF")
@@ -1854,19 +1765,8 @@ void loader()
 	NOP4(tms, 0x27FE9E);
 	NOP4(tms, 0x27FE9E);
 	
-
-	// playtest
-	NOP4(tms, 0x2BC876);
-	NOP4(tms, 0x2BC884);
-	
-	
 //	NOP4(tms, 0x2EDA9E); //versus
 	NOP4(tms, 0x2EDA74); //gauntlets
-	
-	
-	
-//	tms->addPatch("libcocos2dcpp.so", 0x81121D, "68 74 74 70 3A 2F 2F 77 77 77 2E 62 6F 6F 6D 6C 69 6E 67 73 2E 63 6F 6D 2F 64 61 74 61 62 61 73 65 2F 67 65 74 47 4A 53 6F 6E 67 49 6E 66 6F 2E 70 68 70");
-	
 	
 	tms->addPatch("libcocos2dcpp.so", 0x2C0384, "01 22"); // fix bg
 	
@@ -1884,6 +1784,3 @@ JNIEXPORT jint JNI_OnLoad(JavaVM *vm, void *reserved)
 
 	return JNI_VERSION_1_6;
 }
-
-//open with adb
-//call adb shell am start -n com.gdpsedi.geometrydashsubzero/com.robtopx.geometryjumplite.GeometryDashLite

@@ -129,4 +129,6 @@ public:
     virtual cocos2d::CCParticleSystemQuad* createCustomParticle( std::string );
     virtual cocos2d::CCParticleSystemQuad* claimCustomParticle( std::string, int, int );
     virtual void unclaimCustomParticle( std::string, cocos2d::CCParticleSystemQuad* );
+
+    void preUpdateVisibility(float delta);
 }; 

@@ -92,6 +92,8 @@ bool LevelEditorLayerExt::initH(GJGameLevel* level)
 	CreateAndRetainArray(this, 0x2C74);
 	CreateAndRetainArray(this, 0x2C78);
 	CreateAndRetainArray(this, 0x2D50);
+
+	CreateAndRetainArray(this, 0x2C04);
 	
 	CreateAndRetainDict(this, 0x46C);
 	CreateAndRetainDict(this, 0x43C);
@@ -136,16 +138,16 @@ bool LevelEditorLayerExt::initH(GJGameLevel* level)
 
 	this->createPlayer();
 
+	if (MBO(int, level, 0x2E4) == 3 && MBO(int, level, 0x19C) <= 21) {
+		if (GM->getGameVariable("0114")) {
+			MBO(int, this->_player1(), 0x6E0) = 1;
+			MBO(int, this->_player2(), 0x6E0) = 1;
+		}
+    }
+
 	// collision shit
 	this->createPlayerCollisionBlock();
 	this->addPlayerCollisionBlock();
-
-	// questionmark
-	MBO(bool, this->_player1(), 0x609) = true;
-	MBO(bool, this->_player2(), 0x609) = true;
-
-	MBO(bool, this->_player1(), 0x60C) = false;
-	MBO(bool, this->_player2(), 0x60C) = false;
 
 	this->_dCross() = CCSprite::createWithSpriteFrameName( "d_cross_01_001.png" );
 	this->_batchNode()->addChild( this->_dCross(), 10 );
@@ -164,7 +166,7 @@ bool LevelEditorLayerExt::initH(GJGameLevel* level)
 
 	if ( !this->_levelSettings() )
 	{
-		this->_levelSettings() = LevelSettingsObject::create( );
+		this->_levelSettings() = LevelSettingsObject::create();
 		this->_levelSettings()->_gameLevel() = this->_gameLevel();
 
 		this->_levelSettings()->retain();
@@ -215,6 +217,8 @@ static inline void (*updateVisibilityO)(LevelEditorLayer*,float);
 void LevelEditorLayerExt::updateVisibilityH(float a1) {
 	auto p = this;
 
+	//this->preUpdateVisibility(a1);
+	
 	/*int cl = MBO(int, p, 0x2C1C);
 	
 	
@@ -222,7 +226,7 @@ void LevelEditorLayerExt::updateVisibilityH(float a1) {
 		p->toggleLockActiveLayer();
 		p->_editorUI()->updateGroupIDLabel();
 	}*/
-
+	
 	auto node = this->_gameLayer();
 	
 	auto position = node->getPosition();
@@ -247,7 +251,7 @@ void LevelEditorLayerExt::updateVisibilityH(float a1) {
 	/*
 		UPDATING OBJECTS
 	*/
-
+	
 	auto sections = MEMBERBYOFFSET(CCArray*, this, 0x348);
 	for(int i = startIndex;  i <= 9999; i++){
 		if(i >= 0 && i < sections->count()){
@@ -304,8 +308,6 @@ void LevelEditorLayerExt::updateVisibilityH(float a1) {
 	this->sortBatchnodeChildren(0);
 }
 
-
-
 void LevelEditorLayerExt::ApplyHooks() {
 	HOOK_STATIC("_ZN16LevelEditorLayer4initEP11GJGameLevelb",
 	LevelEditorLayerExt::initH, LevelEditorLayerExt::initO);
@@ -315,8 +317,6 @@ void LevelEditorLayerExt::ApplyHooks() {
 
 	HOOK_STATIC("_ZN10GameObject10setOpacityEh", GameObject_setOpacityH, GameObject_setOpacityO);
 
-	
-	HOOK_STATIC("_ZN16LevelEditorLayer12removeObjectEP10GameObjectb", 
-	LevelEditorLayerExt::removeH, LevelEditorLayerExt::removeO);
-	
+	//HOOK_STATIC("_ZN16LevelEditorLayer12removeObjectEP10GameObjectb", 
+	//LevelEditorLayerExt::removeH, LevelEditorLayerExt::removeO);	
 }
