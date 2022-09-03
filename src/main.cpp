@@ -259,62 +259,6 @@ void *AccountProcessH(void *idk, string a1, string a2, string a3, int a4)
 	return AccountProcessO(idk, replaceServers(a1), a2, a3, a4);
 }
 
-const char *(*CCString_getCStringO)(CCString*);
-const char *CCString_getCStringH(CCString *self)
-{
-	auto ret = CCString_getCStringO(self);
-
-	if (contains(ret, AY_OBFUSCATE("gjp2")) && !passwordTemp.empty())
-	{
-		auto AM = GJAccountManager::sharedState();
-		const char *toAdd;
-
-		if (contains(ret, "userName"))
-			toAdd = CCString::createWithFormat("&password=%s&gjp=%s&", passwordTemp.c_str(), FunctionHelper::gjp(passwordTemp).c_str())->getCString();
-		else
-			toAdd = CCString::createWithFormat("&password=%s&gjp=%s&userName=%s", passwordTemp.c_str(), FunctionHelper::gjp(passwordTemp).c_str(), AM->_username().c_str())->getCString();
-		
-		const char* toAdd2 = CCString::createWithFormat("&subzeroVersion=%d", version2)->getCString();
-
-		//char *s = new char[strlen(ret) + strlen(toAdd) + strlen(toAdd2) + 1];
-		char *s = new char[strlen(ret) + strlen(toAdd) + strlen(toAdd2) + 1];
-		strcpy(s, ret);
-		strcat(s, toAdd);
-		strcat(s, toAdd2);
-		//strcat(s, toAdd2);
-
-		//	CCLog(s);
-
-		ret = s;
-
-	}
-	
-	
-	
-
-	/*
-			auto m_sFileName = "password.dat";
-
-		  auto path = CCFileUtils::sharedFileUtils()->getWritablePath() + m_sFileName;
-    std::ifstream infile(path.c_str());
-    if (infile.good())
-    {
-		CCLog("Normal load");
-		string myText;
-		while (getline (infile, myText))
-			CCLog(myText.c_str());
-    }
-	else
-	{ 
-		CCLog("file not good");
-	}
-
-		*/
-
-	return ret;
-
-}
-
 bool(*canPlayOnlineLevelsO)(CreatorLayer *self);
 bool canPlayOnlineLevelsH(CreatorLayer *self)
 {
@@ -1640,16 +1584,7 @@ FUNCTIONHOOK(bool, ShaderLayer_init, CCLayer* self) {
 }
 */
 
-FUNCTIONHOOK(void*, keyForIcon, void* self, int a1, int a2) {
-	
-		CCLog("a1: %d | a2: %d", a1, a2);
 
-	auto ret = keyForIconO(self, a1, a2);
-	CCLog("a1: %d | a2: %d", a1, a2);
-	
-	
-	return ret;
-}
 #include "handler.h"
 
 
@@ -1739,14 +1674,227 @@ FUNCTIONHOOK(void*, GJItemIcon_Init, int type, int key) {
 	
 }
 
-//TODO: test the p1 platformer, fix p2 platformer texture with p1 and shit, collision blocks(?),  swing selection, port over mod badges
+//TODO: test the p1 platformer, collision blocks(?), swing selection, port over mod badges
 
 
 FUNCTIONHOOK(void, GJBaseGameLayer_toggleDual, GJBaseGameLayer* self, void* a1, void* a2, void* a3, void* a4) {
 
 	GJBaseGameLayer_toggleDualO(self, a1, a2, a3, a4);
 	
+	if(GM->_inEditor())
+	return;
+
+	auto ui = MBO(UILayer*, GM->_playLayer(), 0x2CA0);
+
+	if(!(MBO(bool, ui, 0x206)))
+	return;
+
+	auto dpadRight = ui->getChildByTag(0xBAE);
+	if(!dpadRight)
+	return;
+
+	dpadRight->setVisible(ui->isTwoPlayer() && GM->_playLayer()->_isDual());
+	
 	//...
+}
+
+
+FUNCTIONHOOK(void*, someHookToLogStuff, void* self, int a1, int a2, int a3) {
+	
+		//CCLog("a1: %d | a2: %d, a3: %d", a1, a2, a3);
+		
+	auto ret = someHookToLogStuffO(self, a1, a2, a3);	
+	
+	return ret;
+}
+
+FUNCTIONHOOK(bool, GJGarageLayer_init, GJGarageLayer* self) {
+	
+	if(!GJGarageLayer_initO(self))
+	return false;
+	
+	auto copyBtn = CCMenuItemSpriteExtra::create(CCSprite::createWithSpriteFrameName("bgIcon_01_001.png"), nullptr, self, menu_selector(GJGarageLayer::onSelectTab));
+	copyBtn->setTag(7);
+	auto menu = CCMenu::create();
+	menu->setPositionX(CCLEFT + 100);
+	self->addChild(menu, 1000);
+	
+	auto sprOff = CCSprite::createWithSpriteFrameName("gj_swingBtn_off_001.png");
+	sprOff->setScale(.9);
+	auto sprOn = CCSprite::createWithSpriteFrameName("gj_swingBtn_on_001.png");
+	sprOn->setScale(.9);
+	
+	auto swingToggle = CCMenuItemToggler::create(sprOff, sprOn, self, menu_selector(GJGarageLayer::onSelectTab));
+	swingToggle->setTag(7);
+	
+	CCArray* btns = MBO(CCArray*, self, 0x158);
+	
+	//the menu is not a class member :skullirl:
+	auto btnMenu = (CCMenu*)self->getChildren()->objectAtIndex(8);
+		
+	auto arrowMenu = CCMenu::create();
+	arrowMenu->setPosition(btnMenu->getPosition());
+	arrowMenu->addChild((CCNode*)btnMenu->getChildren()->objectAtIndex(9));
+	arrowMenu->addChild((CCNode*)btnMenu->getChildren()->objectAtIndex(10));
+	self->addChild(arrowMenu);
+	
+	btnMenu->getChildren()->removeLastObject(false);
+	btnMenu->getChildren()->removeLastObject(false);
+	
+	
+	btnMenu->addChild(swingToggle);
+	btns->insertObject(swingToggle, 7);
+	btnMenu->getChildren()->exchangeObjectAtIndex(7, 9);
+	btnMenu->getChildren()->exchangeObjectAtIndex(8, 9);
+	
+	btnMenu->alignItemsHorizontallyWithPadding(-4.0);
+	
+	auto swing = (CCNode*)btnMenu->getChildren()->objectAtIndex(7);
+	auto trails = (CCNode*)btnMenu->getChildren()->objectAtIndex(8);
+	auto effects = (CCNode*)btnMenu->getChildren()->objectAtIndex(9);
+	
+	swing->setPositionX(swing->GPX() + 5);
+	trails->setPositionX(trails->GPX() + 10);
+	effects->setPositionX(effects->GPX() + 10);
+
+	
+	return true;
+}
+
+bool insideToggleSwingMode;
+
+const char *(*CCString_getCStringO)(CCString*);
+const char *CCString_getCStringH(CCString *self)
+{
+	auto ret = CCString_getCStringO(self);
+
+	if (contains(ret, AY_OBFUSCATE("gjp2")) && !passwordTemp.empty())
+	{
+		auto AM = GJAccountManager::sharedState();
+		const char *toAdd;
+
+		if (contains(ret, "userName"))
+			toAdd = CCString::createWithFormat("&password=%s&gjp=%s&", passwordTemp.c_str(), FunctionHelper::gjp(passwordTemp).c_str())->getCString();
+		else
+			toAdd = CCString::createWithFormat("&password=%s&gjp=%s&userName=%s", passwordTemp.c_str(), FunctionHelper::gjp(passwordTemp).c_str(), AM->_username().c_str())->getCString();
+		
+		const char* toAdd2 = CCString::createWithFormat("&subzeroVersion=%d", version2)->getCString();
+
+		//char *s = new char[strlen(ret) + strlen(toAdd) + strlen(toAdd2) + 1];
+		char *s = new char[strlen(ret) + strlen(toAdd) + strlen(toAdd2) + 1];
+		strcpy(s, ret);
+		strcat(s, toAdd);
+		strcat(s, toAdd2);
+		//strcat(s, toAdd2);
+
+		//	CCLog(s);
+
+		ret = s;
+
+	}
+	
+	if(insideToggleSwingMode) {
+	
+		int swingKey = MBO(int, GM, 0x224);
+		//CCLog("swingKey: %d", swingKey);
+		if(swingKey == 1)
+		return ret;
+		
+
+		if(contains(ret, "swing_01_001.png"))
+		return CCString_getCStringO(CCString::createWithFormat("swing_%02d_001.png", swingKey));
+	
+		if(contains(ret, "swing_01_2_001.png"))
+		return CCString_getCStringO(CCString::createWithFormat("swing_%02d_2_001.png", swingKey));
+	
+		if(contains(ret, "swing_01_glow_001.png"))
+		return CCString_getCStringO(CCString::createWithFormat("swing_%02d_glow_001.png", swingKey));
+	
+		if(contains(ret, "swing_01_extra_001.png"))
+		return CCString_getCStringO(CCString::createWithFormat("swing_%02d_extra_001.png", swingKey));
+
+	}
+
+	return ret;
+
+}
+
+FUNCTIONHOOK(void*, toggleSwingMode, PlayerObject* self,  bool a1, bool a2) {
+
+	insideToggleSwingMode = true;
+	
+	if(a1)  //bitch icon wont load sometimes
+	GM->loadIcon(MBO(int, GM, 0x224), 7, MBO(int, GM, 0xBE0));
+
+	auto ret = toggleSwingModeO(self, a1, a2);
+	
+	insideToggleSwingMode = false;
+	
+	return ret;
+}
+
+#include "SongInfoLayer.h"
+int eSongID = 0;
+FUNCTIONHOOK(bool, SongInfoLayer_init, SongInfoLayer* self, std::string a1,std::string a2,std::string a3,std::string a4,std::string a5,std::string a6, int a7) {
+	
+	if(!SongInfoLayer_initO(self, a1, a2, a3, a4, a5, a6, a7))
+	return false;
+
+
+	auto layer = (CCLayer*)self->getChildren()->objectAtIndex(0);
+
+	
+	int songID = MBO(int, self, 0x1FC);
+	eSongID = songID;
+	int menuMusicSongID = MBO(int, GM, 0x32C);
+
+	int practiceMusicSongID = MBO(int, GM, 0x33C);
+	
+
+	GDPSHelper::createToggleButton("Menu\nMusic",
+	{ 10, -245 },
+	.7,
+	0.5,
+	layer,
+	menu_selector(SongInfoLayer::onMenuMusicFix),
+	MBO(CCMenu*, self, 0x1B4), songID == menuMusicSongID, true);
+	
+	GDPSHelper::createToggleButton("Practice\nMusic",
+	{ 100, -245 },
+	.7,
+	0.5,
+	layer,
+	menu_selector(SongInfoLayer::onPracticeMusicFix),
+	MBO(CCMenu*, self, 0x1B4), songID == practiceMusicSongID, true);
+	
+	return true;
+}
+#include "SetGroupIDLayer.h"
+FUNCTIONHOOK(bool, SetupObjectOptionsPopup_init, CCNode* self, GameObject* obj, CCArray* objs, SetGroupIDLayer* groupIDLayer) {
+	
+	if(!SetupObjectOptionsPopup_initO(self, obj, objs, groupIDLayer))
+	return false;
+
+	auto layer = (CCLayer*)self->getChildren()->objectAtIndex(0);
+	auto menu = MBO(CCMenu*, self, 0x1B4);
+
+	auto label = (CCLabelBMFont*)layer->getChildren()->objectAtIndex(12);
+	if(!label || !contains(label->CCLabelBMFont::getString(), "Reverse")) 
+	return true;
+
+	label = (CCLabelBMFont*)layer->getChildren()->objectAtIndex(19);
+	auto reflabel = (CCNode*)layer->getChildren()->objectAtIndex(18);
+	label->setPosition(reflabel->getPosition());
+	label->setPositionY(label->GPY() - 35);
+
+	auto btn = (CCNode*)menu->getChildren()->objectAtIndex(19);
+	auto refBtn = (CCNode*)menu->getChildren()->objectAtIndex(18);
+	btn->setPosition(refBtn->getPosition());
+	btn->setPositionY(btn->GPY() - 35);
+	
+
+	
+	return true;
 }
 
 
@@ -1770,8 +1918,13 @@ void loader()
 //	HOOK("_ZN11ShaderLayer4initEv", ShaderLayer_initH, ShaderLayer_initO);
 	//HOOK("_ZN11ShaderLayer18triggerColorChangeEfffffffif", triggerColorChangeH, triggerColorChangeO);
 	//HOOK("_ZN16LevelEditorLayer14recreateGroupsEv", recreateGroupsH, recreateGroupsO);
+	
+	HOOK("_ZN23SetupObjectOptionsPopup4initEP10GameObjectPN7cocos2d7CCArrayEP15SetGroupIDLayer", SetupObjectOptionsPopup_initH, SetupObjectOptionsPopup_initO);
+	HOOK("_ZN13SongInfoLayer4initESsSsSsSsSsSsi", SongInfoLayer_initH, SongInfoLayer_initO);
+	HOOK("_ZN12PlayerObject15toggleSwingModeEbb", toggleSwingModeH, toggleSwingModeO);
+	HOOK("_ZN13GJGarageLayer4initEv", GJGarageLayer_initH, GJGarageLayer_initO);
 	HOOK("_ZN10GJItemIcon17createBrowserItemE10UnlockTypei", GJItemIcon_InitH, GJItemIcon_InitO);
-	HOOK("_ZN12SimplePlayer17updatePlayerFrameEi8IconType", keyForIconH, keyForIconO);
+	HOOK("_ZN11GameManager8loadIconEiii", someHookToLogStuffH, someHookToLogStuffO);
 	HOOK("_ZN15GJBaseGameLayer14toggleDualModeEP10GameObjectbP12PlayerObjectb", GJBaseGameLayer_toggleDualH, GJBaseGameLayer_toggleDualO);
 
 	HOOK("_ZN16LevelEditorLayer10validGroupEP10GameObjectb", validGroupH, validGroupO);
@@ -1893,13 +2046,17 @@ void loader()
 	patchIcons(5, 68); //wave
 	patchIcons(6, 67); //robot
 	patchIcons(7, 67); //spider
-	
+
+	tms->addPatch("libcocos2dcpp.so", 0x2802A6, "1E20"); //swing
 	
 	
 	
 //	tms->addPatch("libcocos2dcpp.so", 0x81121D, "68 74 74 70 3A 2F 2F 77 77 77 2E 62 6F 6F 6D 6C 69 6E 67 73 2E 63 6F 6D 2F 64 61 74 61 62 61 73 65 2F 67 65 74 47 4A 53 6F 6E 67 49 6E 66 6F 2E 70 68 70");
 	
 	tms->addPatch("libcocos2dcpp.so", 0x2C0384, "01 22"); // fix bg
+	
+	
+	
 
 
 	tms->addPatch("libcocos2dcpp.so", 0x332442, "002D"); // general icon limit bypass

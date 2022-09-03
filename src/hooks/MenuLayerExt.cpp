@@ -274,7 +274,6 @@ bool MenuLayerExt::init_hk()
 				request->release();
 		}
 
-
 	
 	
 				

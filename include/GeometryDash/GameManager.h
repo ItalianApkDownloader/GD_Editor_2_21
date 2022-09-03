@@ -26,6 +26,7 @@ enum IconType
     Spider,
     Swing,
     Jetpack,
+	Trails = 99
 };
 
 enum LastGameScene
@@ -215,13 +216,7 @@ public:
 
     CLASS_MEMBER(LastGameScene, lastScene, 0x1AC);
 
-// missing funcs
-public:
-    void setPlayerSwing(int ID) {
-        _playerSwing() = ID;
-        
-        // not sure how rand is calculated
-    }
+
 
 public:
     GameManager();
@@ -247,8 +242,11 @@ int getIntGameVariable(const char* variable);
     void setPlayerColor2(int);
 	void setPlayerShip(int);
 	void setPlayerJetpack(int);
+	void setPlayerSwing(int);
 	void setPlayerFrame(int);
 	void resetAllIcons();
+	void loadIcon(int, int, int);
+	void fadeInMenuMusic();
 	void toggleGameVariable(const char* key);
 };
 

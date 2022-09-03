@@ -43,20 +43,8 @@ void GDPSHelper::logNames(CCArray* objects) {
 	for(int i = 0; i < objects->count(); i++) {
 		auto node = (CCNode*)objects->objectAtIndex(i);
 		auto name = GDPSHelper::NameForNode(node);
-		CCLog("i: %d | %s", i, name.c_str());
-		
-		if(node->getChildrenCount() > 0) {
-			
-			auto objects2 = node->getChildren();
-			
-			for(int j = 0; j < node->getChildrenCount(); j++) {
-				
-				auto node2 = (CCNode*)objects2->objectAtIndex(i);
-				auto name2 = GDPSHelper::NameForNode(node2);
-				CCLog("inside of %s | j: %d | %s", name.c_str(), j, name2.c_str());
-				
-			}
-		}
+		CCLog("i: %d | %s | count: %d", i, name.c_str(), node->getChildrenCount());
+
 		
 	}
 	CCLog("Finished");

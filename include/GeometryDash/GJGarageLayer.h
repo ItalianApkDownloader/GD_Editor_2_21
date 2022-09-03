@@ -13,4 +13,5 @@ public:
 
     void selectPage(IconType);
     void updatePlayerColors();
+    void onSelectTab(CCObject*);
 };

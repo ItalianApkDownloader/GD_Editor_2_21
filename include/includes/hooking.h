@@ -49,6 +49,7 @@ HookWrap::nh(a, \
 (void*)b, \
 (void**)&c);
 
+
 #define HOOK_STATIC(a, b, c) \
 HookWrap::sh(a, \
 HookManager::getPointer(&b), \
