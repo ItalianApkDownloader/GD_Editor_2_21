@@ -2062,6 +2062,10 @@ void loader()
 	tms->addPatch("libcocos2dcpp.so", 0x332442, "002D"); // general icon limit bypass
 	tms->addPatch("libcocos2dcpp.so", 0x2803D0, "1421"); // general icon limit bypass
 	
+	
+	tms->addPatch("libcocos2dcpp.so", 0x2C437C, "16 21"); // explorers song bypass fix in levelsettingslayer
+	tms->addPatch("libcocos2dcpp.so", 0x2C4384, "16 21"); // explorers song bypass fix in levelsettingslayer 2
+	
 	tms->addPatch("libcocos2dcpp.so", 0x2EB9EE, "01 21"); // fix level name in pause
 	
 
