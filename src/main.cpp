@@ -134,7 +134,7 @@ const char *getStringH(LoadingLayer *self)
 	GM->setGameVariable("0122", false);
 	GM->setGameVariable("0023", false); //smooth fix
 	GM->setGameVariable("0074", true);  //show restart button
-	return "Italian APK Downloader\nCatto_\niAndy_HD3\nTr1NgleBoss";
+	return "Italian APK Downloader\nCatto_\niAndy_HD3\nTr1NgleBoss\nEitan";
 }
 
 void(*addToggle_trp)(MoreOptionsLayer *self, const char *title, const char *code, const char *desc);
@@ -438,7 +438,18 @@ const char *keyToFrameH(ObjectToolbox *self, int key)
 }
 
 //7DA3E7
+void *(*GameObject_customSetupO)(GameObject *obj);
+void *GameObject_customSetupH(GameObject *obj){
+	auto ret = GameObject_customSetupO(obj);
 
+	auto id = obj->_objectID();
+
+	if(id == 2100){
+		obj->_objectID() = 1598;
+	}
+
+	return ret;
+}
 void *(*PlayLayer_addObjectO)(PlayLayer *self, GameObject *obj);
 void *PlayLayer_addObjectH(PlayLayer *self, GameObject *obj)
 {
@@ -569,7 +580,22 @@ void hook_onToggle(void *pthis, const char *val)
 		}
 	}
 }
+bool(*EffectGameObject_triggerObjectO)(EffectGameObject*, int);
+bool EffectGameObject_triggerObjectH(EffectGameObject* self, int a2){
+	auto ret = EffectGameObject_triggerObjectO(self, a2);
 
+	if(a2 == 4000){
+		auto playlayer = GM->_playLayer();
+
+		auto bg = (CCSprite*)playlayer->getChildren()->objectAtIndex(3);
+
+
+
+		//bg->setDisplayFrame("game_bg_25_001.png");
+	}
+
+	return ret;
+}
 bool(*SelectArtLayer_initO)(SelectArtLayer *, SelectArtType);
 bool SelectArtLayer_initH(SelectArtLayer *self, SelectArtType type)
 {
@@ -612,8 +638,8 @@ bool SelectArtLayer_initH(SelectArtLayer *self, SelectArtType type)
 	}
 	
 	if(type == mg) {
-		toRemove = 2;
-		maxTextures = 2;
+		toRemove = 3;
+		maxTextures = 3;
 	}
 	
 	for(int i = 0; i < toRemove; i++) {
@@ -631,7 +657,7 @@ bool SelectArtLayer_initH(SelectArtLayer *self, SelectArtType type)
 				else if(type == background)
 					frameSprStr = "bgIcon_%02d_001.png";
 				else
-					frameSprStr = "bgIcon_01_001.png";
+					frameSprStr = "fgIcon_%02d_001.png";
 
 
 				auto frameStr = CCString::createWithFormat(frameSprStr, i + 1)->getCString();
@@ -1097,7 +1123,19 @@ bool SetupAreaTransformTriggerPopupH(SetupAreaTransformTriggerPopup *self, Effec
 	return ret;
 
 }
+const char*(*GameManager_getMGTextureO)(GameManager*, int);
+const char* GameManager_getMGTextureH(GameManager* self, int a2) {
 
+	auto gam = GameManager::sharedState();
+
+	gam->loadMiddleground(2);
+
+	auto epico = CCString::createWithFormat("fg_%02d.png", gam->_foreground());
+
+	auto saas = epico->getCString();
+
+	return saas;
+}
 bool(*SetupAreaFadeTriggerPopupO)(SetupAreaFadeTriggerPopup *, EffectGameObject *, cocos2d::CCArray *);
 bool SetupAreaFadeTriggerPopupH(SetupAreaFadeTriggerPopup *self, EffectGameObject *object, cocos2d::CCArray *objects)
 {
@@ -1365,6 +1403,7 @@ FUNCTIONHOOK(bool, LevelSettingsLayer_init, LevelSettingsLayer* self, LevelSetti
 	
 	bool isStartPos = settings->_isStartPos();
 	
+	auto spriteCache = CCSpriteFrameCache::sharedSpriteFrameCache();
 	
 	auto layer = (CCLayer*)self->getChildren()->objectAtIndex(0);
 	auto menu = (CCMenu*)layer->getChildren()->objectAtIndex(1);
@@ -1372,10 +1411,38 @@ FUNCTIONHOOK(bool, LevelSettingsLayer_init, LevelSettingsLayer* self, LevelSetti
 	
 	if(!isStartPos) {
 		
+		auto mg_label = (CCLabelBMFont*)layer->getChildren()->objectAtIndex(13);
+		auto mini_label = (CCLabelBMFont*)layer->getChildren()->objectAtIndex(14);
+		auto dual_label = (CCLabelBMFont*)layer->getChildren()->objectAtIndex(15);
+
+		mg_label->setPosition(mg_label->getPositionX() - 50, mg_label->getPositionY() - 65);
+		mini_label->setPositionY(mini_label->getPositionY() - 60);
+		dual_label->setPositionY(dual_label->getPositionY() - 55);
+
 		auto platformer_toggle = (CCMenuItemToggler*)menu->getChildren()->objectAtIndex(29);
-		auto label = CCLabelBMFont::create("Platformer", "goldFont.fnt");
-		label->setPosition(platformer_toggle->getPositionX() + 70, platformer_toggle->getPositionY());
-		label->setScale(.6);
+		auto dual_toggle = (CCMenuItemToggler*)menu->getChildren()->objectAtIndex(25);
+		auto mini_toggle = (CCMenuItemToggler*)menu->getChildren()->objectAtIndex(24);
+		auto font = (CCMenuItemSpriteExtra*)menu->getChildren()->objectAtIndex(26);
+		auto middleground = (CCMenuItemSpriteExtra*)menu->getChildren()->objectAtIndex(23);
+		auto ground = (CCMenuItemSpriteExtra*)menu->getChildren()->objectAtIndex(22);
+		auto background = (CCMenuItemSpriteExtra*)menu->getChildren()->objectAtIndex(21);
+
+		auto middlegroundspr = (CCSprite*)middleground->getChildren()->objectAtIndex(0);
+		auto groundspr = (CCSprite*)ground->getChildren()->objectAtIndex(0);
+		auto backgroundspr = (CCSprite*)background->getChildren()->objectAtIndex(0);
+
+		font->setPosition(font->getPositionX() - 70, font->getPositionY() - 10);
+		dual_toggle->setPositionY(dual_toggle->getPositionY() - 55);
+		mini_toggle->setPositionY(mini_toggle->getPositionY() - 60);
+		middleground->setPositionY(middleground->getPositionY() - 65);
+		middleground->setPositionX(middleground->getPositionX() - 50);
+
+		platformer_toggle->setPositionX(platformer_toggle->getPositionX() + 70);
+
+		auto label = CCLabelBMFont::create("Platformer\nMode:", "goldFont.fnt");
+		label->setAlignment(kCCTextAlignmentCenter);
+		label->setPosition(platformer_toggle->getPositionX() - 55, platformer_toggle->getPositionY());
+		label->setScale(.4);
 		menu->addChild(label);
 	}
 
@@ -1399,8 +1466,9 @@ FUNCTIONHOOK(bool, LevelSettingsLayer_init, LevelSettingsLayer* self, LevelSetti
 	togglerArray->replaceObjectAtIndex(7, newToggle, false);
 	menu->getChildren()->replaceObjectAtIndex(swingBtnIndex, newToggle, false);
 	menu->addChild(newToggle);
+
 	#ifdef DEVDEBUG
-	//	GDPSHelper::createLabels(menu, menu->getChildren(), {0, 0}, true);
+	//GDPSHelper::createLabels(layer, layer->getChildren(), {0, 0}, true);
 		
 		int a = MBO(int, settings, 0x108);
 		CCLog("a: %d", a);
@@ -1457,7 +1525,7 @@ FUNCTIONHOOK(void, updateFontLabel, SelectFontLayer* self, CCObject* a2) {
 		if(tag == 0)
 		return updateFontLabelO(self, a2);
 	
-		if(font != 10)
+		if(font != 11)
 		return updateFontLabelO(self, a2);
 
 }
@@ -1869,6 +1937,7 @@ FUNCTIONHOOK(bool, SongInfoLayer_init, SongInfoLayer* self, std::string a1,std::
 	
 	return true;
 }
+
 #include "SetGroupIDLayer.h"
 FUNCTIONHOOK(bool, SetupObjectOptionsPopup_init, CCNode* self, GameObject* obj, CCArray* objs, SetGroupIDLayer* groupIDLayer) {
 	
@@ -1909,6 +1978,9 @@ void loader()
 	LevelEditorLayerExt::ApplyHooks();
 	EditorPauseLayerExt::ApplyHooks();
 	DPADHooks::ApplyHooks();
+
+	auto objs = ObjectToolbox::sharedState();
+	objs->addObject(4000, "swing_01_001.png");
 	
 	#ifdef SHADERDEBUG
 	DevDebugHooks::ApplyHooks();
@@ -1937,6 +2009,7 @@ void loader()
 	HOOK("_ZN16LevelEditorLayer19addObjectFromVectorERSt6vectorISsSaISsEE", LevelEditorLayer_addObjectFromVectorH, LevelEditorLayer_addObjectFromVectorO);
 	HOOK("_ZN11GameManager22shouldShowInterstitialEiii", shouldShowInterstitialH, shouldShowInterstitialO);
 	HOOK("_ZN14LevelInfoLayer4initEP11GJGameLevelb", LevelInfoLayer_initH, LevelInfoLayer_initO);
+	HOOK("_ZN10GameObject11customSetupEv", GameObject_customSetupH,GameObject_customSetupO);
 	//HOOK("_ZN15GJBaseGameLayer12addToSectionEP10GameObject", GJBaseGameLayer_addToSectionH, GJBaseGameLayer_addToSectionO);
 	//HOOK("_ZN15GJBaseGameLayer23removeObjectFromSectionEP10GameObject", GJBaseGameLayer_removeObjectFromSectionH, GJBaseGameLayer_removeObjectFromSectionO);
 
@@ -1957,6 +2030,7 @@ void loader()
 	HOOK("_ZN17SetupTriggerPopup4initEP16EffectGameObjectPN7cocos2d7CCArrayEff", SetupTriggerPopupH, SetupTriggerPopupO);
 	HOOK("_ZN23SetupPickupTriggerPopup4initEP16EffectGameObjectPN7cocos2d7CCArrayE", SetupPickupTriggerH, SetupPickupTriggerO);
 	HOOK("_ZN20AccountRegisterLayer4initEv", AccountRegisterLayer_InitH, AccountRegisterLayer_InitO);
+	HOOK("_ZN11GameManager12getMGTextureEi", GameManager_getMGTextureH, GameManager_getMGTextureO);
 //	HOOK("_ZN11GameManager18toggleGameVariableEPKc", hook_onToggle, onToggleTrampoline);
 	
 	HOOK("_ZN13ObjectToolbox13intKeyToFrameEi", keyToFrameH, keyToFrameO);
@@ -2040,14 +2114,15 @@ void loader()
 	
 	//https://cdn.discordapp.com/attachments/997593414684135485/1014791808666042438/icons.rar
 	
-	patchIcons(2, 168); //ship
+	patchIcons(1, 155); //cube
+	patchIcons(2, 169); //ship
 	patchIcons(3, 114); //ball
-	patchIcons(4, 146); //ufo
-	patchIcons(5, 68); //wave
-	patchIcons(6, 67); //robot
-	patchIcons(7, 67); //spider
+	patchIcons(4, 148); //ufo
+	patchIcons(5, 96); //wave
+	patchIcons(6, 68); //robot
+	patchIcons(7, 69); //spider
 
-	tms->addPatch("libcocos2dcpp.so", 0x2802A6, "1E20"); //swing
+	tms->addPatch("libcocos2dcpp.so", 0x2802A6, "2120"); //swing
 	
 	
 	
@@ -2063,10 +2138,16 @@ void loader()
 	tms->addPatch("libcocos2dcpp.so", 0x2803D0, "1421"); // general icon limit bypass
 	
 	
-	tms->addPatch("libcocos2dcpp.so", 0x2C437C, "16 21"); // explorers song bypass fix in levelsettingslayer
+	tms->addPatch("libcocos2dcpp.so", 0x2C437C, "16 29"); // explorers song bypass fix in levelsettingslayer
 	tms->addPatch("libcocos2dcpp.so", 0x2C4384, "16 21"); // explorers song bypass fix in levelsettingslayer 2
+	tms->addPatch("libcocos2dcpp.so", 0x2C43A6, "16 29"); // explorers song bypass fix in levelsettingslayer 3
 	
 	tms->addPatch("libcocos2dcpp.so", 0x2EB9EE, "01 21"); // fix level name in pause
+
+	// remove chromatic glitch (tringle petition)
+	tms->addPatch("libcocos2dcpp.so", 0x2E3666, "00 BF 00 BF 00 BF 00 BF 00 BF 00 BF 00 BF 00 BF 00 BF 00 BF");
+
+	tms->addPatch("libcocos2dcpp.so", 0x2C44EA, "4F F0 02 0A"); // FG
 	
 
 
