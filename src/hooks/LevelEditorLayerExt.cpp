@@ -215,10 +215,8 @@ FUNCTIONHOOK(void, GameObject_setOpacity, GameObject* self, unsigned char opacit
 }
 
 static inline void (*updateVisibilityO)(LevelEditorLayer*,float);
-void LevelEditorLayerExt::updateVisibilityH(float a1) {
+void LevelEditorLayerExt::updateVisibilityH(float delta) {
 	auto p = this;
-
-	//this->preUpdateVisibility(a1);
 	
 	/*int cl = MBO(int, p, 0x2C1C);
 	
@@ -264,7 +262,7 @@ void LevelEditorLayerExt::updateVisibilityH(float a1) {
 						for (int k = 0; k < sect->count(); k++) {
 							GameObject *obj = dynamic_cast<GameObject *>(sect->objectAtIndex(k));
 							auto objectPos = obj->getPosition();
-							if(rect.containsPoint(objectPos)){
+							if(rect.containsPoint(objectPos)) {
 								obj->addMainSpriteToParent(false);
 								if(obj->hasSecondaryColor()) obj->addColorSpriteToParent(true);
 								obj->activateObject();
@@ -275,8 +273,6 @@ void LevelEditorLayerExt::updateVisibilityH(float a1) {
 								int currentLayer = MBO(int, p, 0x2C50);
 								int l1 = MBO(int, obj, 0x450);
 								int l2 = MBO(int, obj, 0x454);
-								
-								//extern void* GameObjectSetOpacityH(GameObject* self, unsigned char opacity);
 
 								// new option "Hide invisible"
 								if(MBO(bool, obj, 0x4AF) && GM->getGameVariable("0121")) {
@@ -305,7 +301,9 @@ void LevelEditorLayerExt::updateVisibilityH(float a1) {
 	this->updateObjectColors(this->_objectsToUpdate());
 	this->_objectsToUpdate()->removeAllObjects();
 	
+	// area triggers
 	this->processAreaVisualActions();
+
 	this->sortBatchnodeChildren(0);
 }
 
@@ -318,6 +316,6 @@ void LevelEditorLayerExt::ApplyHooks() {
 
 	HOOK_STATIC("_ZN10GameObject10setOpacityEh", GameObject_setOpacityH, GameObject_setOpacityO);
 
-	//HOOK_STATIC("_ZN16LevelEditorLayer12removeObjectEP10GameObjectb", 
-	//LevelEditorLayerExt::removeH, LevelEditorLayerExt::removeO);	
+	HOOK_STATIC("_ZN16LevelEditorLayer12removeObjectEP10GameObjectb", 
+	LevelEditorLayerExt::removeH, LevelEditorLayerExt::removeO);	
 }

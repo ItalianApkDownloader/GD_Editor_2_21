@@ -10,18 +10,26 @@ enum PlayerButton
     Right = 3
 };
 
-class PlayerObject : public cocos2d::CCSprite  // GameObject->CCSpritePlus
+enum PlayerCollisionDirection
 {
+    dirTop = 0,
+    dirBottom = 1,
+    dirLeft = 2,
+    dirRight = 3
+};
+
+class PlayerObject : public GameObject  // GameObject->CCSpritePlus
+{	
 public:
-    unsigned char _pad1[0x120]; // padding for CCSprite + 0x10 (0x1e4)
-    int field304; // 0x304
-    uint8_t _pad308[ 0x3f0 ]; // 0x308
-    bool field6f8; // 0x6f8
-    uint8_t _pad6f9[ 0x68b ]; // 0x3f9
-    int platformerMode; // 0xA84
-	
-	public:
-    CLASS_MEMBER(bool, platformer, 0xA84);
+    CLASS_MEMBER(bool, isPlatformer, 0xB70);
+    CLASS_MEMBER(bool, isGameplayRotated, 0x75B);
+    CLASS_MEMBER(bool, isGravityFlipped, 0x757);
+    CLASS_MEMBER(bool, inPlayLayer, 0x60C);
+    CLASS_MEMBER(bool, isRollMode, 0x753);
+    CLASS_MEMBER(bool, isDartMode, 0x754);
+    CLASS_MEMBER(float, yVelocity, 0x740);
+    CLASS_MEMBER(bool, isDashing, 0x770);
+    CLASS_MEMBER(float, playerScale, 0x774);
 
 public:
     PlayerObject();
@@ -38,7 +46,29 @@ public:
     void releaseButton(PlayerButton btn);
     void switchedDirTo(PlayerButton btn);
     int getActiveMode();
+
+    void hitGround(bool);
+    void hitGroundNoJump(bool);
+    void updateCollide(PlayerCollisionDirection, int);
+    void didHitHead();
+    void stopDashing();
+
+    void updateCollideLeft(float, int);
+    void updateCollideRight(float, int);
+    void updateCollideBottom(float, int);
+    void updateCollideTop(float, int);
+
+    void exitPlatformerAnimateJump();
+
+    void setYVelocity(double, int);
+
+    bool isInNormalMode();
+    bool isFlying();
+    bool isSafeFlip(float);
+    void checkSnapJumpToObject(GameObject* obj);
     
+    int flipMod();
+
     // virtual void setVisible( bool visible ); // 0xA8
 
     virtual void placeholder1();

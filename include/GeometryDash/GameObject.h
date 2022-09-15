@@ -304,6 +304,17 @@ public:
 
     void updateMainColor();
 
+    float slopeYPos(cocos2d::CCRect rect);
+
+    cocos2d::CCRect const& getObjectRect();
+    cocos2d::CCRect getObjectRect(float, float);
+
+    cocos2d::CCPoint getLastPosition();
+    cocos2d::CCPoint getRealPosition();
+    cocos2d::CCPoint getScalePosDelta();
+
+    int getType();
+
     void updateMainColor(cocos2d::_ccColor3B const& color);
     void updateSecondaryColor(cocos2d::_ccColor3B const& color);
 	void addMainSpriteToParent(bool);

@@ -10,6 +10,7 @@
 #include "CCScene.h"
 #include "TriggerEffectDelegate.h"
 #include "GameObject.h"
+#include "EnterEffectObject.h"
 #include "GJEffectManager.h"
 #include "particle_nodes/CCParticleSystemQuad.h"
 
@@ -98,6 +99,8 @@ public:
     void tweenValue( float from, float to, int tag, std::string property_key, float duration, int action, float f_rate );
 
     void resetLevelVariables();
+
+    void triggerAreaEffect(EnterEffectObject* object);
 
     void queueButton(int,bool,bool);
     void processAreaVisualActions();

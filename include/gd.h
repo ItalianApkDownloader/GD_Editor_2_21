@@ -6,6 +6,7 @@
 
 #include "GJUserScore.h"
 #include "EffectGameObject.h"
+#include "EnterEffectObject.h"
 #include "SetupCameraRotatePopup.h"
 #include "Slider.h"
 #include "GJEffectManager.h"

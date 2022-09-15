@@ -26,6 +26,7 @@
 #include "hooks/PauseLayerExt.h"
 #include "hooks/ShaderDebug.h"
 #include "hooks/DPADControl.h"
+#include "hooks/CollisionFix.h"
 
 /*
 		FLAG USED FOR DEVELOPER MODE DEBUGGING LIKE SHADERS
@@ -1978,9 +1979,10 @@ void loader()
 	LevelEditorLayerExt::ApplyHooks();
 	EditorPauseLayerExt::ApplyHooks();
 	DPADHooks::ApplyHooks();
+	CollisionFix::ApplyHooks();
 
-	auto objs = ObjectToolbox::sharedState();
-	objs->addObject(4000, "swing_01_001.png");
+	/*auto objs = ObjectToolbox::sharedState();
+	objs->addObject(4000, "swing_01_001.png");*/
 	
 	#ifdef SHADERDEBUG
 	DevDebugHooks::ApplyHooks();

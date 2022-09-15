@@ -211,7 +211,7 @@ public:
 	CLASS_MEMBER(PlayLayer*, editorLayer, 0x16C);
 	CLASS_MEMBER(bool, inEditor, 0x1BA);
 	
-	
+	CLASS_MEMBER(int, foreground, 0x2C4);
 
 
     CLASS_MEMBER(LastGameScene, lastScene, 0x1AC);
@@ -248,6 +248,8 @@ int getIntGameVariable(const char* variable);
 	void loadIcon(int, int, int);
 	void fadeInMenuMusic();
 	void toggleGameVariable(const char* key);
+
+	void loadMiddleground(int ID);
 };
 
 #define GM GameManager::sharedState()
