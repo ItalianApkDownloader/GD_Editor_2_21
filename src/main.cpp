@@ -1124,19 +1124,16 @@ bool SetupAreaTransformTriggerPopupH(SetupAreaTransformTriggerPopup *self, Effec
 	return ret;
 
 }
-const char*(*GameManager_getMGTextureO)(GameManager*, int);
-const char* GameManager_getMGTextureH(GameManager* self, int a2) {
 
+FUNCTIONHOOK(const char*, GameManager_getMGTexture, GameManager* self, int a2) {
 	auto gam = GameManager::sharedState();
 
 	gam->loadMiddleground(2);
 
-	auto epico = CCString::createWithFormat("fg_%02d.png", gam->_foreground());
-
-	auto saas = epico->getCString();
-
-	return saas;
+	auto epico = CCString::createWithFormat("fg_%02d.png", a2);
+	return epico->getCString();
 }
+
 bool(*SetupAreaFadeTriggerPopupO)(SetupAreaFadeTriggerPopup *, EffectGameObject *, cocos2d::CCArray *);
 bool SetupAreaFadeTriggerPopupH(SetupAreaFadeTriggerPopup *self, EffectGameObject *object, cocos2d::CCArray *objects)
 {
