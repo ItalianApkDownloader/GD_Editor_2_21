@@ -64,6 +64,7 @@ void DPADHooks::EditorUIInit(EditorUI* self) {
 
 FUNCTIONHOOK(bool, UILayer_ccTouchBegan, UILayer* self, CCTouch *touch, CCEvent *event) {
     auto ret = UILayer_ccTouchBeganO(self, touch, event);
+    
 
     if(MBO(bool, self, 0x206)) {
         auto gm = GameManager::sharedState();
@@ -114,6 +115,7 @@ FUNCTIONHOOK(bool, UILayer_ccTouchBegan, UILayer* self, CCTouch *touch, CCEvent 
                 else p2jump = touchPos.x > winSize.width / 2;
 
                 if(p2jump) {
+
                     if(MBO(int, self, 0x1D0) != -1) {
                         goto CONTINUE;
                     }
@@ -126,10 +128,17 @@ FUNCTIONHOOK(bool, UILayer_ccTouchBegan, UILayer* self, CCTouch *touch, CCEvent 
             if(MBO(int, self, 0x1CC) == -1) {
                 MBO(int, self, 0x1CC) = MBO(int, touch, 0x30);
                 gm->_playLayer()->queueButton(1, true, false);
+                return true;
             }
         }
         
         if(!self->isTwoPlayer() && !dpad1rect.containsPoint(touchPos))
+        {
+            MBO(int, self, 0x1CC) = MBO(int, touch, 0x30);
+            gm->_playLayer()->queueButton(1, true, false);
+        }
+       
+        if(self->isTwoPlayer() && rightBtnRect.containsPoint(touchPos) && !MBO(bool, gm->_playLayer(), 0x4C1))
         {
             MBO(int, self, 0x1CC) = MBO(int, touch, 0x30);
             gm->_playLayer()->queueButton(1, true, false);

@@ -16,7 +16,7 @@ returntype name##H(__VA_ARGS__)
 */
 // TODO: fix pads and slopes and shit and other shit idfk
 FUNCTIONHOOK(void, PlayerObject_collidedWithObjectInternal, PlayerObject* self, float idk, GameObject* obj, CCRect hitbox, bool what) {
-	if(self->_isGameplayRotated()) {
+	if(self->_isGameplayRotated() && !GM->getGameVariable("1000010")) {
 		int idkSomeInt = obj != nullptr ? MBO(int, obj, 0x324) : 0;
  
 		CCRect rect = hitbox;

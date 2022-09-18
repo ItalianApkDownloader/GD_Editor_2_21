@@ -155,6 +155,7 @@ void addToggle_hk(MoreOptionsLayer *self, const char *title, const char *code, c
 			addToggle_trp(self, "Swap platformer\njump sides", "100011", 0);
 			addToggle_trp(self, "Playtest as\nSave and Play", "100008", "Playtest button makes the save and play action");
 			addToggle_trp(self, "Practice Music", "0125", 0);
+			addToggle_trp(self, "Disable arrow trigger\nfix", "1000010", 0);
 			//addToggle_trp(self, "Show Platformer Hitbox", "100009", 0);
 
 			isGDPSSettings = false;
@@ -1759,7 +1760,7 @@ FUNCTIONHOOK(void, GJBaseGameLayer_toggleDual, GJBaseGameLayer* self, void* a1, 
 	if(!dpadRight)
 	return;
 
-	dpadRight->setVisible(ui->isTwoPlayer() && GM->_playLayer()->_isDual());
+	dpadRight->setVisible(ui->isTwoPlayer() && GM->_playLayer()->_isDual() && !GM->getGameVariable("10007"));
 	
 	//...
 }
@@ -1844,13 +1845,11 @@ const char *CCString_getCStringH(CCString *self)
 		else
 			toAdd = CCString::createWithFormat("&password=%s&gjp=%s&userName=%s", passwordTemp.c_str(), FunctionHelper::gjp(passwordTemp).c_str(), AM->_username().c_str())->getCString();
 		
-		const char* toAdd2 = CCString::createWithFormat("&subzeroVersion=%d", version2)->getCString();
 
 		//char *s = new char[strlen(ret) + strlen(toAdd) + strlen(toAdd2) + 1];
-		char *s = new char[strlen(ret) + strlen(toAdd) + strlen(toAdd2) + 1];
+		char *s = new char[strlen(ret) + strlen(toAdd) + 1];
 		strcpy(s, ret);
 		strcat(s, toAdd);
-		strcat(s, toAdd2);
 		//strcat(s, toAdd2);
 
 		//	CCLog(s);
@@ -1964,6 +1963,34 @@ FUNCTIONHOOK(bool, SetupObjectOptionsPopup_init, CCNode* self, GameObject* obj, 
 	return true;
 }
 
+FUNCTIONHOOK(void, SupportLayer_onRestore, CCLayer* self, CCObject* sender) {
+	
+	auto path = CCFileUtils::sharedFileUtils()->getWritablePath() + "crash.txt";
+
+    std::ifstream ifs( path );
+
+    std::stringstream ss;
+
+    if ( ifs.good() )
+    {
+        std::string sLine;
+
+        int i = 0;
+        while ( i < 19 )
+        {
+            getline(ifs, sLine);
+            ss << sLine << std::endl;
+            i++;
+        }
+    }
+    else 
+        ss << "File not found.";
+
+    ifs.close( );
+
+    // saber::logging::log( "%s ALL DATA", content.c_str() );
+    FLAlertLayer::create( nullptr, "Stack Trace", ss.str(), "Exit", nullptr, 450., true, 300. )->show( );
+}
 
 void loader()
 {
@@ -1990,6 +2017,7 @@ void loader()
 	//HOOK("_ZN11ShaderLayer18triggerColorChangeEfffffffif", triggerColorChangeH, triggerColorChangeO);
 	//HOOK("_ZN16LevelEditorLayer14recreateGroupsEv", recreateGroupsH, recreateGroupsO);
 	
+	HOOK("_ZN12SupportLayer9onRestoreEPN7cocos2d8CCObjectE", SupportLayer_onRestoreH, SupportLayer_onRestoreO);
 	HOOK("_ZN23SetupObjectOptionsPopup4initEP10GameObjectPN7cocos2d7CCArrayEP15SetGroupIDLayer", SetupObjectOptionsPopup_initH, SetupObjectOptionsPopup_initO);
 	HOOK("_ZN13SongInfoLayer4initESsSsSsSsSsSsi", SongInfoLayer_initH, SongInfoLayer_initO);
 	HOOK("_ZN12PlayerObject15toggleSwingModeEbb", toggleSwingModeH, toggleSwingModeO);
@@ -2113,7 +2141,7 @@ void loader()
 	
 	//https://cdn.discordapp.com/attachments/997593414684135485/1014791808666042438/icons.rar
 	
-	patchIcons(1, 155); //cube
+	patchIcons(1, 154); //cube
 	patchIcons(2, 169); //ship
 	patchIcons(3, 114); //ball
 	patchIcons(4, 148); //ufo
