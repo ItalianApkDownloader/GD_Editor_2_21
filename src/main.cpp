@@ -108,6 +108,11 @@ void OptionsLayerInitH(OptionsLayer *self)
 	return OptionsLayerInitO(self);
 }
 
+class AdvancedOptionsLayer {
+	public:
+	void onAdvanced(CCObject*);
+};
+
 bool doRequest;
 
 const char *(*getStringO)(LoadingLayer *self);
@@ -156,6 +161,7 @@ void addToggle_hk(MoreOptionsLayer *self, const char *title, const char *code, c
 			addToggle_trp(self, "Playtest as\nSave and Play", "100008", "Playtest button makes the save and play action");
 			addToggle_trp(self, "Practice Music", "0125", 0);
 			addToggle_trp(self, "Disable arrow trigger\nfix", "1000010", 0);
+			addToggle_trp(self, "Show FPS", "0115", 0);
 			//addToggle_trp(self, "Show Platformer Hitbox", "100009", 0);
 
 			isGDPSSettings = false;
@@ -1992,6 +1998,19 @@ FUNCTIONHOOK(void, SupportLayer_onRestore, CCLayer* self, CCObject* sender) {
     FLAlertLayer::create( nullptr, "Stack Trace", ss.str(), "Exit", nullptr, 450., true, 300. )->show( );
 }
 
+FUNCTIONHOOK(void, PauseLayer_customSetup, PauseLayer* self) {
+	
+	PauseLayer_customSetupO(self);
+	
+	auto sprite = CCSprite::createWithSpriteFrameName("GJ_optionsBtn_001.png");
+	sprite->setScale(.7);
+	auto optionsBtn = CCMenuItemSpriteExtra::create(sprite, nullptr, self, menu_selector(MenuLayer::onOptions));
+	auto bottomMenu2 = CCMenu::createWithItem(optionsBtn);
+	reinterpret_cast<CCSprite *>(bottomMenu2)->setPosition({CCRIGHT - 80, CCTOP - 30});
+	self->addChild(bottomMenu2);
+	
+}
+
 void loader()
 {
 	auto cocos2d = dlopen(targetLibName != "" ? targetLibName : NULL, RTLD_LAZY);
@@ -2007,7 +2026,6 @@ void loader()
 
 	/*auto objs = ObjectToolbox::sharedState();
 	objs->addObject(4000, "swing_01_001.png");*/
-	
 	#ifdef SHADERDEBUG
 	DevDebugHooks::ApplyHooks();
 	#endif
@@ -2016,7 +2034,7 @@ void loader()
 //	HOOK("_ZN11ShaderLayer4initEv", ShaderLayer_initH, ShaderLayer_initO);
 	//HOOK("_ZN11ShaderLayer18triggerColorChangeEfffffffif", triggerColorChangeH, triggerColorChangeO);
 	//HOOK("_ZN16LevelEditorLayer14recreateGroupsEv", recreateGroupsH, recreateGroupsO);
-	
+	HOOK("_ZN10PauseLayer11customSetupEv", PauseLayer_customSetupH, PauseLayer_customSetupO);
 	HOOK("_ZN12SupportLayer9onRestoreEPN7cocos2d8CCObjectE", SupportLayer_onRestoreH, SupportLayer_onRestoreO);
 	HOOK("_ZN23SetupObjectOptionsPopup4initEP10GameObjectPN7cocos2d7CCArrayEP15SetGroupIDLayer", SetupObjectOptionsPopup_initH, SetupObjectOptionsPopup_initO);
 	HOOK("_ZN13SongInfoLayer4initESsSsSsSsSsSsi", SongInfoLayer_initH, SongInfoLayer_initO);

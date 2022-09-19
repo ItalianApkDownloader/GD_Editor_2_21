@@ -18,6 +18,7 @@ std::map<const char*, std::vector<float>> shaderTriggerUniformValues3f;
 std::map<const char*, std::vector<float>> shaderTriggerUniformValues4f;
 
 void UILayerDebug::doInit() {
+	CCLog("do init");
     shaderTriggerUniforms.clear();
 
 	shaderTriggerUniformValues1f.clear();

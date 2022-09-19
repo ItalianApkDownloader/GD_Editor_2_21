@@ -240,8 +240,8 @@ bool MenuLayerExt::init_hk()
 
 	#endif
 
- 
  /*
+ 
 	auto menu = CCMenu::create();
 	menu->setPositionY(menu->getPositionY() + 100);
 	auto btn3 = CCSprite::createWithSpriteFrameName("GJ_optionsBtn_001.png");
@@ -249,8 +249,8 @@ bool MenuLayerExt::init_hk()
 		btn3,
 		btn3,
 		this,
-	menu_selector(MenuLayerExt::onStackTrace));
-	//menu_selector(MenuLayerExt::onTest));
+	//menu_selector(MenuLayerExt::onStackTrace));
+	menu_selector(VideoOptionsLayer::onAdvanced));
 	menu->addChild(myButton3);
 	this->addChild(menu);
 	
