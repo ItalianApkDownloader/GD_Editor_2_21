@@ -40,10 +40,8 @@ returntype name##H(__VA_ARGS__)
 #define GPX() getPositionX()
 
 #define version2 13
-#define DEVDEBUG true
-//#define SHADERDEBUG true
-
-
+//#define DEVDEBUG
+//#define SHADERDEBUG
 
 #define __STR_CAT___(str1, str2) str1##str2
 #define __STR_CAT__(str1, str2) __STR_CAT___(str1, str2)

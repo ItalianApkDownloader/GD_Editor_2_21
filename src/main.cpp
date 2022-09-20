@@ -27,6 +27,7 @@
 #include "hooks/ShaderDebug.h"
 #include "hooks/DPADControl.h"
 #include "hooks/CollisionFix.h"
+#include "hooks/ShaderFix.h"
 
 /*
 		FLAG USED FOR DEVELOPER MODE DEBUGGING LIKE SHADERS
@@ -2045,6 +2046,7 @@ void loader()
 	EditorPauseLayerExt::ApplyHooks();
 	DPADHooks::ApplyHooks();
 	CollisionFix::ApplyHooks();
+	ShaderFix::ApplyHooks();
 
 	/*auto objs = ObjectToolbox::sharedState();
 	objs->addObject(4000, "swing_01_001.png");*/
@@ -2215,9 +2217,6 @@ void loader()
 	tms->addPatch("libcocos2dcpp.so", 0x2C43A6, "16 29"); // explorers song bypass fix in levelsettingslayer 3
 	
 	tms->addPatch("libcocos2dcpp.so", 0x2EB9EE, "01 21"); // fix level name in pause
-
-	// remove chromatic glitch (tringle petition)
-	tms->addPatch("libcocos2dcpp.so", 0x2E3666, "00 BF 00 BF 00 BF 00 BF 00 BF 00 BF 00 BF 00 BF 00 BF 00 BF");
 
 	tms->addPatch("libcocos2dcpp.so", 0x2C44EA, "4F F0 02 0A"); // FG
 	
