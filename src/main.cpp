@@ -108,10 +108,7 @@ void OptionsLayerInitH(OptionsLayer *self)
 	return OptionsLayerInitO(self);
 }
 
-class AdvancedOptionsLayer {
-	public:
-	void onAdvanced(CCObject*);
-};
+
 
 bool doRequest;
 
@@ -382,7 +379,7 @@ const char *keyToFrameH(ObjectToolbox *self, int key)
 	//	auto ret = keyToFrameO(self, key);
 	//	CCLog("%d | | %s", key, ret);
 
-	if (key >= 2925)
+	if (key >= 2925) 
 	{
 		switch (key)
 		{
@@ -1772,15 +1769,6 @@ FUNCTIONHOOK(void, GJBaseGameLayer_toggleDual, GJBaseGameLayer* self, void* a1, 
 }
 
 
-FUNCTIONHOOK(void*, someHookToLogStuff, void* self, int a1, int a2, int a3) {
-	
-		//CCLog("a1: %d | a2: %d, a3: %d", a1, a2, a3);
-		
-	auto ret = someHookToLogStuffO(self, a1, a2, a3);	
-	
-	return ret;
-}
-
 FUNCTIONHOOK(bool, GJGarageLayer_init, GJGarageLayer* self) {
 	
 	if(!GJGarageLayer_initO(self))
@@ -2011,6 +1999,40 @@ FUNCTIONHOOK(void, PauseLayer_customSetup, PauseLayer* self) {
 	
 }
 
+/* change swing portal color (not working)
+	
+FUNCTIONHOOK(CCParticleSystemQuad*, createParticle, GJBaseGameLayer* self, int a1, char const* a2, int a3, void* a4) {
+	
+	CCLog("a1: %d, a2: %s, a3: %d", a1, a2, a3);
+	
+	auto ret = createParticleO(self, a1, a2, a3, a4);
+	
+		ret->CCParticleSystem::setStartColor({255, 0, 0, 100});
+		ret->CCParticleSystem::setEndColor({255, 0, 0, 100});
+	
+
+	return ret;
+	
+}
+
+FUNCTIONHOOK(GameObject*, GameObject_createAndAddParticle, GameObject* obj, int a1, char const* a2, int a3, void* a4) {
+	
+	auto ret = reinterpret_cast<CCParticleSystem*>(GameObject_createAndAddParticleO(obj, a1, a2, a3, a4));
+
+		ret->CCParticleSystem::setStartColor({255, 0, 0, 100});
+		ret->CCParticleSystem::setEndColor({255, 0, 0, 100});
+		
+	return reinterpret_cast<GameObject*>(ret);
+}
+*/
+
+FUNCTIONHOOK(void, onMoreGames, MenuLayer* self, CCObject* sender) {
+	
+	auto dir = cocos2d::CCDirector::sharedDirector( );
+	auto scene = cocos2d::CCTransitionFade::create(0.5, MapSelectLayer::scene());
+	dir->replaceScene( scene );
+}
+
 void loader()
 {
 	auto cocos2d = dlopen(targetLibName != "" ? targetLibName : NULL, RTLD_LAZY);
@@ -2034,6 +2056,11 @@ void loader()
 //	HOOK("_ZN11ShaderLayer4initEv", ShaderLayer_initH, ShaderLayer_initO);
 	//HOOK("_ZN11ShaderLayer18triggerColorChangeEfffffffif", triggerColorChangeH, triggerColorChangeO);
 	//HOOK("_ZN16LevelEditorLayer14recreateGroupsEv", recreateGroupsH, recreateGroupsO);
+//	HOOK("_ZN10GameObject20createAndAddParticleEiPKciN7cocos2d15tCCPositionTypeE", GameObject_createAndAddParticleH, GameObject_createAndAddParticleO);
+	//HOOK("_ZN15GJBaseGameLayer14createParticleEiPKciN7cocos2d15tCCPositionTypeE", createParticleH, createParticleO);
+	
+	
+	HOOK("_ZN9MenuLayer11onMoreGamesEPN7cocos2d8CCObjectE", onMoreGamesH, onMoreGamesO);
 	HOOK("_ZN10PauseLayer11customSetupEv", PauseLayer_customSetupH, PauseLayer_customSetupO);
 	HOOK("_ZN12SupportLayer9onRestoreEPN7cocos2d8CCObjectE", SupportLayer_onRestoreH, SupportLayer_onRestoreO);
 	HOOK("_ZN23SetupObjectOptionsPopup4initEP10GameObjectPN7cocos2d7CCArrayEP15SetGroupIDLayer", SetupObjectOptionsPopup_initH, SetupObjectOptionsPopup_initO);
@@ -2041,7 +2068,7 @@ void loader()
 	HOOK("_ZN12PlayerObject15toggleSwingModeEbb", toggleSwingModeH, toggleSwingModeO);
 	HOOK("_ZN13GJGarageLayer4initEv", GJGarageLayer_initH, GJGarageLayer_initO);
 	HOOK("_ZN10GJItemIcon17createBrowserItemE10UnlockTypei", GJItemIcon_InitH, GJItemIcon_InitO);
-	HOOK("_ZN11GameManager8loadIconEiii", someHookToLogStuffH, someHookToLogStuffO);
+	//HOOK("_ZN11GameManager8loadIconEiii", someHookToLogStuffH, someHookToLogStuffO);
 	HOOK("_ZN15GJBaseGameLayer14toggleDualModeEP10GameObjectbP12PlayerObjectb", GJBaseGameLayer_toggleDualH, GJBaseGameLayer_toggleDualO);
 
 	HOOK("_ZN16LevelEditorLayer10validGroupEP10GameObjectb", validGroupH, validGroupO);

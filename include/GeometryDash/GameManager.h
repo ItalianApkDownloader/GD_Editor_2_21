@@ -248,6 +248,9 @@ int getIntGameVariable(const char* variable);
 	void loadIcon(int, int, int);
 	void fadeInMenuMusic();
 	void toggleGameVariable(const char* key);
+	
+	void setUGV(const char*, bool);
+	bool getUGV(const char*);
 
 	void loadMiddleground(int ID);
 };
