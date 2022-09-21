@@ -1,9 +1,7 @@
 #pragma once
 
-#include "PlayerObject.h"
-#include "GJGameLevel.h"
-#include "GJEffectManager.h"
-#include "GJBaseGameLayer.h"
+#include <gd.h>
+#include "GDAPI_Macros.h"
 
 class PlayLayer : public GJBaseGameLayer // GJBaseGameLayer
 {
@@ -16,7 +14,9 @@ public:
 	    CLASS_MEMBER(bool, practiceMode, 0x675);
 		CLASS_MEMBER(GJGameLevel*, level, 0x13C);
 		CLASS_MEMBER(LevelSettingsObject*, lvlSettingsObject, 0x33C);
-		//CLASS_MEMBER(CCLayer*, UILayer, 0x2CA0);
+		//CLASS_MEMBER(UILayer*, UILayer, 0x2CA0); the include errors are scary
+		
+		
 
 public:
     PlayLayer();

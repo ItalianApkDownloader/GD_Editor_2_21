@@ -70,6 +70,20 @@ bool EditLevelLayerExt::initH(GJGameLevel* level) {
 	reinterpret_cast<CCSprite *>(bottomMenu2)->setPosition({CCLEFT + 80, CCTOP - 25});
 	this->addChild(bottomMenu2);
 	
+	auto menu3 = CCMenu::create();
+	menu3->setPosition(CCRIGHT - 90, CCTOP - 30);
+	auto btn3 = CCSprite::createWithSpriteFrameName("garageRope_001.png");
+	auto myButton3 = CCMenuItemSpriteExtra::create(
+		btn3,
+		btn3,
+		this,
+	menu_selector(LevelInfoLayer::onGarage));
+
+	myButton3->useAnimationType(MenuAnimationType::two);
+	myButton3->setSizeMult(1.2);
+	menu3->addChild(myButton3);
+	this->addChild(menu3);
+	
 	
 	this->startedEditor = false;
 

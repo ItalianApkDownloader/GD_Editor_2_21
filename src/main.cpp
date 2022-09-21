@@ -28,6 +28,7 @@
 #include "hooks/DPADControl.h"
 #include "hooks/CollisionFix.h"
 #include "hooks/ShaderFix.h"
+#include "hooks/SpeedrunTimer.h"
 
 /*
 		FLAG USED FOR DEVELOPER MODE DEBUGGING LIKE SHADERS
@@ -154,6 +155,7 @@ void addToggle_hk(MoreOptionsLayer *self, const char *title, const char *code, c
 			addToggle_trp(self, "Playtest as\nSave and Play", "100008", "Playtest button makes the save and play action");
 			addToggle_trp(self, "Practice Music", "0125", 0);
 			addToggle_trp(self, "Disable arrow trigger\nfix", "1000010", 0);
+			addToggle_trp(self, "Speedrun Timer", "1000011", "<cr>Red</c> means that the time is invalid");
 			addToggle_trp(self, "Show FPS", "0115", 0);
 			//addToggle_trp(self, "Show Platformer Hitbox", "100009", 0);
 
@@ -1776,6 +1778,7 @@ void loader()
 	DPADHooks::ApplyHooks();
 	CollisionFix::ApplyHooks();
 	ShaderFix::ApplyHooks();
+	SpeedrunTimer::ApplyHooks();
 
 	/*auto objs = ObjectToolbox::sharedState();
 	objs->addObject(4000, "swing_01_001.png");*/

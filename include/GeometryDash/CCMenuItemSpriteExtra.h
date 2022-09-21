@@ -4,6 +4,14 @@
 #include "GDAPI_Macros.h"
 
 
+enum MenuAnimationType {
+		zero = 0,
+		one = 1,
+		two = 2,
+		three = 3
+};
+	
+    
 class CCMenuItemSpriteExtra : public cocos2d::CCMenuItemSprite 
 {
 public:
@@ -99,5 +107,7 @@ public:
     static CCMenuItemSpriteExtra* create( cocos2d::CCNode* sprite, cocos2d::CCNode* a2, cocos2d::CCObject* parentNode, cocos2d::SEL_MenuHandler selector );
 
     bool init(cocos2d::CCNode *,cocos2d::CCNode *,cocos2d::CCObject *,void (cocos2d::CCObject::*)(cocos2d::CCObject *));
+    void useAnimationType(MenuAnimationType);
+    void setSizeMult(float);
 
 };

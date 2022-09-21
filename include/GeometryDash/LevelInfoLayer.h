@@ -69,4 +69,5 @@ public:
 
     void onFeatured( cocos2d::CCObject* ref );
     void onClone( cocos2d::CCObject* ref );
+    void onGarage( cocos2d::CCObject* ref );
 };
