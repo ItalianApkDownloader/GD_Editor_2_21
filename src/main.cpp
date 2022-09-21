@@ -39,6 +39,7 @@
 string passwordTemp = "";
 bool colorPopup = true;
 int nFont = 0;
+bool first = true;
 
 void(*GameManager_tryShowAdO)();
 void GameManager_tryShowAdH() {}
@@ -61,25 +62,19 @@ FUNCTIONHOOK(bool, UILayer_init, UILayer* self) {
    
 bool(*isIconUnlockedO)(void *, int, int);
 bool isIconUnlockedH(void *self, int a1, int a2)
-{
-
-	return true;
-
-}
+{ return true; }
 
 CCSprite * (*spriteCreateO)(const char *textureName);
 CCSprite* spriteCreateH(const char *textureName)
 {
-	auto ret = spriteCreateO(textureName);
-
 	if (contains(textureName, "GJ_square05.png"))
 		return spriteCreateO("GJ_square04.png");
 
+	auto ret = spriteCreateO(textureName);
 	if (ret != nullptr)
 		return ret;
 
 	return spriteCreateO("pixel.png");
-
 }
 
 bool isGDPSSettings;
@@ -116,9 +111,9 @@ bool doRequest;
 const char *(*getStringO)(LoadingLayer *self);
 const char *getStringH(LoadingLayer *self)
 {
-	auto m_sFileName = "password.dat";
+	const auto m_sFileName = "password.dat";
 
-	auto path = CCFileUtils::sharedFileUtils()->getWritablePath() + m_sFileName;
+	const auto path = CCFileUtils::sharedFileUtils()->getWritablePath() + m_sFileName;
 
 	std::ifstream infile(path.c_str());
 	if (infile.good())
@@ -171,57 +166,15 @@ void addToggle_hk(MoreOptionsLayer *self, const char *title, const char *code, c
 	}
 }
 
-bool first = true;
-bool(*MenuLayerInitO)(MenuLayer*);
-//keeping this here until i start porting stuff from old project
-bool MenuLayerInitH(MenuLayer *self)
-{
-	//CCLog(AY_OBFUSCATE("This apk belongs to TheMilkCat"));
-	CCLog("Menu Init!");
-
-	//	CCLog(AY_OBFUSCATE("APK Belongs to DM Group"));
-
-	//string useless = GDPS->itos(1);
-	//	self->runAction(CCCallFuncO::create(self, callfuncO_selector(CreatorLayer::onMyLevels), self));
-
-	if (first)
-	{
-		if (GM->getGameVariable("100003"))
-			self->runAction(CCCallFuncO::create(self, callfuncO_selector(CreatorLayer::onMyLevels), self));
-		first = false;
-	}
-/*
-	auto dir = CCDirector::sharedDirector();
-	
-	auto old_menu = CCMenu::create();
-	auto oldSprite = cocos2d::CCSprite::createWithSpriteFrameName("GJ_creatorBtn_001.png");
-	//auto oldSprite = cocos2d::CCSprite::createWithSpriteFrameName("GJ_profileButton_001.png");
-	auto old_btn = CCMenuItemSpriteExtra::create(
-		oldSprite,
-		oldSprite,
-		self,
-		menu_selector(MenuLayer::onMyProfile));
-	old_menu->addChild(old_btn, 100);
-	old_btn->setPositionX(dir->getScreenLeft() + 50);
-	old_btn->setPositionY(dir->getScreenBottom() + 110);
-	old_menu->setPosition({0, 0});
-	
-	self->addChild(old_menu);
-*/
-
-	return MenuLayerInitO(self);
-
-}
-
 CCSprite * (*spriteCreateFrameNameO)(const char *textureName);
 CCSprite* spriteCreateFrameNameH(const char *textureName)
 {
 	
-	auto ret = spriteCreateFrameNameO(textureName);
 
 	if (contains(textureName, "GJ_fullBtn_001.png"))
 		return spriteCreateFrameNameO("GJ_creatorBtn_001.png");
 
+	auto ret = spriteCreateFrameNameO(textureName);
 	if (ret != nullptr)
 		return ret;
 
@@ -296,11 +249,7 @@ void *addToGroupH(GJBaseGameLayer *self, GameObject *a2, int a3, bool a4)
 {
 	*((bool*) a2 + 1157) = false;
 
-	auto ret = addToGroupO(self, a2, a3, a4);
-
-	//	CCLog(typeid(*(CCObject*)ret).name());
-
-	return ret;
+	return addToGroupO(self, a2, a3, a4);
 }
 #include "AccountLoginLayer.h"
 
@@ -309,18 +258,16 @@ void *AccountSubmitH(AccountLoginLayer *self, CCObject *a2, void *a3, void *a4)
 {
 	passwordTemp = self->_inputPassword()->getString();
 	CCLog(passwordTemp.c_str());
-	auto ret = AccountSubmitO(self, a2, a3, a4);
-
-	return ret;
-
+	
+	return AccountSubmitO(self, a2, a3, a4);
 }
 
 void *(*LoginFinishedO)(AccountLoginLayer *self, void *a2, void *a3);
 void *LoginFinishedH(AccountLoginLayer *self, void *a2, void *a3)
 {
-	auto m_sFileName = "password.dat";
+	const auto m_sFileName = "password.dat";
 
-	auto path = CCFileUtils::sharedFileUtils()->getWritablePath() + m_sFileName;
+	const auto path = CCFileUtils::sharedFileUtils()->getWritablePath() + m_sFileName;
 	ofstream MyFile(path.c_str());
 
 	MyFile << passwordTemp;
@@ -334,6 +281,8 @@ void *LoginFinishedH(AccountLoginLayer *self, void *a2, void *a3)
 bool(*LevelInfoLayerInitO)(LevelInfoLayer *, GJGameLevel *, bool);
 bool LevelInfoLayerInitH(LevelInfoLayer *self, GJGameLevel *level, bool a3)
 {
+	if(!LevelInfoLayerInitO(self, level, a3)) return false;
+	
 	auto sprite = CCSprite::createWithSpriteFrameName("communityCreditsBtn_001.png");
 	sprite->setScale(2);
 	auto btn = CCMenuItemSpriteExtra::create(sprite, sprite, self, menu_selector(LevelInfoLayer::onClone));
@@ -342,8 +291,7 @@ bool LevelInfoLayerInitH(LevelInfoLayer *self, GJGameLevel *level, bool a3)
 	menu->addChild(btn, 500);
 	self->addChild(menu, 500);
 
-	auto ret = LevelInfoLayerInitO(self, level, a3);
-	return ret;
+	return true;
 
 }
 
@@ -532,7 +480,6 @@ void *EditorUI_SelectObjectsH(EditorUI *self, CCArray *objects, bool a3)
 void (*EditorUI_SelectObjectO)(EditorUI *self, GameObject *object, bool a3);
 void EditorUI_SelectObjectH(EditorUI *self, GameObject *object, bool a3)
 {
-
 //	CCLog("enter");
 	int cl = MBO(int, self->_levelEditor(), 0x2C50);
 
@@ -568,7 +515,6 @@ bool EditorUI_InitH(EditorUI *self, LevelEditorLayer *editor)
 	}
 
 	return true;
-
 }
 
 int(*onToggleTrampoline)(void *pthis, const char *val);
@@ -586,22 +532,7 @@ void hook_onToggle(void *pthis, const char *val)
 		}
 	}
 }
-bool(*EffectGameObject_triggerObjectO)(EffectGameObject*, int);
-bool EffectGameObject_triggerObjectH(EffectGameObject* self, int a2){
-	auto ret = EffectGameObject_triggerObjectO(self, a2);
 
-	if(a2 == 4000){
-		auto playlayer = GM->_playLayer();
-
-		auto bg = (CCSprite*)playlayer->getChildren()->objectAtIndex(3);
-
-
-
-		//bg->setDisplayFrame("game_bg_25_001.png");
-	}
-
-	return ret;
-}
 bool(*SelectArtLayer_initO)(SelectArtLayer *, SelectArtType);
 bool SelectArtLayer_initH(SelectArtLayer *self, SelectArtType type)
 {
@@ -613,21 +544,6 @@ bool SelectArtLayer_initH(SelectArtLayer *self, SelectArtType type)
 	
 	auto menu = self->_bgSelectMenu();
 	auto array = self->_someArray();
-	/*
-	if(type == ground) {
-		
-		//move buttons
-		for(int i = 30; i < 34; i++) {
-			
-		auto btn = (CCNode*)menu->getChildren()->objectAtIndex(i);
-		if(i == 30)
-			btn->setPositionY(btn->GPY() - 30);
-		else
-			btn->setPositionX(btn->GPX() + 100);
-		}
-		
-	}
-	*/
 	
 	//setting
 	
@@ -672,8 +588,8 @@ bool SelectArtLayer_initH(SelectArtLayer *self, SelectArtType type)
 			auto spr = CCSprite::createWithSpriteFrameName(frameStr);
 			auto btn = CCMenuItemSpriteExtra::create(spr, spr, self, menu_selector(SelectArtLayer::selectArt));
 			if(type == background) {
-			btn->setPosition(node->GPX(), node->GPY() - (20 *  (i / 10)));
-			spr->setScale(.8);
+				btn->setPosition(node->GPX(), node->GPY() - (20 *  (i / 10)));
+				spr->setScale(.8);
 			}
 			else
 			btn->setPosition(node->getPosition());
@@ -681,7 +597,6 @@ bool SelectArtLayer_initH(SelectArtLayer *self, SelectArtType type)
 			btn->setTag(type != mg ? i + 1 : i);
 			menu->addChild(btn);
 			array->addObject(btn);
-			
 		}	
 		
 		
@@ -691,66 +606,6 @@ bool SelectArtLayer_initH(SelectArtLayer *self, SelectArtType type)
 	
 	self->selectArt(0);
 	
-	
-	
-	
-//	GDPSHelper::createLabels(menu, array, {0, 0}, true);
-/*
-	auto bgSelect = self->_bgSelectMenu();
-	bgSelect->getChildren()->removeAllObjects();
-
-	auto bgArray = self->_someArray();
-	bgArray->removeAllObjects();
-
-	auto label = CCSprite::createWithSpriteFrameName("bgIcon_03_001.png");
-	auto test = CCMenuItemSpriteExtra::create(label, label, self, menu_selector(SelectArtLayer::selectArt));
-	bgArray->addObject(test);
-	bgSelect->addChild(test);
-
-	auto label2 = CCLabelBMFont::create("Reverse", "bigFont.fnt");
-	auto test2 = CCMenuItemSpriteExtra::create(label, label, self, menu_selector(SelectArtLayer::selectArt));
-	test2->setPositionY(test2->GPY() + 30);
-	bgArray->addObject(test2);
-	bgSelect->addChild(test2);
-*/
-	/*
-		int maxTextures = 25;	// not sure if this is right but even if its too much it won't crash
-
-		if (type == SelectArtType::ground)
-			maxTextures = 17;
-
-		auto spriteCache = CCSpriteFrameCache::sharedSpriteFrameCache();
-
-		for (int i = 0; i < maxTextures; i++)
-		{
-			auto bgBtn = (CCMenuItemSpriteExtra*)self->_bgSelectMenu()->getChildren()->objectAtIndex(i);
-
-			if (bgBtn != nullptr)
-			{
-				const char *frameSprStr;
-
-				if (type == SelectArtType::ground)
-					frameSprStr = "gIcon_%02d_001.png";
-				else
-					frameSprStr = "bgIcon_%02d_001.png";
-
-				auto frameStr = CCString::createWithFormat(frameSprStr, i + 1)->getCString();
-
-				auto frameSpr = spriteCache->spriteFrameByName(frameStr);
-
-				if (frameSpr != nullptr) {}
-			}
-		}
-
-		if (type == SelectArtType::background)
-		{
-			auto okBtn = (CCMenuItemSpriteExtra*)self->_bgSelectMenu()->getChildren()->objectAtIndex(self->_bgSelectMenu()->getChildrenCount() - 1);
-
-			okBtn->setPositionX(80);
-			okBtn->setPositionY(okBtn->getPositionY() + 5);
-		}
-
-	*/
 	return true;
 }
 #include "AccountRegisterLayer.h"
@@ -759,8 +614,8 @@ bool(*AccountRegisterLayer_InitO)(AccountRegisterLayer*);
 bool AccountRegisterLayer_InitH(AccountRegisterLayer*)
 {
 	cocos2d::CCApplication::sharedApplication()->openURL("http://game.gdpseditor.com/server/tools/account/registerAccount.php");
-
 }
+
 #include "SetupTriggerPopup.h"
 #include "SetupPickupTriggerPopup.h"
 
@@ -1131,12 +986,10 @@ bool SetupAreaTransformTriggerPopupH(SetupAreaTransformTriggerPopup *self, Effec
 }
 
 FUNCTIONHOOK(const char*, GameManager_getMGTexture, GameManager* self, int a2) {
-	auto gam = GameManager::sharedState();
 
-	gam->loadMiddleground(2);
-
-	auto epico = CCString::createWithFormat("fg_%02d.png", a2);
-	return epico->getCString();
+	//avoid temp variables
+	GM->loadMiddleground(2);
+	return CCString::createWithFormat("fg_%02d.png", a2)->getCString();
 }
 
 bool(*SetupAreaFadeTriggerPopupO)(SetupAreaFadeTriggerPopup *, EffectGameObject *, cocos2d::CCArray *);
@@ -1204,9 +1057,10 @@ void LevelEditorLayerExt::onEnablePlaytest(CCObject* sender) {
 	GM->setGameVariable("100006", true); 
 	auto node = (CCNode*)sender;
 	node->setPositionY(10000);
-	
 }
+
 bool play;
+
 void(*EditorUI_onPlaytestO)(EditorUI *self, CCObject *a2);
 void EditorUI_onPlaytestH(EditorUI *self, CCObject *a2)
 {
@@ -1343,8 +1197,6 @@ FUNCTIONHOOK(bool, LevelInfoLayer_init, LevelInfoLayer* self, GJGameLevel* level
 	auto bottomMenu2 = CCMenu::createWithItem(optionsBtn);
 	reinterpret_cast<CCSprite *>(bottomMenu2)->setPosition({CCLEFT + 80, CCTOP - 25});
 	self->addChild(bottomMenu2);
-	
-	
 
 	return true;
 }
@@ -1534,132 +1386,12 @@ FUNCTIONHOOK(void, updateFontLabel, SelectFontLayer* self, CCObject* a2) {
 }
 
 
-FUNCTIONHOOK(bool, validGroup, GameObject* obj, int group) {
-	
-	return true;
-}
-
-/*
-
-#include <random>
-
-
-FUNCTIONHOOK(bool, MPL_init, CCLayer* self) {
-	
-	    std::random_device dev;
-    std::mt19937 rng(dev());
-    std::uniform_int_distribution<std::mt19937::result_type> dist6(1,7); // distribution in range [1, 6]
-	
-	int n = dist6(rng);
-	
-	std::string desc = "";
-	
-	switch(n) {
-	
-	case 1:
-		desc = "What did you expect to happen?";
-	break;
-	case 2:
-	desc = "RubRub won't like this...";
-	break;
-	case 3:
-	desc = "Are you sure this is a good idea?";
-	break;
-	case 4:
-	desc = "Mutliplayer is not available... <cr>(?)</c>";
-	break;
-	case 5:
-	desc = "Nice weather outside";
-	break;
-	case 6: 
-	desc = "Multiplayer does not exist, stop trying!";
-	break;
-	case 7:
-	desc = "Go play with the new editor while you wait for... <cr>(?)</c>";
-	break;
-	case 8:
-	desc = "Test your luck?";
-
-	
-	}
-	
-
-    std::uniform_int_distribution<std::mt19937::result_type> dist4(1,50); // distribution in range [1, 6]
-	
-	int z = dist4(rng);
-	CCLog("z: %d / n: %d", z, n);
-	if(z == 25)
-	desc = AY_OBFUSCATE("I might try to add this but don't tell anyone ok?\n :)");
-	
-	
-		FLAlertLayer::create(nullptr, "It's a secret...", desc, "OK", nullptr, 400, false, 200)->show();
-		
-
-	return true;
-
-}
-
-//#include "ShaderLayer.h"
-FUNCTIONHOOK(void*, triggerColorChange, CCLayer* self, float f1 ,float f2,float f3,float f4,float f5,float f6,float f7,int i1,float f8) {
-
-	CCLog("enter triggerColorChange");
-	CCLog("f1: %f", f1);
-	CCLog("f2: %f", f2);
-	CCLog("f3: %f", f3);
-	CCLog("f4: %f", f4);
-	CCLog("f5: %f", f5);
-	CCLog("f6: %f", f6);
-	CCLog("f7: %f", f7);
-	CCLog("f8: %f", f8);
-	CCLog("i1: %f", i1);
-	
-	/*
-   *((float *)a2 + 0x13B),
-    *((float *)a2 + 0x19C),
-    *((float *)a2 + 0x19D),
-    *((float *)a2 + 0x19B),
-    *((float *)a2 + 0x19F),
-    *((float *)a2 + 0x1A0),
-	*((float *)a2 + 0x1A1),
-    *((_DWORD *)a2 + 0x145),
-	*((float *)a2 + 0x146));
-	
-	return triggerColorChangeO(self, f1, f2, f3, f4, f5, f6, f7, i1, f8);
-	
-	
-}
-
-FUNCTIONHOOK(bool, ShaderLayer_init, CCLayer* self) {
-	
-	CCLog("before init");
-		int b = MBO(int, self, 0x41C);
-	int c = MBO(int, self, 0x41C + 4);
-	
-	CCLog("b: %d", b);
-	CCLog("c: %d", c);
-	
-	auto ret = ShaderLayer_initO(self);
-	CCLog("init done");
-	b = MBO(int, self, 0x41C);
-	c = MBO(int, self, 0x41C + 4);
-	
-	CCLog("b: %d", b);
-	CCLog("c: %d", c);
-	CCLog("return ret");
-	return ret;
-	
-	
-
-	
-	
-}
-*/
-
+FUNCTIONHOOK(bool, validGroup, GameObject* obj, int group) 
+{ return true; }
 
 #include "handler.h"
 
 
-//https://cdn.discordapp.com/attachments/997593414684135485/1014791808666042438/icons.rar
 void patchIcons(int gameMode, int amountt) {
 	
 	if(amountt > 255) //2 bytes limit
@@ -1736,13 +1468,12 @@ void patchIcons(int gameMode, int amountt) {
 }
 
 
-FUNCTIONHOOK(void*, GJItemIcon_Init, int type, int key) {
-	
+FUNCTIONHOOK(void*, GJItemIcon_Init, int type, int key)
+{
 	if(type == 11 && key > 17)
 		return nullptr;
 	
 	return GJItemIcon_InitO(type, key);
-	
 }
 
 //TODO: test the p1 platformer, collision blocks(?), swing selection, port over mod badges
@@ -1953,8 +1684,6 @@ FUNCTIONHOOK(bool, SetupObjectOptionsPopup_init, CCNode* self, GameObject* obj, 
 	btn->setPosition(refBtn->getPosition());
 	btn->setPositionY(btn->GPY() - 35);
 	
-
-	
 	return true;
 }
 
@@ -2123,8 +1852,6 @@ void loader()
 		
 	HOOK("_ZN16GameStatsManager14isItemUnlockedE10UnlockTypei",
 		isIconUnlockedH, isIconUnlockedO);
-	HOOK("_ZN9MenuLayer4initEv",
-		MenuLayerInitH, MenuLayerInitO);
 	HOOK("_ZN16MoreOptionsLayer9addToggleEPKcS1_S1_",
 		addToggle_hk, addToggle_trp);
 	HOOK("_ZN12OptionsLayer11customSetupEv",

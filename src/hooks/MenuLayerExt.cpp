@@ -232,8 +232,17 @@ void MenuLayerExt::onStackTrace(CCObject* s) {
 static inline bool (*init_trp)(MenuLayer *self);
 bool MenuLayerExt::init_hk()
 {
-
+	CCLog("Menu Init!");
 	auto ret = init_trp(this);
+
+	extern bool first;
+	if (first)
+	{
+		if (GM->getGameVariable("100003"))
+			this->runAction(CCCallFuncO::create(this, callfuncO_selector(CreatorLayer::onMyLevels), this));
+		first = false;
+	}
+	
 	
 	#ifdef DEVDEBUG
 	FMOD->setBackgroundMusicVolume(0);
