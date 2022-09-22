@@ -12,6 +12,8 @@
 
 using namespace cocos2d;
 
+#define TIMER_ENABLED GM->getGameVariable("1000011")
+
 #define FUNCTIONHOOK(returntype, name, ...) \
 returntype (*name##O)(__VA_ARGS__);			\
 returntype name##H(__VA_ARGS__)
@@ -21,7 +23,6 @@ float timer = 0;
 bool fix1;
 bool isTimeValid;
 
-#define TIMER_ENABLED GM->getGameVariable("1000011")
 
 UILayer* getUILayer() {
 	return MBO(UILayer*, GM->_playLayer(), 0x2CA0);
@@ -70,7 +71,7 @@ void SpeedrunTimer::UpdateTimer(float delta)
 
 FUNCTIONHOOK(void, PlayLayer_levelComplete, PlayLayer* self) 
 {
-	CCLog("PlayLayer_levelComplete");
+	//CCLog("PlayLayer_levelComplete");
 	PlayLayer_levelCompleteO(self);
 
 	if(TIMER_ENABLED) {
@@ -80,7 +81,7 @@ FUNCTIONHOOK(void, PlayLayer_levelComplete, PlayLayer* self)
 
 FUNCTIONHOOK(void, PlayLayer_togglePracticeMode, PlayLayer* self, bool practiceMode) {
 	
-	CCLog("PlayLayer_togglePracticeMode");
+	//CCLog("PlayLayer_togglePracticeMode");
 	PlayLayer_togglePracticeModeO(self, practiceMode);
 			if(TIMER_ENABLED) {
 
@@ -95,7 +96,7 @@ FUNCTIONHOOK(void, PlayLayer_togglePracticeMode, PlayLayer* self, bool practiceM
 
 FUNCTIONHOOK(void, PauseLayer_onResume, void* self, CCObject* sender) {
 	
-	CCLog("PauseLayer_onResume");
+	//CCLog("PauseLayer_onResume");
 	PauseLayer_onResumeO(self, sender);
 	
 	if(TIMER_ENABLED && fix1) 
@@ -105,7 +106,7 @@ FUNCTIONHOOK(void, PauseLayer_onResume, void* self, CCObject* sender) {
 		timerLabel->setVisible(true);
 		isTimeValid = false;
 	}
-	//disable timer in pause menu
+	//if disable timer in pause menu
 	else if(!TIMER_ENABLED) 
 	{
 		getUILayer()->unschedule(schedule_selector(SpeedrunTimer::UpdateTimer));
@@ -124,12 +125,12 @@ FUNCTIONHOOK(void, PauseLayer_init, void* self) {
 
 FUNCTIONHOOK(void, PlayLayer_resetLevel, PlayLayer* self)
 {
-	CCLog("PlayLayer_resetLevel");
+	//CCLog("PlayLayer_resetLevel");
     PlayLayer_resetLevelO(self);
 	if(TIMER_ENABLED) {
 
 		bool practiceMode = MBO(bool, self, 0x29A0);
-		CCLog("practice mode: %d", practiceMode);
+	//	CCLog("practice mode: %d", practiceMode);
 		
 		if(!practiceMode) {
 			timer = 0;
@@ -154,13 +155,14 @@ FUNCTIONHOOK(void, PlayerObject_playDeathEffect, PlayerObject* self)
 		getUILayer()->unschedule(schedule_selector(SpeedrunTimer::UpdateTimer));
 	}
 }
-
-//since PlayLayer::onUpdate was separated into different funcs ill just take updateVisbility
+/*
+//since PlayLayer::Update was separated into different funcs ill just take updateVisbility
+//will be used later on to upate timer opacity/color/position once i gete into it lol
 FUNCTIONHOOK(void, PlayLayer_updateVisiblity, PlayLayer* self, float delta)
 {
     PlayLayer_updateVisiblityO(self, delta);
 }
-
+*/
 //chad libhooking lib supports multihook so i can just hook uilayer init again and nothing will happen
 FUNCTIONHOOK(bool, UILayer_init2, UILayer* self) {
 	

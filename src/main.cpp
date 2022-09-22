@@ -155,7 +155,7 @@ void addToggle_hk(MoreOptionsLayer *self, const char *title, const char *code, c
 			addToggle_trp(self, "Playtest as\nSave and Play", "100008", "Playtest button makes the save and play action");
 			addToggle_trp(self, "Practice Music", "0125", 0);
 			addToggle_trp(self, "Disable arrow trigger\nfix", "1000010", 0);
-			addToggle_trp(self, "Speedrun Timer", "1000011", "<cr>Red</c> means that the time is invalid");
+			addToggle_trp(self, "Speedrun Timer", "1000011", "<cr>Red</c> means that the time is <cr>invalid</c>.\n Before starting a speedrun <cr>make sure to die atleast 1 time</c> because the first attempt time takes the enter transition into account and that will always be slower");
 			addToggle_trp(self, "Show FPS", "0115", 0);
 			//addToggle_trp(self, "Show Platformer Hitbox", "100009", 0);
 
@@ -438,12 +438,57 @@ void *PlayLayer_addObjectH(PlayLayer *self, GameObject *obj)
 bool(*LoadingLayer_initO)(LoadingLayer *, bool);
 bool LoadingLayer_initH(LoadingLayer *self, bool fromReload)
 {
+
+	auto path = CCFileUtils::sharedFileUtils()->getWritablePath() + "crash.txt";
+
+    std::ifstream ifs( path );
+
+    std::stringstream ss;
+
+    if ( ifs.good() )
+    {
+        std::string sLine;
+
+        int i = 0;
+        while ( i < 19 )
+        {
+            getline(ifs, sLine);
+            ss << sLine << std::endl;
+            i++;
+        }
+    }
+    else 
+        ss << "File not found.";
+
+	if(contains(ss.str().c_str(), "LoadingLayer")) {
+		
+		patch tmp;
+		//patch out the update progress function, which crashes because we didnt call init
+		tmp.addPatch("libcocos2dcpp.so", 0x270594, "00BF00BF"); // general icon limit bypass
+		tmp.Modify();
+		
+		self->loadAssets();
+		
+		auto spriteCache = CCSpriteFrameCache::sharedSpriteFrameCache();
+		spriteCache->addSpriteFramesWithFile("GJ_LaunchSheet.plist");
+		
+		
+		auto label = CCLabelBMFont::create("Crash found\ninitializing in safe mode", "bigFont.fnt");
+		label->CCLabelBMFont::setColor({255, 0, 0});
+		label->setPosition(CCMIDX, CCMIDY);
+		//label->setScale(2);
+		self->addChild(label);
+		return true;
+	
+	}
+	
 	if (!LoadingLayer_initO(self, fromReload)) return false;
 	
 	auto text = *reinterpret_cast< CCNode **>(reinterpret_cast<uintptr_t> (self) + 0x144);
 	text->setPositionY(text->getPositionY() - 10);
 
 	return true;
+
 }
 
 void *(*EditorUI_SelectObjectsO)(EditorUI *self, CCArray *objects, bool a3);
@@ -1914,7 +1959,7 @@ void loader()
 	
 
 	NOP4(tms, 0x2EDA9E); //versus
-	NOP4(tms, 0x2EDA74); //gauntlets
+//	NOP4(tms, 0x2EDA74); //gauntlets
 	
 	//https://cdn.discordapp.com/attachments/997593414684135485/1014791808666042438/icons.rar
 	
