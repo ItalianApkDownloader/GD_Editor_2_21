@@ -575,7 +575,7 @@ void hook_onToggle(void *pthis, const char *val)
 	{
 		if (v == 100005 && GM->getGameVariable("100005"))
 		{
-			FLAlertLayer::create(nullptr, "DISCLAIMER", "<cg>Pixel blocks</c > are <cr>not official</c > and for that reason levels containing these blocks < cr>will not look good in the official 2.2.</c>\n    <co>(textures will change)</c><cr>Don't use pixel blocks if you want your level to be playable in 2.2.</c>", "OK", nullptr, 500, false, 300)->show();
+			FLAlertLayer::create(nullptr, "DISCLAIMER", "<cg>Pixel blocks</c> are <cr>not official</c> and for that reason levels containing these blocks <cr>will not look good in the official 2.2.</c>\n    <co>(textures will change)</c><cr>Don't use pixel blocks if you want your level to be playable in 2.2.</c>", "OK", nullptr, 500, false, 300)->show();
 		}
 	}
 }
@@ -758,17 +758,17 @@ bool infoButton_hk(string title, string desc, float a3)
 				break;
 
 			case 1346:	//rotate 
-				desc += "\n- < cp>Follow p follows the players icon rotation. Some modes don't work with this.</c>";
+				desc += "\n- <cp>Follow p follows the players icon rotation. Some modes don't work with this.</c>";
 				return infoButton(title, desc, a3);
 				break;
 
 			case 2067:	//scale
-				desc += "\n- < cp>Scaling a singular object uses  the objects rotated x/y instead of grid x/y.</c>";
+				desc += "\n- <cp>Scaling a singular object uses  the objects rotated x/y instead of grid x/y.</c>";
 				return infoButton(title, desc, a3);
 				break;
 
 			case 1585:	//aninamte
-				desc += "\n- < cp>Can also animate particle effects and animated object.</c>";
+				desc += "\n- <cp>Can also animate particle effects and animated object.</c>";
 				return infoButton(title, desc, a3);
 				break;
 
@@ -796,11 +796,11 @@ bool infoButton_hk(string title, string desc, float a3)
 				break;
 
 			case 2016:	//camera guide
-				return infoButton("Camera Guide", "Shows the position of the camera if the player was to spawn on the exact position of the Guide Trigger.\n < cg>The green line shows the entire visible area.</c>\n < cy>The yellow lines show where objects start to fade in and out.</c>", a3);
+				return infoButton("Camera Guide", "Shows the position of the camera if the player was to spawn on the exact position of the Guide Trigger.\n <cg>The green line shows the entire visible area.</c>\n <cy>The yellow lines show where objects start to fade in and out.</c>", a3);
 				break;
 
 			case 1934:	//song trigger
-				return infoButton(title, "<cy>Sets the time of the song in ms.</c>\n < cr>This means 1000ms = 1 second</c>", a3);
+				return infoButton(title, "<cy>Sets the time of the song in ms.</c>\n <cr>This means 1000ms = 1 second</c>", a3);
 				break;
 
 			case 1935:	//timewarp
@@ -826,7 +826,7 @@ bool infoButton_hk(string title, string desc, float a3)
 				break;
 
 			case 2903:	//gradient trigger
-				desc += "\n < cg>Uses base and detail color. Does not work with hsv.</c>\n\
+				desc += "\n <cg>Uses base and detail color. Does not work with hsv.</c>\n\
 <cb>You can choose on what layer the gradient should be.</c>\n\
 <co>Rotating the gradient trigger also rotates the gradient.</c>\n\
 <cp>Vertex mode uses math instead of textures to create the gradient. U D L R (BL BR TL TR in vertex mode) places the egdes of the gradient on center ids.</c>\n\
