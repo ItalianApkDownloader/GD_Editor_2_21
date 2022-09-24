@@ -42,6 +42,7 @@ returntype name##H(__VA_ARGS__)
 #define version2 13
 //#define DEVDEBUG
 //#define SHADERDEBUG
+//#define EMUI_FIX
 
 #define __STR_CAT___(str1, str2) str1##str2
 #define __STR_CAT__(str1, str2) __STR_CAT___(str1, str2)

@@ -47,6 +47,27 @@ void GameManager_tryShowAdH() {}
 
 bool test = false;
 
+
+void UpdatePasswordTemp() {
+	const auto m_sFileName = "password.dat";
+
+	const auto path = CCFileUtils::sharedFileUtils()->getWritablePath() + m_sFileName;
+
+	std::ifstream infile(path.c_str());
+	if (infile.good())
+	{
+		string myText;
+		while (getline(infile, myText))
+			passwordTemp = myText;
+		//	CCLog("password done");
+	}
+	else
+	{
+		passwordTemp = "0";
+		//	CCLog("no file found");
+	}
+}
+
 FUNCTIONHOOK(bool, UILayer_init, UILayer* self) {
 	if(!UILayer_initO(self)) return false;
 	
@@ -112,23 +133,6 @@ bool doRequest;
 const char *(*getStringO)(LoadingLayer *self);
 const char *getStringH(LoadingLayer *self)
 {
-	const auto m_sFileName = "password.dat";
-
-	const auto path = CCFileUtils::sharedFileUtils()->getWritablePath() + m_sFileName;
-
-	std::ifstream infile(path.c_str());
-	if (infile.good())
-	{
-		string myText;
-		while (getline(infile, myText))
-			passwordTemp = myText;
-		//	CCLog("password done");
-	}
-	else
-	{
-		passwordTemp = "0";
-		//	CCLog("no file found");
-	}
 
 	doRequest = true;
 	GM->setGameVariable("0122", false);
@@ -433,15 +437,11 @@ void *PlayLayer_addObjectH(PlayLayer *self, GameObject *obj)
 
 }
 
-
-// moving funny loading text
-bool(*LoadingLayer_initO)(LoadingLayer *, bool);
-bool LoadingLayer_initH(LoadingLayer *self, bool fromReload)
-{
-
-	auto path = CCFileUtils::sharedFileUtils()->getWritablePath() + "crash.txt";
+void showStackTrace() {
+	        auto path = CCFileUtils::sharedFileUtils()->getWritablePath() + "crash.txt";
 
     std::ifstream ifs( path );
+    std::string content = "File not found.";
 
     std::stringstream ss;
 
@@ -460,11 +460,22 @@ bool LoadingLayer_initH(LoadingLayer *self, bool fromReload)
     else 
         ss << "File not found.";
 
-	if(contains(ss.str().c_str(), "LoadingLayer")) {
-		
+    ifs.close( );
+
+    // saber::logging::log( "%s ALL DATA", content.c_str() );
+    FLAlertLayer::create( nullptr, "Stack Trace", ss.str(), "Exit", nullptr, 450., true, 300. )->show( );
+
+}
+
+// moving funny loading text
+bool(*LoadingLayer_initO)(LoadingLayer *, bool);
+bool LoadingLayer_initH(LoadingLayer *self, bool fromReload)
+{
+	#ifdef EMUI_FIX
+	
 		patch tmp;
 		//patch out the update progress function, which crashes because we didnt call init
-		tmp.addPatch("libcocos2dcpp.so", 0x270594, "00BF00BF"); // general icon limit bypass
+		tmp.addPatch("libcocos2dcpp.so", 0x270594, "00BF00BF");
 		tmp.Modify();
 		
 		self->loadAssets();
@@ -472,21 +483,17 @@ bool LoadingLayer_initH(LoadingLayer *self, bool fromReload)
 		auto spriteCache = CCSpriteFrameCache::sharedSpriteFrameCache();
 		spriteCache->addSpriteFramesWithFile("GJ_LaunchSheet.plist");
 		
-		
-		auto label = CCLabelBMFont::create("Crash found\ninitializing in safe mode", "bigFont.fnt");
-		label->CCLabelBMFont::setColor({255, 0, 0});
-		label->setPosition(CCMIDX, CCMIDY);
-		//label->setScale(2);
-		self->addChild(label);
-		return true;
-	
-	}
-	
-	if (!LoadingLayer_initO(self, fromReload)) return false;
-	
-	auto text = *reinterpret_cast< CCNode **>(reinterpret_cast<uintptr_t> (self) + 0x144);
-	text->setPositionY(text->getPositionY() - 10);
+	#else
 
+		if (!LoadingLayer_initO(self, fromReload)) return false;
+	
+		auto text = *reinterpret_cast< CCNode **>(reinterpret_cast<uintptr_t> (self) + 0x144);
+		text->setPositionY(text->getPositionY() - 10);
+
+	
+	#endif
+
+	UpdatePasswordTemp();
 	return true;
 
 }
@@ -1814,7 +1821,9 @@ void loader()
 {
 	auto cocos2d = dlopen(targetLibName != "" ? targetLibName : NULL, RTLD_LAZY);
 
+	#ifndef EMUI_FIX
 	Crash_Handler();
+	#endif
 
 	MenuLayerExt::ApplyHooks();
 	EditLevelLayerExt::ApplyHooks();
@@ -1825,8 +1834,7 @@ void loader()
 	ShaderFix::ApplyHooks();
 	SpeedrunTimer::ApplyHooks();
 
-	/*auto objs = ObjectToolbox::sharedState();
-	objs->addObject(4000, "swing_01_001.png");*/
+
 	#ifdef SHADERDEBUG
 	DevDebugHooks::ApplyHooks();
 	#endif

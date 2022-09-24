@@ -266,6 +266,11 @@ bool MenuLayerExt::init_hk()
 	
  
 		extern bool doRequest;
+		
+		#ifdef EMUI_FIX
+		doRequest = false;
+		#endif
+		
 		if(doRequest) {
 		
 			doRequest = false;
