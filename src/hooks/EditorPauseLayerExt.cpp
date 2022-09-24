@@ -46,8 +46,6 @@ void EditorPauseLayerExt::onResumeH(CCObject* a1){
 		parent->reorderChild(editor->_gridLayer(), zOrder);
 	}
 	
-
-
 	removeFromParentAndCleanup(true);
 }
 

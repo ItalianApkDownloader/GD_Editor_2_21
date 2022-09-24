@@ -18,4 +18,9 @@ public:
 	
 	void addObjectsToPage(cocos2d::CCArray *objects, int page);
 
+	void determineStartValues();
+
+	void updateTouchTriggered();
+	void updateSpawnedByTrigger();
+	void updateMultiTriggerBtn();
 };

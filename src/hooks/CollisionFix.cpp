@@ -294,7 +294,12 @@ FUNCTIONHOOK(void, PlayerObject_collidedWithObjectInternal, PlayerObject* self, 
 			}
 		}
 	}
-	else PlayerObject_collidedWithObjectInternalO(self, idk, obj, hitbox, what);
+	else {
+		PlayerObject_collidedWithObjectInternalO(self, idk, obj, hitbox, what);
+
+		// make ignore damage actually work
+		if(GM->getGameVariable("0009")) MBO(bool, self, 0x724) = false;
+	}
 }
 
 void CollisionFix::ApplyHooks() {

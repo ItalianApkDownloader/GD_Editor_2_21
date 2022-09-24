@@ -1817,6 +1817,31 @@ FUNCTIONHOOK(void, onMoreGames, MenuLayer* self, CCObject* sender) {
 	dir->replaceScene( scene );
 }
 
+FUNCTIONHOOK(bool, SetupShaderEffectPopup_init, SetupTriggerPopup* self, EffectGameObject* object, CCArray* objects, int objectID) {
+	auto ret = SetupShaderEffectPopup_initO(self, object, objects, objectID);
+
+	/*
+		fix shader triggers not toggling checkboxes
+	*/
+	self->determineStartValues();
+
+	self->updateTouchTriggered();
+	self->updateSpawnedByTrigger();
+
+	auto spawnToggle = MBO(CCMenuItemToggler*, self, 0x204);
+	spawnToggle->toggle(MBO(bool, self, 0x200));
+
+	auto touchToggle = MBO(CCMenuItemToggler*, self, 0x208);
+	touchToggle->toggle(MBO(bool, self, 0x201));
+
+	// multi trigger
+	auto arr = MBO(CCArray*, self, 0x20C);
+	auto multiTrigger = (CCMenuItemToggler*)arr->objectAtIndex(0);
+	multiTrigger->toggle(MBO(bool, self, 0x210));
+
+	return ret;
+}
+
 void loader()
 {
 	auto cocos2d = dlopen(targetLibName != "" ? targetLibName : NULL, RTLD_LAZY);
@@ -1846,7 +1871,7 @@ void loader()
 //	HOOK("_ZN10GameObject20createAndAddParticleEiPKciN7cocos2d15tCCPositionTypeE", GameObject_createAndAddParticleH, GameObject_createAndAddParticleO);
 	//HOOK("_ZN15GJBaseGameLayer14createParticleEiPKciN7cocos2d15tCCPositionTypeE", createParticleH, createParticleO);
 	
-	
+	HOOK("_ZN22SetupShaderEffectPopup4initEP16EffectGameObjectPN7cocos2d7CCArrayEi", SetupShaderEffectPopup_initH, SetupShaderEffectPopup_initO);
 	HOOK("_ZN9MenuLayer11onMoreGamesEPN7cocos2d8CCObjectE", onMoreGamesH, onMoreGamesO);
 	HOOK("_ZN10PauseLayer11customSetupEv", PauseLayer_customSetupH, PauseLayer_customSetupO);
 	HOOK("_ZN12SupportLayer9onRestoreEPN7cocos2d8CCObjectE", SupportLayer_onRestoreH, SupportLayer_onRestoreO);
@@ -1985,7 +2010,7 @@ void loader()
 	
 //	tms->addPatch("libcocos2dcpp.so", 0x81121D, "68 74 74 70 3A 2F 2F 77 77 77 2E 62 6F 6F 6D 6C 69 6E 67 73 2E 63 6F 6D 2F 64 61 74 61 62 61 73 65 2F 67 65 74 47 4A 53 6F 6E 67 49 6E 66 6F 2E 70 68 70");
 	
-	tms->addPatch("libcocos2dcpp.so", 0x2C0384, "01 22"); // fix bg
+	tms->addPatch("libcocos2dcpp.so", 0x382266, "4F F0 01 03"); // fix bg
 	
 	
 	

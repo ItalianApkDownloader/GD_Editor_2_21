@@ -39,7 +39,7 @@ bool LevelEditorLayerExt::initH(GJGameLevel* level)
 	auto gm = GameManager::sharedState();
 	gm->_inEditor() = true;
 
-	MEMBERBYOFFSET(bool, this, 0x2780) = true;
+	MEMBERBYOFFSET(bool, this, 0x2780) = true; // inEditor
 
 	this->setObjectCount(0);
 
@@ -191,7 +191,6 @@ bool LevelEditorLayerExt::initH(GJGameLevel* level)
 		MEMBERBYOFFSET(int, this->_levelSettings(), 0x148)
 	);
 
-	// fix background
 	MEMBERBYOFFSET(bool, this, 0x2A19) = true;
 
     this->_editorUI()->updateSlider();
@@ -275,7 +274,7 @@ void LevelEditorLayerExt::updateVisibilityH(float delta) {
 								int l2 = MBO(int, obj, 0x454);
 
 								// new option "Hide invisible"
-								if(MBO(bool, obj, 0x4AF) && GM->getGameVariable("0121")) {
+								if(MBO(bool, obj, 0x4AF) || MBO(bool, obj, 0x236) && GM->getGameVariable("0121") && !MBO(bool, obj, 0x405)) {
 									GameObject_setOpacityH(obj, 0);
 								}
 								else {
