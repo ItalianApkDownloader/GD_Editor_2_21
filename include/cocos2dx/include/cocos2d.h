@@ -35,6 +35,7 @@ static __TYPE__* create() \
 returntype (*name##O)(__VA_ARGS__);			\
 returntype name##H(__VA_ARGS__)
 
+#define CallBySymbol(returntype, library, symbol, ...) (*(returntype(*)(__VA_ARGS__))reinterpret_cast<void*>(dlsym(dlopen(library, RTLD_LAZY), symbol)))
 
 #define GPY() getPositionY()
 #define GPX() getPositionX()
