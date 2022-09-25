@@ -27,7 +27,10 @@ FLAlertLayer* alert;
 
 
 public:
+
+void onUpdateShaderFile(CCObject*);
 		
+void onShaderRequestCompleted(cocos2d::extension::CCHttpClient *sender, cocos2d::extension::CCHttpResponse *response);
 void onRequestCompleted(cocos2d::extension::CCHttpClient *sender, cocos2d::extension::CCHttpResponse *response);
 	
  

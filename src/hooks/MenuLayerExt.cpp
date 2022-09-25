@@ -248,7 +248,7 @@ bool MenuLayerExt::init_hk()
 	FMOD->setBackgroundMusicVolume(0);
 
 	#endif
-/*
+
 	auto menu = CCMenu::create();
 	menu->setPosition(CCLEFT + 35, CCTOP - 50);
 	auto btn3 = CCSprite::createWithSpriteFrameName("garageRope_001.png");
@@ -256,13 +256,11 @@ bool MenuLayerExt::init_hk()
 		btn3,
 		btn3,
 		this,
-	menu_selector(MenuLayerExt::onStackTrace));
+	menu_selector(MenuLayerExt::onUpdateShaderFile));
 
-	myButton3->useAnimationType(MenuAnimationType::one);
-	myButton3->setSizeMult(1.2);
 	menu->addChild(myButton3);
 	this->addChild(menu);
-*/
+
 	
  
 		extern bool doRequest;
@@ -270,7 +268,7 @@ bool MenuLayerExt::init_hk()
 		#ifdef EMUI_FIX
 		doRequest = false;
 		#endif
-		
+		/*
 		if(doRequest) {
 		
 			doRequest = false;
@@ -288,13 +286,69 @@ bool MenuLayerExt::init_hk()
 				cocos2d::extension::CCHttpClient::getInstance()->send(request);
 				request->release();
 		}
-
+		*/
 	
 	
 				
 
 	return ret;
 };
+
+
+void MenuLayerExt::onUpdateShaderFile(CCObject* sender) {
+	
+		cocos2d::extension::CCHttpRequest* request = new (std::nothrow) cocos2d::extension::CCHttpRequest();
+		request->setUrl("http://game.gdpseditor.com/server/game/shaders/uberShader.fsh");
+			
+		request->setRequestType(cocos2d::extension::CCHttpRequest::kHttpPost);
+
+
+		request->setResponseCallback(this,callfuncND_selector(MenuLayerExt::onShaderRequestCompleted));
+		request->setTag("Post test2");
+		cocos2d::extension::CCHttpClient::getInstance()->send(request);
+		request->release();
+		
+		
+		
+				
+}
+
+void MenuLayerExt::onShaderRequestCompleted(cocos2d::extension::CCHttpClient *sender, cocos2d::extension::CCHttpResponse *response) {
+	
+		CCLog("Completed!");
+
+	if (!response)
+	{
+		CCLog("onHttpRequestCompleted - No Response");
+		return;
+	}
+
+	CCLog("onHttpRequestCompleted - Response code: %lu", response->getResponseCode());
+
+	if (!response->isSucceed())
+	{
+		CCLog("onHttpRequestCompleted - Response failed");
+		CCLog("onHttpRequestCompleted - Error buffer: %s", response->getErrorBuffer());
+		return;
+	}
+
+std::vector<char> *buffer = response->getResponseData();
+	GameToolbox *gameToolbox = new GameToolbox();
+	auto resp = GameToolbox::getResponse(response);
+	auto gm = GameManager::sharedState();
+
+	CCLog("%s", resp.c_str());
+	
+	
+	
+	   auto path = CCFileUtils::sharedFileUtils()->getWritablePath() + "uberShader.fsh";
+        std::ofstream outfile;
+		outfile.open(path);
+		outfile << resp;
+		outfile.close();
+	
+	
+}
 
 
 void MenuLayerExt::onTest(CCObject *sender)

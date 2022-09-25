@@ -1659,6 +1659,34 @@ const char *CCString_getCStringH(CCString *self)
 		return CCString_getCStringO(CCString::createWithFormat("swing_%02d_extra_001.png", swingKey));
 
 	}
+	
+	if(contains(ret, "splitscreen") && contains(ret, "shockWaveUV") && contains(ret, "chromaticGlitchUV")) {
+		CCLog("enter if");
+		auto path = CCFileUtils::sharedFileUtils()->getWritablePath() + "uberShader.fsh";
+
+		std::ifstream ifs( path );
+
+		std::stringstream ss;
+
+		if (ifs.good())
+		{
+			CCLog("opening file!!!");
+			std::string sLine;
+			while (getline(ifs, sLine))
+			{
+				ss << sLine << std::endl;
+			}
+			ifs.close();
+			CCLog("returning updated shader!!!");
+			return ss.str().c_str();
+		}
+		else
+		{
+			CCLog("file not found");
+			ifs.close();
+			return ret;
+		}		
+	}
 
 	return ret;
 
