@@ -27,7 +27,8 @@ public:
     CLASS_MEMBER(bool, inPlayLayer, 0x60C);
     CLASS_MEMBER(bool, isRollMode, 0x753);
     CLASS_MEMBER(bool, isDartMode, 0x754);
-    CLASS_MEMBER(float, yVelocity, 0x740);
+    CLASS_MEMBER(double, xVelocityPlatformer, 0xB00);
+    CLASS_MEMBER(double, yVelocity, 0x740);
     CLASS_MEMBER(bool, isDashing, 0x770);
     CLASS_MEMBER(float, playerScale, 0x774);
 
@@ -70,6 +71,7 @@ public:
     int flipMod();
 
     // virtual void setVisible( bool visible ); // 0xA8
+    void logValues();
 
     virtual void placeholder1();
     virtual void placeholder2();

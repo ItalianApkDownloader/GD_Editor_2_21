@@ -27,6 +27,8 @@ FUNCTIONHOOK(void, PlayerObject_collidedWithObjectInternal, PlayerObject* self, 
 			object = obj;
 		}
 
+		//CCLog("yVel: %f", self->_yVelocity());
+
 		auto playerRect = self->getObjectRect(0.3, 0.3);
 		auto playerRect2 = self->getObjectRect();
 		bool isPassableObj = false;
@@ -40,7 +42,7 @@ FUNCTIONHOOK(void, PlayerObject_collidedWithObjectInternal, PlayerObject* self, 
 			}
 		}
 		float mul2 = mul1 * self->flipMod();
-		if(self->isFlying() && !self->_isPlatformer()) mul2 = self->flipMod() * 6;
+		if(self->isFlying() && !self->_isPlatformer()) mul2 = self->flipMod() * 6; // funky rob hardcode
 		
 		if(MBO(GameObject*, self, 0x749) != nullptr) {
 			mul2 = mul2 + MBO(double, self, 0x578) * self->flipMod();
@@ -51,41 +53,33 @@ FUNCTIONHOOK(void, PlayerObject_collidedWithObjectInternal, PlayerObject* self, 
 
 		if(isPassableObj) return; // we dont want any collision action with passable objects
 
-		// i have no fucking idea what this does or what the values even are
+		// this shit supposed to deal with scaling objects
+		//CCLog("unkvariable: %f", idk);
 		/*if(obj != nullptr) {
 			if(idk > 0) {
 				auto lastPos = obj->getLastPosition();
 				auto realPos = obj->getRealPosition();
 				auto scaleD = obj->getScalePosDelta();
 
-				float thang = scaleD.x;
-				float thang2 = realPos.x;
-				if(scaleD.y != 0) {
-					auto pPos = self->getPosition();
-
-					float v19 = 0;
-
-					if(pPos.x >= scaleD.x) v19 = thang2 - thang;
-					else v19 = thang2 + thang;
-
-					thang = 0;
-					thang2 = v19;
-				}
-				if(realPos != lastPos || scaleD.x != thang2 || thang != 0) {
-
-				}
+				
 			}
 		}*/
 
+		//CCLog("0x46C: %f", MBO(float, self, 0x46C));
 		float v31 = MBO(float, self, 0x7C8) * 0.5;
-		float v32 = pos.x - v31 * self->flipMod();
-		float v34 = v32 + mul2;
-		float v35 = pos.x - v31 * self->flipMod() + mul2;
+		//CCLog("v31: %f", v31);
+		float v32 = pos.x + v31 * self->flipMod();
+		//CCLog("v32: %f", v32);
+		float v34 = v32 - mul2;
+		//CCLog("mul2: %f", mul2);
+		//CCLog("v34: %f", v34);
+		float v35 = pos.x + v31 * self->flipMod() - mul2;
+		//CCLog("v35: %f", v35);
 
 		// H blocks and platformer
 		bool hitHead = false;
 		if(MBO(int, self, 0xB7C) > 0 || self->_isPlatformer() || MBO(int, self, 0xB80) > 0) {
-			hitHead = !isPassableObj;
+			hitHead = true;
 		}
 
 		auto point2 = MBO(CCPoint, self, 0x468);
@@ -116,6 +110,8 @@ FUNCTIONHOOK(void, PlayerObject_collidedWithObjectInternal, PlayerObject* self, 
 
 		//CCLog("v34: %f, v35: %f, objectRect: (MinX: %f, MaxX: %f, MinY: %f, MaxY: %f)", v34, v35, rect.getMinX(), rect.getMaxX(), rect.getMinY(), rect.getMaxY());
 
+		//CCLog("v34: %f, v35: %f", v34, v35);
+		//CCLog("MinX: %f; MaxX: %f; MinY: %f; MaxY: %f;", rect.getMinX(), rect.getMaxX(), rect.getMinY(), rect.getMaxY());
 		if(self->_isGravityFlipped()) {
 			if(v34 > rect.getMinX() && v35 > rect.getMinX()) {
 				noJump = false;
@@ -126,8 +122,6 @@ FUNCTIONHOOK(void, PlayerObject_collidedWithObjectInternal, PlayerObject* self, 
 			noJump = false;
 			goto DOSTUFF;
 		}
-
-		//noJump = true;
 
 	DOSTUFF:
 		// avoid issues with mini player
@@ -142,20 +136,27 @@ FUNCTIONHOOK(void, PlayerObject_collidedWithObjectInternal, PlayerObject* self, 
 		else {
 			yDifference = object->getPosition().x - pos.x;
 		}
-		bool canChangePosition = yDifference > 5;
-
-		bool groundCol = false;
+		bool canChangePosition = fabs(yDifference) > 5;
 
 		if(self->_isDartMode() && !isDblock) {
 			goto KILLPLAYER;
 		}
 
+		goto SIDECOLLISION;
+
 		/*
 			TOP AND BOTTOM COLLISION
 		*/
-		if ((pos.x + scaleFactor - 6 > rect.getMinX()) && (point2.x + scaleFactor - 6 > rect.getMinX())) {
+		//if ((pos.x + scaleFactor - 6 > rect.getMinX()) && (point2.x + scaleFactor - 6 > rect.getMinX())) {
+	TBCOLLISION:
+		// get new position
+		pos = self->getPosition();
+
+		if(!(v34 <= rect.getMinX() || v35 <= rect.getMinX())) {
+			//CCLog("collided");
 			// left side
 			if (self->_isGravityFlipped()) {
+				//CCLog("left side: bottom collided");
 				if(canChangePosition) {
 					float newX = rect.getMaxX() + scaleFactor;
 					self->setPosition(CCPoint(newX, self->getPosition().y));
@@ -172,6 +173,7 @@ FUNCTIONHOOK(void, PlayerObject_collidedWithObjectInternal, PlayerObject* self, 
 				}
 			}
 			else {
+				//CCLog("left side: top collided");
 				self->updateCollideTop(rect.getMinX(), idkSomeInt);
 
 				if (self->_isPlatformer())
@@ -191,6 +193,7 @@ FUNCTIONHOOK(void, PlayerObject_collidedWithObjectInternal, PlayerObject* self, 
 		else {
 			// right side
 			if (!self->_isGravityFlipped()) {
+				//CCLog("right side: bottom collided");
 				if(canChangePosition) {
 					/*float waveAdd = 0;
 
@@ -213,6 +216,7 @@ FUNCTIONHOOK(void, PlayerObject_collidedWithObjectInternal, PlayerObject* self, 
 				}
 			}
 			else {
+				//CCLog("right side: top collided");
 				self->updateCollideTop(rect.getMaxX(), idkSomeInt);
 
 				if (self->_isPlatformer()) {
@@ -230,9 +234,12 @@ FUNCTIONHOOK(void, PlayerObject_collidedWithObjectInternal, PlayerObject* self, 
 			//MBO(int, self, 0xB00) = 0;
 		}
 
+		goto FINISH;
+
 		/*
 			LEFT AND RIGHT COLLISION
 		*/
+	SIDECOLLISION:
 		if(self->_isPlatformer()) {
 			float v65 = 0;
 			float v66 = 0;
@@ -241,55 +248,77 @@ FUNCTIONHOOK(void, PlayerObject_collidedWithObjectInternal, PlayerObject* self, 
 				v66 = pos.x;
 			}
 			else {
-				v65 = pos.x + gamemodeSize * 0.5 - mul1;
-				v66 = pos.x - gamemodeSize * 0.5 + mul1;
+				v65 = pos.x - gamemodeSize * 0.5 + mul1;
+				v66 = pos.x + gamemodeSize * 0.5 - mul1;
 			}
 
 			auto objPos = object->getPosition();
-
+			
 			// make sure its wall collision
 			//CCLog("v65: %f, v66: %f, rect: (MinX: %f, MaxX: %f, MinY: %f, MaxY: %f)", v65, v66, rect.getMinX(), rect.getMaxX(), rect.getMinY(), rect.getMaxY());
-			if(v65 < rect.getMaxX() && v65 > rect.getMinX() || v66 > rect.getMaxY() && v66 < rect.getMinY()
+			if(v65 < rect.getMaxX() && v65 > rect.getMinX() || v66 < rect.getMaxX() && v66 > rect.getMinX()
 				&& CCRect(objPos.x + 2.5, objPos.y, scaleFactorUndiv, gamemodeSize - 5).intersectsRect(rect)) {
-				//CCLog("why are you");
+
+				//CCLog("xVelocity: %f", self->_xVelocityPlatformer());
+
+				int v76 = 0;
 				if(pos.y + scaleFactor - 6 > rect.getMinY() && point2.y + scaleFactor - 6 > rect.getMinY()) {
 					// left
 					if(pos.x - scaleFactor + 6 < rect.getMaxY() && point2.x - scaleFactor + 6 < rect.getMaxY()) {
-						if(isDblock) return;
+						// not sure what this is
+						//if(isDblock) return;
 					}
 
 					self->updateCollideLeft(rect.getMaxY(), idkSomeInt);
 
 					float newY = rect.getMaxY() + scaleFactor;
 					self->setPosition(CCPoint(pos.x, newY));
+
+					v76 = MBO(int, self, 0xB59);
 				}
 				else {
 					// right
 					self->updateCollideRight(rect.getMinX(), idkSomeInt);
 
 					float newY = rect.getMinY() - scaleFactor;
-					//self->setPosition(CCPoint(pos.x, newY));
+					self->setPosition(CCPoint(pos.x, newY));
+
+					v76 = MBO(int, self, 0xB5A);
 				}
 
-				MBO(int, self, 0xB00) = 0;
+				self->_xVelocityPlatformer() = 0;
+
 				if(self->_isDashing()) {
 					self->stopDashing();
 					MBO(int, self, 0x725) = 0;
 				}
 
-				if(MBO(bool, self, 0xB5A)) MBO(int, self, 0xB3C) = 0;
+				//if(v76) MBO(int, self, 0xB3C) = 0;
+
+				//if(MBO(bool, self, 0xB5A)) MBO(int, self, 0xB3C) = 0;
+			}
+			else {
+				goto TBCOLLISION;
 			}
 		}
 
+	FINISH:
 		// kill the player
-		if (!self->_isPlatformer()) {
-		KILLPLAYER:
-			if (rect.intersectsRect(playerRect)) {
+		if (rect.intersectsRect(playerRect)) {
+			/*if(noJump && self->isSafeFlip(0.1)) {
+				CCLog("set bool");
+				MBO(bool, self, 0x790) = false;
+			}*/
+
+			if (!self->_isPlatformer()) {
+			KILLPLAYER:
 				if (self->_inPlayLayer()) {
 					GM->_playLayer()->destroyPlayer(self, nullptr);
+					return;
 				}
 				else {
-					CCLog("die");
+					MBO(bool, self, 0x724) = true; // shouldBeDead
+					return;
 				}
 			}
 		}
@@ -303,5 +332,18 @@ FUNCTIONHOOK(void, PlayerObject_collidedWithObjectInternal, PlayerObject* self, 
 }
 
 void CollisionFix::ApplyHooks() {
+	auto tms = new patch();
+
+	//tms->addPatch("libcocos2dcpp.so", 0x2A0240, "00 bf 00 bf");
+	//tms->addPatch("libcocos2dcpp.so", 0x2A01C6, "04 E0");
+	tms->addPatch("libcocos2dcpp.so", 0x2A01C2, "02 E0");
+	//tms->addPatch("libcocos2dcpp.so", 0x2A0210, "00 bf");
+	/*tms->addPatch("libcocos2dcpp.so", 0x2A0416, "00 bf 00 bf");
+	tms->addPatch("libcocos2dcpp.so", 0x2A05AC, "00 bf 00 bf");
+	tms->addPatch("libcocos2dcpp.so", 0x2A0678, "00 bf 00 bf");
+	tms->addPatch("libcocos2dcpp.so", 0x2A0158, "00 bf 00 bf");*/
+
+	tms->Modify();
+
 	HOOK("_ZN12PlayerObject26collidedWithObjectInternalEfP10GameObjectN7cocos2d6CCRectEb", PlayerObject_collidedWithObjectInternalH, PlayerObject_collidedWithObjectInternalO);
 }
