@@ -157,6 +157,7 @@ public:
 
 public:
     CLASS_MEMBER(std::string*, levelString, 0x11C);
+    CLASS_MEMBER(std::string, levelName, 0x114);
     
 public:
     GJGameLevel();

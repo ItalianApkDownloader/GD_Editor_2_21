@@ -2,6 +2,7 @@
 #include "cocos2d.h"
 #include "LevelEditorLayerExt.h"
 #include "hooking.h"
+#include "FunctionHelper.h"
 
 #define FUNCTIONHOOK(returntype, name, ...) \
 returntype (*name##O)(__VA_ARGS__);			\
@@ -35,7 +36,18 @@ bool LevelEditorLayerExt::initH(GJGameLevel* level)
 	CCLog("Editor Init!");
 	if (!dynamic_cast<GJBaseGameLayer*>(this)->init())
 		return false;
-
+	
+	#ifdef DEVDEBUG
+	//custom pixel block ammount for testing
+	if(FunctionHelper::isNumber(level->_levelName()) && GM->getGameVariable("1000012")) {
+		extern int customAmountByLevelName;
+		customAmountByLevelName = atoi(level->_levelName().c_str());
+	}
+	else {
+		extern int customAmountByLevelName;
+		customAmountByLevelName = 0;
+	}
+	#endif
 	auto gm = GameManager::sharedState();
 	gm->_inEditor() = true;
 
@@ -269,15 +281,18 @@ void LevelEditorLayerExt::updateVisibilityH(float delta) {
 								// attempt at preview animation for animated objects
 								//if(MBO(bool, obj, 0x47C)) obj->updateSyncedAnimation(MEMBERBYOFFSET(float, this, 0x28B0), -1);
 								
-								int currentLayer = MBO(int, p, 0x2C50);
-								int l1 = MBO(int, obj, 0x450);
-								int l2 = MBO(int, obj, 0x454);
+
 
 								// new option "Hide invisible"
 								if(MBO(bool, obj, 0x4AF) || MBO(bool, obj, 0x236) && GM->getGameVariable("0121") && !MBO(bool, obj, 0x405)) {
 									GameObject_setOpacityH(obj, 0);
 								}
 								else {
+								
+									int currentLayer = MBO(int, p, 0x2C50);
+									int l1 = MBO(int, obj, 0x450);
+									int l2 = MBO(int, obj, 0x454);
+								
 									bool shouldBeVisible = (currentLayer == l1 || (currentLayer == l2 && l2 != 0) || currentLayer == -1);
 									GameObject_setOpacityH(obj, shouldBeVisible ? 255 : 70);
 								}

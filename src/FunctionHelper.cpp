@@ -15,6 +15,11 @@ std::string FunctionHelper::itohex(int i)
   return stream.str();
 }
 
+bool FunctionHelper::isNumber(const std::string& s)
+{
+    return !s.empty() && std::find_if(s.begin(), 
+        s.end(), [](unsigned char c) { return !std::isdigit(c); }) == s.end();
+}
 
 std::string FunctionHelper::itos(int Number)
 {

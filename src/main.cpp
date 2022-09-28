@@ -161,6 +161,9 @@ void addToggle_hk(MoreOptionsLayer *self, const char *title, const char *code, c
 			addToggle_trp(self, "Disable arrow trigger\nfix", "1000010", 0);
 			addToggle_trp(self, "Speedrun Timer", "1000011", "<cr>Red</c> means that the time is <cr>invalid</c>.\n Before starting a speedrun <cr>make sure to die atleast 1 time</c> because the first attempt time takes the enter transition into account and that will always be slower");
 			addToggle_trp(self, "Show FPS", "0115", 0);
+			#ifdef DEVDEBUG
+			addToggle_trp(self, "pixel blocks amount\nby level name", "1000012", 0);
+			#endif
 			//addToggle_trp(self, "Show Platformer Hitbox", "100009", 0);
 
 			isGDPSSettings = false;
@@ -306,6 +309,8 @@ inline long mid_num(const std::string &s)
 	return std::strtol(&s[s.find('_') + 1], nullptr, 10);
 }
 
+int customAmountByLevelName = 0;
+
 FUNCTIONHOOK(GameObject*, GameObject_create, int key)
 {
 	auto tb = ObjectToolbox::sharedState()->intKeyToFrame(key);
@@ -321,8 +326,14 @@ FUNCTIONHOOK(GameObject*, GameObject_create, int key)
 			return GameObject_createO(1);
 
 		auto pixelKey = mid_num(tb);
-//
-		return GameObject_createO(pixelKey > 140 ? 1 : key);
+		#ifdef DEVDEBUG
+		if(customAmountByLevelName != 0)
+			return GameObject_createO(pixelKey > customAmountByLevelName ? 136 : key);
+		else
+			return GameObject_createO(pixelKey > 140 ? 136 : key);
+		#else
+			return GameObject_createO(pixelKey > 140 ? 136 : key);
+		#endif
 	}
 
 	return GameObject_createO(key);
@@ -1283,7 +1294,7 @@ FUNCTIONHOOK(void, DrawGridLayer_update, DrawGridLayer* self, float delta) {
 			bgMusicTime = self->_musicTime() + delta;
 		}
 
-		if(self->_musicTime() == -1 || fabsf(bgMusicTime - self->_musicTime()) >= 100) {
+		if(self->_musicTime() == -1 || fabsf(bgMusicTime - self->_musicTime()) >= 9999) {
 			self->_anotherTime() = bgMusicTime;
 		}
 		else self->_anotherTime() = self->_anotherTime() + delta;
@@ -1870,6 +1881,27 @@ FUNCTIONHOOK(bool, SetupShaderEffectPopup_init, SetupTriggerPopup* self, EffectG
 	return ret;
 }
 
+    template<class Type = cocos2d::CCNode*>
+    static Type getChildOfType(cocos2d::CCNode* node, size_t index) {
+        auto indexCounter = static_cast<size_t>(0);
+
+        for (size_t i = 0; i < node->getChildrenCount(); ++i) {
+            auto obj = reinterpret_cast<Type>(
+                node->getChildren()->objectAtIndex(i)
+            );
+            if (obj != nullptr) {
+                if (indexCounter == index) {
+                    return obj;
+                }
+                ++indexCounter;
+            }
+        }
+
+        return nullptr;
+    }
+	
+
+
 void loader()
 {
 	auto cocos2d = dlopen(targetLibName != "" ? targetLibName : NULL, RTLD_LAZY);
@@ -1898,6 +1930,8 @@ void loader()
 	//HOOK("_ZN16LevelEditorLayer14recreateGroupsEv", recreateGroupsH, recreateGroupsO);
 //	HOOK("_ZN10GameObject20createAndAddParticleEiPKciN7cocos2d15tCCPositionTypeE", GameObject_createAndAddParticleH, GameObject_createAndAddParticleO);
 	//HOOK("_ZN15GJBaseGameLayer14createParticleEiPKciN7cocos2d15tCCPositionTypeE", createParticleH, createParticleO);
+	
+	//this is the longest symbol i have ever seen
 	
 	HOOK("_ZN22SetupShaderEffectPopup4initEP16EffectGameObjectPN7cocos2d7CCArrayEi", SetupShaderEffectPopup_initH, SetupShaderEffectPopup_initO);
 	HOOK("_ZN9MenuLayer11onMoreGamesEPN7cocos2d8CCObjectE", onMoreGamesH, onMoreGamesO);
@@ -2038,7 +2072,7 @@ void loader()
 	
 //	tms->addPatch("libcocos2dcpp.so", 0x81121D, "68 74 74 70 3A 2F 2F 77 77 77 2E 62 6F 6F 6D 6C 69 6E 67 73 2E 63 6F 6D 2F 64 61 74 61 62 61 73 65 2F 67 65 74 47 4A 53 6F 6E 67 49 6E 66 6F 2E 70 68 70");
 	
-	tms->addPatch("libcocos2dcpp.so", 0x382266, "4F F0 01 03"); // fix bg
+	//tms->addPatch("libcocos2dcpp.so", 0x382266, "4F F0 01 03"); // fix bg
 	
 	
 	

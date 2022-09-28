@@ -44,10 +44,14 @@ void EditLevelLayerExt::onClick(CCObject* sender){
 	}
 }
 
+
 static inline bool (*initO)(EditLevelLayer*, GJGameLevel* level);
 bool EditLevelLayerExt::initH(GJGameLevel* level) {
 	
 	auto ret = initO(this, level);
+	
+	extern int customAmountByLevelName;
+	customAmountByLevelName = 0;
 	
 	auto menu = MEMBERBYOFFSET(CCMenu*, this, 0x14C);
 	
