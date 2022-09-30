@@ -1899,11 +1899,6 @@ FUNCTIONHOOK(bool, SetupShaderEffectPopup_init, SetupTriggerPopup* self, EffectG
 
         return nullptr;
     }
-	
-FUNCTIONHOOK(void, GJBaseGameLayer_updateCameraBGArt, GJBaseGameLayer* self, CCPoint pos) {
-	GJBaseGameLayer_updateCameraBGArtO(self, pos);
-	CCLog("Position: (%f, %f)", pos.x, pos.y);
-}
 
 void loader()
 {
@@ -1934,10 +1929,7 @@ void loader()
 //	HOOK("_ZN10GameObject20createAndAddParticleEiPKciN7cocos2d15tCCPositionTypeE", GameObject_createAndAddParticleH, GameObject_createAndAddParticleO);
 	//HOOK("_ZN15GJBaseGameLayer14createParticleEiPKciN7cocos2d15tCCPositionTypeE", createParticleH, createParticleO);
 	
-	//this is the longest symbol i have ever seen
-	
-	HOOK("_ZN15GJBaseGameLayer17updateCameraBGArtEN7cocos2d7CCPointE", GJBaseGameLayer_updateCameraBGArtH, GJBaseGameLayer_updateCameraBGArtO);
-	HOOK("_ZN22SetupShaderEffectPopup4initEP16EffectGameObjectPN7cocos2d7CCArrayEi", SetupShaderEffectPopup_initH, SetupShaderEffectPopup_initO);
+	HOOK("_ZN22SetupShaderEffectPopup4initEP16EffectGameObjectPN7cocos2d7CCArrayEi", SetupShaderEffectPopup_initH, SetupShaderEffectPopup_initO); //this is the longest symbol i have ever seen
 	HOOK("_ZN9MenuLayer11onMoreGamesEPN7cocos2d8CCObjectE", onMoreGamesH, onMoreGamesO);
 	HOOK("_ZN10PauseLayer11customSetupEv", PauseLayer_customSetupH, PauseLayer_customSetupO);
 	HOOK("_ZN12SupportLayer9onRestoreEPN7cocos2d8CCObjectE", SupportLayer_onRestoreH, SupportLayer_onRestoreO);
