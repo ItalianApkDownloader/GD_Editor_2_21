@@ -1881,24 +1881,32 @@ FUNCTIONHOOK(bool, SetupShaderEffectPopup_init, SetupTriggerPopup* self, EffectG
 	return ret;
 }
 
-    template<class Type = cocos2d::CCNode*>
-    static Type getChildOfType(cocos2d::CCNode* node, size_t index) {
-        auto indexCounter = static_cast<size_t>(0);
-
-        for (size_t i = 0; i < node->getChildrenCount(); ++i) {
-            auto obj = reinterpret_cast<Type>(
-                node->getChildren()->objectAtIndex(i)
-            );
-            if (obj != nullptr) {
-                if (indexCounter == index) {
-                    return obj;
-                }
-                ++indexCounter;
+template<class Type = cocos2d::CCNode*>
+static Type getChildOfType(cocos2d::CCNode* node, size_t index) {
+    auto indexCounter = static_cast<size_t>(0);
+    for (size_t i = 0; i < node->getChildrenCount(); ++i) {
+        auto obj = reinterpret_cast<Type>(
+            node->getChildren()->objectAtIndex(i)
+        );
+        if (obj != nullptr) {
+            if (indexCounter == index) {
+                return obj;
             }
+            ++indexCounter;
         }
-
-        return nullptr;
     }
+    return nullptr;
+}
+
+// stupid ass fix for playtest bg
+FUNCTIONHOOK(void, GJBaseGameLayer_updateCameraBGArt, GJBaseGameLayer* self, CCPoint pos) {
+	if(MBO(bool, self, 0x2780)) {
+		auto posThing = self->_background()->getPosition();
+		GJBaseGameLayer_updateCameraBGArtO(self, pos);
+		self->_background()->setPosition(posThing);
+	}
+	else GJBaseGameLayer_updateCameraBGArtO(self, pos);
+}
 
 void loader()
 {
@@ -1927,7 +1935,7 @@ void loader()
 	//HOOK("_ZN11ShaderLayer18triggerColorChangeEfffffffif", triggerColorChangeH, triggerColorChangeO);
 	//HOOK("_ZN16LevelEditorLayer14recreateGroupsEv", recreateGroupsH, recreateGroupsO);
 //	HOOK("_ZN10GameObject20createAndAddParticleEiPKciN7cocos2d15tCCPositionTypeE", GameObject_createAndAddParticleH, GameObject_createAndAddParticleO);
-	//HOOK("_ZN15GJBaseGameLayer14createParticleEiPKciN7cocos2d15tCCPositionTypeE", createParticleH, createParticleO);
+	HOOK("_ZN15GJBaseGameLayer17updateCameraBGArtEN7cocos2d7CCPointE", GJBaseGameLayer_updateCameraBGArtH, GJBaseGameLayer_updateCameraBGArtO);
 	
 	HOOK("_ZN22SetupShaderEffectPopup4initEP16EffectGameObjectPN7cocos2d7CCArrayEi", SetupShaderEffectPopup_initH, SetupShaderEffectPopup_initO); //this is the longest symbol i have ever seen
 	HOOK("_ZN9MenuLayer11onMoreGamesEPN7cocos2d8CCObjectE", onMoreGamesH, onMoreGamesO);
