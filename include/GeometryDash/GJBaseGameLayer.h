@@ -88,6 +88,9 @@ public:
     void createPlayer();
     void createPlayerCollisionBlock();
 
+    void generateAreaTargetGroups();
+    void generateSpecialTargetGroups();
+
     void createGroundLayer( int,int);
 	void createBackground(int );
     void createMiddleground(int );

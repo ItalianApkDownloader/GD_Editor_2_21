@@ -52,7 +52,8 @@ bool LevelEditorLayerExt::initH(GJGameLevel* level)
 	gm->_inEditor() = true;
 
 	MEMBERBYOFFSET(bool, this, 0x2780) = true; // inEditor
-
+	MEMBERBYOFFSET(float, this, 0x28B0) = 0;
+ 
 	this->setObjectCount(0);
 
 	GSM->stopBackgroundMusic();
@@ -204,6 +205,7 @@ bool LevelEditorLayerExt::initH(GJGameLevel* level)
 	);
 
 	MEMBERBYOFFSET(bool, this, 0x2A19) = true;
+	MEMBERBYOFFSET(bool, this, 0x2A68) = false;
 
     this->_editorUI()->updateSlider();
 
@@ -211,6 +213,10 @@ bool LevelEditorLayerExt::initH(GJGameLevel* level)
 
 	this->sortStickyGroups();
 	this->updateEditorMode();
+
+	// area triggers
+	this->generateAreaTargetGroups();
+	this->generateSpecialTargetGroups();
 
     this->schedule(schedule_selector(LevelEditorLayer::updateEditor));
 
@@ -228,7 +234,9 @@ FUNCTIONHOOK(void, GameObject_setOpacity, GameObject* self, unsigned char opacit
 static inline void (*updateVisibilityO)(LevelEditorLayer*,float);
 void LevelEditorLayerExt::updateVisibilityH(float delta) {
 	auto p = this;
-	
+
+	this->preUpdateVisibility(delta);
+
 	/*int cl = MBO(int, p, 0x2C1C);
 	
 	
