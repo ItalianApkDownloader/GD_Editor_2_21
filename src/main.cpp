@@ -11,7 +11,10 @@
 #include "GDPSManager.h"
 #include "GDPSHelper.h"
 #include "FunctionHelper.h"
+#include "../include/FunctionHelper.h"
 #include "CCDrawNode.h"
+
+
 
 
 #include <unwind.h>
@@ -29,6 +32,7 @@
 #include "hooks/CollisionFix.h"
 #include "hooks/ShaderFix.h"
 #include "hooks/SpeedrunTimer.h"
+#include "hooks/AdvancedLevelInfo.h"
 
 /*
 		FLAG USED FOR DEVELOPER MODE DEBUGGING LIKE SHADERS
@@ -41,7 +45,7 @@ string passwordTemp = "";
 bool colorPopup = true;
 int nFont = 0;
 bool first = true;
-
+string testt = FunctionHelper::itos(3);
 void(*GameManager_tryShowAdO)();
 void GameManager_tryShowAdH() {}
 
@@ -89,8 +93,8 @@ bool isIconUnlockedH(void *self, int a1, int a2)
 CCSprite * (*spriteCreateO)(const char *textureName);
 CCSprite* spriteCreateH(const char *textureName)
 {
-	if (contains(textureName, "GJ_square05.png"))
-		return spriteCreateO("GJ_square04.png");
+	if (containss(textureName, "GJ_square05.png"))
+	return spriteCreateO("GJ_square04.png");
 
 	auto ret = spriteCreateO(textureName);
 	if (ret != nullptr)
@@ -164,6 +168,7 @@ void addToggle_hk(MoreOptionsLayer *self, const char *title, const char *code, c
 			#ifdef DEVDEBUG
 			addToggle_trp(self, "pixel blocks amount\nby level name", "1000012", 0);
 			#endif
+			addToggle_trp(self, "Show Trigger\nActivations", "1000013", 0);
 			//addToggle_trp(self, "Show Platformer Hitbox", "100009", 0);
 
 			isGDPSSettings = false;
@@ -180,7 +185,7 @@ CCSprite* spriteCreateFrameNameH(const char *textureName)
 {
 	
 
-	if (contains(textureName, "GJ_fullBtn_001.png"))
+	if (containss(textureName, "GJ_fullBtn_001.png"))
 		return spriteCreateFrameNameO("GJ_creatorBtn_001.png");
 
 	auto ret = spriteCreateFrameNameO(textureName);
@@ -317,12 +322,12 @@ FUNCTIONHOOK(GameObject*, GameObject_create, int key)
 	
 	if(key == 2013) return GameObject_createO(1);
 	
-	if(contains(tb, "pixelb"))
+	if(containss(tb, "pixelb"))
 		return GameObject_createO(1);
 
-	if(contains(tb, "pixel")) {
+	if(containss(tb, "pixel")) {
 		
-		if(contains(tb, "b_"))
+		if(containss(tb, "b_"))
 			return GameObject_createO(1);
 
 		auto pixelKey = mid_num(tb);
@@ -1280,6 +1285,8 @@ FUNCTIONHOOK(GameObject*, LevelEditorLayer_addObjectFromVector, LevelEditorLayer
 
 FUNCTIONHOOK(void, DrawGridLayer_update, DrawGridLayer* self, float delta) {
 	auto editor = MEMBERBYOFFSET(LevelEditorLayer*, self, 0x15C);
+	
+	//CCLog("%f", editor->_timeScale());
 
 	if(MBO(bool, editor->_editorUI(), 0x18C)) {
 		auto fmod = FMODAudioEngine::sharedEngine();
@@ -1302,6 +1309,7 @@ FUNCTIONHOOK(void, DrawGridLayer_update, DrawGridLayer* self, float delta) {
 		self->_musicTime() = bgMusicTime;
 	}
 }
+
 
 FUNCTIONHOOK(void, triggerShader, void* a1, void* a2) {
 		
@@ -1626,12 +1634,12 @@ const char *CCString_getCStringH(CCString *self)
 {
 	auto ret = CCString_getCStringO(self);
 
-	if (contains(ret, AY_OBFUSCATE("gjp2")) && !passwordTemp.empty())
+	if (containss(ret, AY_OBFUSCATE("gjp2")) && !passwordTemp.empty())
 	{
 		auto AM = GJAccountManager::sharedState();
 		const char *toAdd;
 
-		if (contains(ret, "userName"))
+		if (containss(ret, "userName"))
 			toAdd = CCString::createWithFormat("&password=%s&gjp=%s&", passwordTemp.c_str(), FunctionHelper::gjp(passwordTemp).c_str())->getCString();
 		else
 			toAdd = CCString::createWithFormat("&password=%s&gjp=%s&userName=%s", passwordTemp.c_str(), FunctionHelper::gjp(passwordTemp).c_str(), AM->_username().c_str())->getCString();
@@ -1657,21 +1665,21 @@ const char *CCString_getCStringH(CCString *self)
 		return ret;
 		
 
-		if(contains(ret, "swing_01_001.png"))
+		if(containss(ret, "swing_01_001.png"))
 		return CCString_getCStringO(CCString::createWithFormat("swing_%02d_001.png", swingKey));
 	
-		if(contains(ret, "swing_01_2_001.png"))
+		if(containss(ret, "swing_01_2_001.png"))
 		return CCString_getCStringO(CCString::createWithFormat("swing_%02d_2_001.png", swingKey));
 	
-		if(contains(ret, "swing_01_glow_001.png"))
+		if(containss(ret, "swing_01_glow_001.png"))
 		return CCString_getCStringO(CCString::createWithFormat("swing_%02d_glow_001.png", swingKey));
 	
-		if(contains(ret, "swing_01_extra_001.png"))
+		if(containss(ret, "swing_01_extra_001.png"))
 		return CCString_getCStringO(CCString::createWithFormat("swing_%02d_extra_001.png", swingKey));
 
 	}
 	
-	if(contains(ret, "splitscreen") && contains(ret, "shockWaveUV") && contains(ret, "chromaticGlitchUV")) {
+	if(containss(ret, "splitscreen") && containss(ret, "shockWaveUV") && containss(ret, "chromaticGlitchUV")) {
 		CCLog("enter if");
 		auto path = CCFileUtils::sharedFileUtils()->getWritablePath() + "uberShader.fsh";
 
@@ -1764,7 +1772,7 @@ FUNCTIONHOOK(bool, SetupObjectOptionsPopup_init, CCNode* self, GameObject* obj, 
 	auto menu = MBO(CCMenu*, self, 0x1B4);
 
 	auto label = (CCLabelBMFont*)layer->getChildren()->objectAtIndex(12);
-	if(!label || !contains(label->CCLabelBMFont::getString(), "Reverse")) 
+	if(!label || !containss(label->CCLabelBMFont::getString(), "Reverse")) 
 	return true;
 
 	label = (CCLabelBMFont*)layer->getChildren()->objectAtIndex(19);
@@ -1881,32 +1889,14 @@ FUNCTIONHOOK(bool, SetupShaderEffectPopup_init, SetupTriggerPopup* self, EffectG
 	return ret;
 }
 
-    template<class Type = cocos2d::CCNode*>
-    static Type getChildOfType(cocos2d::CCNode* node, size_t index) {
-        auto indexCounter = static_cast<size_t>(0);
-
-        for (size_t i = 0; i < node->getChildrenCount(); ++i) {
-            auto obj = reinterpret_cast<Type>(
-                node->getChildren()->objectAtIndex(i)
-            );
-            if (obj != nullptr) {
-                if (indexCounter == index) {
-                    return obj;
-                }
-                ++indexCounter;
-            }
-        }
-
-        return nullptr;
-    }
-
 void loader()
 {
 	auto cocos2d = dlopen(targetLibName != "" ? targetLibName : NULL, RTLD_LAZY);
 
 	#ifndef EMUI_FIX
-	Crash_Handler();
+	//Crash_Handler();
 	#endif
+	
 
 	MenuLayerExt::ApplyHooks();
 	EditLevelLayerExt::ApplyHooks();
@@ -1916,7 +1906,7 @@ void loader()
 	CollisionFix::ApplyHooks();
 	ShaderFix::ApplyHooks();
 	SpeedrunTimer::ApplyHooks();
-
+	AdvancedLevelInfo::ApplyHooks();
 
 	#ifdef SHADERDEBUG
 	DevDebugHooks::ApplyHooks();
@@ -1928,8 +1918,8 @@ void loader()
 	//HOOK("_ZN16LevelEditorLayer14recreateGroupsEv", recreateGroupsH, recreateGroupsO);
 //	HOOK("_ZN10GameObject20createAndAddParticleEiPKciN7cocos2d15tCCPositionTypeE", GameObject_createAndAddParticleH, GameObject_createAndAddParticleO);
 	//HOOK("_ZN15GJBaseGameLayer14createParticleEiPKciN7cocos2d15tCCPositionTypeE", createParticleH, createParticleO);
-	
-	HOOK("_ZN22SetupShaderEffectPopup4initEP16EffectGameObjectPN7cocos2d7CCArrayEi", SetupShaderEffectPopup_initH, SetupShaderEffectPopup_initO); //this is the longest symbol i have ever seen
+		
+	HOOK("_ZN22SetupShaderEffectPopup4initEP16EffectGameObjectPN7cocos2d7CCArrayEi", SetupShaderEffectPopup_initH, SetupShaderEffectPopup_initO);
 	HOOK("_ZN9MenuLayer11onMoreGamesEPN7cocos2d8CCObjectE", onMoreGamesH, onMoreGamesO);
 	HOOK("_ZN10PauseLayer11customSetupEv", PauseLayer_customSetupH, PauseLayer_customSetupO);
 	HOOK("_ZN12SupportLayer9onRestoreEPN7cocos2d8CCObjectE", SupportLayer_onRestoreH, SupportLayer_onRestoreO);

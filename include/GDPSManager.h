@@ -1,23 +1,31 @@
 #pragma once
 #define GDPS GDPSManager::sharedState()
 
+#include <iostream>
+#include "json.hpp"
+
+
 
 class GDPSManager{
-
-public:
-    string password;
 	
-	public:
-    void createToggleButton(const char*, CCPoint, CCObject*, cocos2d::SEL_MenuHandler, CCMenu*, bool, bool);
-	std::string itos(int);
+	RSJresource jsonObject;
+	
+	
+public:
+	
+	int opacity;
+	std::string password;
 
 protected:
+	void logString();
     bool init();
-    void encodeDataTo(CCDictionary * data);
-    void dataLoaded(CCDictionary* data);
+    void encodeDataTo();
+    void dataLoaded();
     void firstLoad();
     void setup();
     void load();
+	void writeToFile(std::string path, const char* content);
+	const char* getJsonString();
 
 
 
@@ -27,12 +35,7 @@ public:
     static GDPSManager* sharedState();
 
     void save();
-	void changeServers(const char* server, const char* server_b64); //server needs to be 33 characters, server base 64 needs to be 44 characters
-	void setPlayerSwing(int id);
-	void setPlayerJetpack(int id);
-	void setWorldIsland(int id);
 
 protected:
-    CCDictionary * dictionary = nullptr;
     std::string m_sFileName;
 };

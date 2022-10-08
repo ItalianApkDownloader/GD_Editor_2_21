@@ -36,7 +36,7 @@ typedef void *_PVOID;
 #define MEMBERBYOFFSET(type, class, offset) *reinterpret_cast<type*>(reinterpret_cast<uintptr_t>(class) + offset)
 #define MBO MEMBERBYOFFSET
 #define targetLibName ("libcocos2dcpp.so")
-#define contains(x, y) strstr(x, y) != NULL
+#define containss(x, y) strstr(x, y) != NULL
 
 
 

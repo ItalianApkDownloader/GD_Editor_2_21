@@ -1,6 +1,13 @@
 #pragma once
 
-//making everything static so i dont need an instance of the class lol
+//making everything static so idont need an instance of the class lol
+
+
+
+
+
+
+
 
 class FunctionHelper {
 	
@@ -24,9 +31,5 @@ public:
 	static std::string base64_encode(unsigned char const* bytes_to_encode, unsigned int in_len);
 	static std::string gjp(std::string plainText_password);
 	static std::string itohex(int i);
-
-	
-
-
 
 };

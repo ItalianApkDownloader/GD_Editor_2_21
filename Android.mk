@@ -51,8 +51,10 @@ LOCAL_C_INCLUDES += $(LOCAL_PATH)/include/KittyMemory \
 LOCAL_C_INCLUDES += $(LOCAL_PATH)/include/layers \
 
 LOCAL_SRC_FILES := 	src/main.cpp \
+					src/hooks/AdvancedLevelInfo.cpp \
 					src/hooks/SpeedrunTimer.cpp \
 					src/GDPSHelper.cpp \
+					src/GDPSManager.cpp \
 					src/FunctionHelper.cpp \
 					src/hooks/MenuLayerExt.cpp \
 					src/hooks/EditorPauseLayerExt.cpp \

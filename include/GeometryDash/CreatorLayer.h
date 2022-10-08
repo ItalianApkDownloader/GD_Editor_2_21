@@ -7,7 +7,6 @@
 #include "GDAPI_Macros.h"
 #include "GJListLayer.h"
 #include "patch.h"
-#include "GDPSManager.h"
 
 class CreatorLayer : public cocos2d::CCLayer 
 {

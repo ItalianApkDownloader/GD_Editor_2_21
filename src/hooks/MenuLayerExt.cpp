@@ -17,7 +17,7 @@
 //#include "../layers/ToolsLayer.h"
 #include "../../include/hooks/MenuLayerExt.h"
 #include "hooking.h"
-#include "FunctionHelper.h"
+#include "../FunctionHelper.h"
 
 template <class T>
 extern void *getPointer(T value);
