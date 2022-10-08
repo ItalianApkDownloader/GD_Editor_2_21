@@ -35,7 +35,7 @@ static __TYPE__* create() \
 returntype (*name##O)(__VA_ARGS__);			\
 returntype name##H(__VA_ARGS__)
 
-#define CallBySymbol(returntype, library, symbol, ...) (*(returntype(*)(__VA_ARGS__))reinterpret_cast<void*>(dlsym(dlopen(library, RTLD_LAZY), symbol)))
+
 
 #define GPY() getPositionY()
 #define GPX() getPositionX()
@@ -44,6 +44,11 @@ returntype name##H(__VA_ARGS__)
 #define DEVDEBUG
 //#define SHADERDEBUG
 //#define EMUI_FIX
+
+#define CallBySymbol(returntype, library, symbol, ...) (*(returntype(*)(__VA_ARGS__))reinterpret_cast<void*>(dlsym(dlopen(library, RTLD_LAZY), symbol)))
+
+#define CBS(a, b, c, ...) CallBySymbol(a, b, c, __VA_ARGS__)
+#define CBSR(a, c, ...) CBS(void*, "libcocos2dcpp.so", c, __VA_ARGS__)
 
 #define __STR_CAT___(str1, str2) str1##str2
 #define __STR_CAT__(str1, str2) __STR_CAT___(str1, str2)

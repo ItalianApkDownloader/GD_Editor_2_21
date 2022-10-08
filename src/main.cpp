@@ -15,6 +15,7 @@
 #include "CCDrawNode.h"
 
 
+#define IMGUI_IMPL_OPENGL_ES2 k
 
 
 #include <unwind.h>
@@ -33,6 +34,7 @@
 #include "hooks/ShaderFix.h"
 #include "hooks/SpeedrunTimer.h"
 #include "hooks/AdvancedLevelInfo.h"
+#include "hooks/ImGuiOverlay.h"
 
 /*
 		FLAG USED FOR DEVELOPER MODE DEBUGGING LIKE SHADERS
@@ -1921,10 +1923,10 @@ void loader()
 	auto cocos2d = dlopen(targetLibName != "" ? targetLibName : NULL, RTLD_LAZY);
 
 	#ifndef EMUI_FIX
-	Crash_Handler();
+	//Crash_Handler();
 	#endif
 	
-
+	
 	MenuLayerExt::ApplyHooks();
 	EditLevelLayerExt::ApplyHooks();
 	LevelEditorLayerExt::ApplyHooks();
@@ -1934,6 +1936,7 @@ void loader()
 	ShaderFix::ApplyHooks();
 	SpeedrunTimer::ApplyHooks();
 	AdvancedLevelInfo::ApplyHooks();
+	ImGuiOverlay::ApplyHooks();
 
 	#ifdef SHADERDEBUG
 	DevDebugHooks::ApplyHooks();
@@ -1945,7 +1948,9 @@ void loader()
 	//HOOK("_ZN16LevelEditorLayer14recreateGroupsEv", recreateGroupsH, recreateGroupsO);
 //	HOOK("_ZN10GameObject20createAndAddParticleEiPKciN7cocos2d15tCCPositionTypeE", GameObject_createAndAddParticleH, GameObject_createAndAddParticleO);
 	//HOOK("_ZN15GJBaseGameLayer14createParticleEiPKciN7cocos2d15tCCPositionTypeE", createParticleH, createParticleO);
-		
+	
+
+	
 	HOOK("_ZN22SetupShaderEffectPopup4initEP16EffectGameObjectPN7cocos2d7CCArrayEi", SetupShaderEffectPopup_initH, SetupShaderEffectPopup_initO);
 
 	HOOK("_ZN15GJBaseGameLayer17updateCameraBGArtEN7cocos2d7CCPointE", GJBaseGameLayer_updateCameraBGArtH, GJBaseGameLayer_updateCameraBGArtO);

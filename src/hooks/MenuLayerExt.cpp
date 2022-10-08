@@ -16,8 +16,16 @@
 #include "../layers/CreditsLayer.h"
 //#include "../layers/ToolsLayer.h"
 #include "../../include/hooks/MenuLayerExt.h"
+#include "../../include/imgui/imgui.h"
+#include "../../include/imgui/backends/imgui_impl_opengl3.h"
+#include "../../include/imgui/backends/imgui_impl_glfw.h"
+#include "ImGuiOverlay.h"
 #include "hooking.h"
 #include "../FunctionHelper.h"
+#include "../GDPSHelper.h"
+
+
+
 
 template <class T>
 extern void *getPointer(T value);
@@ -243,6 +251,9 @@ bool MenuLayerExt::init_hk()
 		first = false;
 	}
 	
+	GDPSHelper::logNames(this->getChildren());
+	
+
 	
 	#ifdef DEVDEBUG
 	FMOD->setBackgroundMusicVolume(0);

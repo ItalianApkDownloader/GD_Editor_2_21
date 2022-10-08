@@ -51,6 +51,14 @@ LOCAL_C_INCLUDES += $(LOCAL_PATH)/include/KittyMemory \
 LOCAL_C_INCLUDES += $(LOCAL_PATH)/include/layers \
 
 LOCAL_SRC_FILES := 	src/main.cpp \
+					include/imgui/imgui.cpp \
+					include/imgui/imgui_demo.cpp \
+					include/imgui/imgui_draw.cpp \
+					include/imgui/imgui_tables.cpp \
+					include/imgui/imgui_widgets.cpp \
+					include/imgui/backends/imgui_impl_opengl3.cpp \
+					include/imgui/backends/imgui_impl_android.cpp \
+					src/hooks/ImGuiOverlay.cpp \
 					src/hooks/AdvancedLevelInfo.cpp \
 					src/hooks/SpeedrunTimer.cpp \
 					src/GDPSHelper.cpp \
@@ -77,5 +85,6 @@ LOCAL_LDLIBS := -llog \
 				-lGLESv1_CM \
 				-ldl \
 				-landroid \
+				
 
 include $(BUILD_SHARED_LIBRARY)

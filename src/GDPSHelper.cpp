@@ -40,6 +40,11 @@ std::string GDPSHelper::NameForNode(cocos2d::CCObject* node)
 
 void GDPSHelper::logNames(CCArray* objects) {
 	
+	if(!objects) {
+		CCLog("nullptr");
+		return;
+	}
+	
 	for(int i = 0; i < objects->count(); i++) {
 		auto node = (CCNode*)objects->objectAtIndex(i);
 		auto name = GDPSHelper::NameForNode(node);
