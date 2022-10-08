@@ -251,10 +251,6 @@ bool MenuLayerExt::init_hk()
 		first = false;
 	}
 	
-	GDPSHelper::logNames(this->getChildren());
-	
-
-	
 	#ifdef DEVDEBUG
 	FMOD->setBackgroundMusicVolume(0);
 
@@ -298,8 +294,6 @@ bool MenuLayerExt::init_hk()
 				request->release();
 		}
 		*/
-	
-	
 				
 
 	return ret;

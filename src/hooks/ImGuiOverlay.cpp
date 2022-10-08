@@ -14,6 +14,7 @@
 #include "../../include/imgui/backends/imgui_impl_glfw.h"
 
 using namespace cocos2d;
+using namespace ImGui;
 
 
 
@@ -32,9 +33,12 @@ float SCENE_ALPHA = 0.9f;
 bool SHOW_DEBUG_OPTIONS = false;
 bool SHOW_LOGGER = false;
 bool SHOW_VARS = false;
-bool SHOW_EXPLORER = false;
-bool SHOW_DEMO = true;
-bool SHOW_TEST = true;
+bool SHOW_EXPLORER = true;
+bool SHOW_DEMO = false;
+bool SHOW_TEST = false;
+
+
+
 
 
 bool GAME_IN_WINDOW = false;
@@ -49,6 +53,9 @@ bool IS_ACTIVE = false;
 #include <typeinfo>
 #include <memory>
 #include <cxxabi.h>
+
+
+vector<string> current_nodes;
 
 
 std::string get_name_for_node(cocos2d::CCNode* node)
@@ -104,22 +111,11 @@ void imgui_draw_vars_window()
 
 void draw_tree_for_node(cocos2d::CCNode* node)
 {
-    CCLog("hello 90000 node for tree");
     auto ccd = cocos2d::CCDirector::sharedDirector();
     float dpi = CallBySymbol(float, "libcocos2dcpp.so", "_ZN7cocos2d8CCDevice6getDPIEv", void)();
-        CCLog("hello 11111 node for tree");
-
-    CCLog("hello starting 4444 for tree");
         
-    CCLog("%s", get_name_for_node(node).c_str()); //<- it crashes here
-    
-    CCLog("done");
     if (ImGui::TreeNode(get_name_for_node(node).c_str())) {
-            CCLog("hello starting node 5555 tree");
-
         ImGui::PushItemWidth(std::min(ImGui::GetWindowWidth() * 0.65f, (dpi / DPI_NORMAL_FACTOR) * 400.0f));
-        CCLog("hello starting node for tree");
-
         {
             auto px = node->getPositionX();
             auto py = node->getPositionY();
@@ -147,8 +143,6 @@ void draw_tree_for_node(cocos2d::CCNode* node)
                 }
             }
         }
-        CCLog("hello starting node for 2222");
-
         {
             auto rotation = node->getRotation();
             auto rx = node->getRotationX();
@@ -323,37 +317,16 @@ void imgui_showTest() {
 // Create a window called "My First Tool", with a menu bar.
 ImGui::PushStyleVar(ImGuiStyleVar_WindowMinSize, {800.f,600.f });
 ImGui::Begin("My First Tool", &SHOW_TEST, ImGuiWindowFlags_MenuBar);
-if (ImGui::BeginMenuBar())
-{
-    if (ImGui::BeginMenu("File"))
-    {
-        if (ImGui::MenuItem("Open..", "Ctrl+O")) { /* Do stuff */ }
-        if (ImGui::MenuItem("Save", "Ctrl+S"))   { /* Do stuff */ }
-        if (ImGui::MenuItem("Close", "Ctrl+W"))  { SHOW_TEST = false; }
-        ImGui::EndMenu();
-    }
-    ImGui::EndMenuBar();
-}
 
-// Edit a color stored as 4 floats
-float mycolor[4]  = {255, 255, 0, 255};
-ImGui::ColorEdit4("Color", mycolor);
-
-// Generate samples and plot them
-float samples[100];
-for (int n = 0; n < 100; n++)
-    samples[n] = sinf(n * 0.2f + ImGui::GetTime() * 1.5f);
-ImGui::PlotLines("Samples", samples, 100);
-
-for (int n = 0; n < 15; n++)
-ImGui::Text("%04d: example text", n);
+for(string i : current_nodes)
+    Text("%s", i.c_str());
 
 // Display contents in a scrolling region
 ImGui::TextColored(ImVec4(1,1,0,1), "Important Stuff");
 ImGui::BeginChild("Scrolling");
 
 ImGui::EndChild();
-ImGui::EndChild();
+//ImGui::End();
 }
 
 
@@ -395,7 +368,9 @@ void imgui_init() {
     ImGuiIO& io = ImGui::GetIO();
 
     ImFont* font = io.Fonts->AddFontDefault();
-    font->Scale *= 2.5;
+    
+    //edit this value to change main font size
+    font->Scale *= 3;
 
     io.BackendPlatformName = "imgui_impl_cocos2dx";
     io.MousePos = ImVec2(-FLT_MAX, -FLT_MAX);
@@ -417,6 +392,9 @@ void imgui_init() {
 FUNCTIONHOOK(void*, Application_run, void* self) {
 
 	auto ret = Application_runO(self);
+    
+    for(int i = 0; i < 5; i++)
+    current_nodes.push_back("init, empty");
 	
 	imgui_init();
 	
@@ -477,10 +455,10 @@ void imgui_start_frame()
 
 FUNCTIONHOOK(void, CCDirector_drawScene, cocos2d::CCDirector* self)
 {
-    imgui_start_frame();
-
-
     CCDirector_drawSceneO(self);
+    imgui_start_frame();
+    
+   // GDPSHelper::logNames(self->getRunningScene()->getChildren());
 
     if (IS_ACTIVE) {
         imgui_tick(nullptr);

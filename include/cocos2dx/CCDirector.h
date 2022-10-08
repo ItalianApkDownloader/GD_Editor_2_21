@@ -155,7 +155,7 @@ protected:
 
 
 public:
-        inline CCScene* getRunningScene(void) { return m_pRunningScene; }
+        inline CCScene* getRunningScene(void) { return MBO(CCScene*, this, 0xCC); }
 	virtual bool init();
 
 	virtual long getClassTypeInfo();
