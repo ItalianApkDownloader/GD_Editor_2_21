@@ -1921,7 +1921,7 @@ void loader()
 	auto cocos2d = dlopen(targetLibName != "" ? targetLibName : NULL, RTLD_LAZY);
 
 	#ifndef EMUI_FIX
-	//Crash_Handler();
+	Crash_Handler();
 	#endif
 	
 
