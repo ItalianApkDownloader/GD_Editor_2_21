@@ -143,20 +143,20 @@ FUNCTIONHOOK(void, PlayerObject_collidedWithObjectInternal, PlayerObject* self, 
 		if(self->_isPlatformer()) {
 			float v65 = 0;
 			float v66 = 0;
-			if(MBO(bool, self, 0x748) || MBO(GameObject*, self, 0x749) != nullptr || MBO(double, self, 0x7B8) - MBO(double, self, 0xB50) < 0.200000003) {
-				v65 = pos.x - (gamemodeSize * 0.5 * self->_playerScale()) * self->flipMod();
+			if(MBO(GameObject*, self, 0x748) != nullptr || MBO(GameObject*, self, 0x749) != nullptr || MBO(double, self, 0x7B8) - MBO(double, self, 0xB50) < 0.200000003) {
+				v65 = pos.x - scaleFactor * self->flipMod();
 				v66 = pos.x;
 			}
 			else {
-				v65 = pos.x - gamemodeSize * 0.5 * self->_playerScale() + mul1;
-				v66 = pos.x + gamemodeSize * 0.5 * self->_playerScale() - mul1;
+				v65 = pos.x - scaleFactor + mul1;
+				//v66 = pos.x + scaleFactor - mul1;
 			}
 			
 			// make sure its wall collision
 			//CCLog("v65: %f, v66: %f, rect: (MinX: %f, MaxX: %f, MinY: %f, MaxY: %f)", v65, v66, rect.getMinX(), rect.getMaxX(), rect.getMinY(), rect.getMaxY());
-			if(v65 < rect.getMaxX() && v65 > rect.getMinX() || v66 < rect.getMaxX() && v66 > rect.getMinX()
+			//if(v65 < rect.getMaxX() && v65 > rect.getMinX() || v66 < rect.getMaxX() && v66 > rect.getMinX()
+			if(v65 > rect.getMinX() && v65 < rect.getMaxX() //|| v66 < rect.getMaxX() && v66 > rect.getMinX()
 				&& CCRect(playerRect2.origin.x - 2.5, playerRect2.origin.y, gamemodeSize - 5, scaleFactorUndiv).intersectsRect(rect)) {
-				//CCLog("wall collision!!!");
 
 				//CCLog("xVelocity: %f", self->_xVelocityPlatformer());
 
@@ -213,7 +213,9 @@ FUNCTIONHOOK(void, PlayerObject_collidedWithObjectInternal, PlayerObject* self, 
 		pos = self->getPosition();
 
 		// avoid wall collision mumbo jumbo
+		CCLog("TB collision");
 		if(CCRect(playerRect2.origin.x, playerRect2.origin.y + 2.5, playerRect2.size.width, scaleFactorUndiv - 5).intersectsRect(rect)) {
+			CCLog("TB collision yessssssssssssssssssssssssssssss");
 			if ((pos.x + scaleFactor - 6 > rect.getMinX()) && (point2.x + scaleFactor - 6 > rect.getMinX())) {
 			//if(!(v34 <= rect.getMinX() || v35 <= rect.getMinX())) {
 				//CCLog("collided");

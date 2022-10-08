@@ -91,6 +91,8 @@ public:
     void generateAreaTargetGroups();
     void generateSpecialTargetGroups();
 
+    void generateEnterEasingBuffers(EnterEffectObject*);
+
     void createGroundLayer( int,int);
 	void createBackground(int );
     void createMiddleground(int );

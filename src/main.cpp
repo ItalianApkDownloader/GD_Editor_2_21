@@ -1280,7 +1280,14 @@ FUNCTIONHOOK(bool, shouldShowInterstitial, GameManager* self, int a, int b, int 
 FUNCTIONHOOK(GameObject*, LevelEditorLayer_addObjectFromVector, LevelEditorLayer* self, void* vec) {
 	auto obj = LevelEditorLayer_addObjectFromVectorO(self, vec);
 
-	if(obj != nullptr) return obj;
+	if(obj != nullptr) {
+		int objID = MBO(int, obj, 0x3A0);
+		if(objID < 3016 && objID >= 3006) {
+			self->generateEnterEasingBuffers((EnterEffectObject*)obj);
+		}
+
+		return obj;
+	}
 
 	return GameObject::createWithKey(1);
 }
@@ -1918,12 +1925,23 @@ FUNCTIONHOOK(void, GJBaseGameLayer_updateCameraBGArt, GJBaseGameLayer* self, CCP
 	else GJBaseGameLayer_updateCameraBGArtO(self, pos);
 }
 
+// area trigger in playtest
+FUNCTIONHOOK(GameObject*, LevelEditorLayer_createObject, LevelEditorLayer* self, int objectID, CCPoint pos, bool idk) {
+	auto obj = LevelEditorLayer_createObjectO(self, objectID, pos, idk);
+
+	if(objectID < 3016 && objectID >= 3006) {
+		self->generateEnterEasingBuffers((EnterEffectObject*)obj);
+	}
+
+	return obj;
+}
+
 void loader()
 {
 	auto cocos2d = dlopen(targetLibName != "" ? targetLibName : NULL, RTLD_LAZY);
 
 	#ifndef EMUI_FIX
-	//Crash_Handler();
+	Crash_Handler();
 	#endif
 	
 	
@@ -1949,8 +1967,8 @@ void loader()
 //	HOOK("_ZN10GameObject20createAndAddParticleEiPKciN7cocos2d15tCCPositionTypeE", GameObject_createAndAddParticleH, GameObject_createAndAddParticleO);
 	//HOOK("_ZN15GJBaseGameLayer14createParticleEiPKciN7cocos2d15tCCPositionTypeE", createParticleH, createParticleO);
 	
+	HOOK("_ZN16LevelEditorLayer12createObjectEiN7cocos2d7CCPointEb", LevelEditorLayer_createObjectH, LevelEditorLayer_createObjectO);
 
-	
 	HOOK("_ZN22SetupShaderEffectPopup4initEP16EffectGameObjectPN7cocos2d7CCArrayEi", SetupShaderEffectPopup_initH, SetupShaderEffectPopup_initO);
 
 	HOOK("_ZN15GJBaseGameLayer17updateCameraBGArtEN7cocos2d7CCPointE", GJBaseGameLayer_updateCameraBGArtH, GJBaseGameLayer_updateCameraBGArtO);
