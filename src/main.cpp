@@ -741,8 +741,10 @@ bool SetupTriggerPopupH(SetupTriggerPopup *self, EffectGameObject *object, cocos
 
 	if (colorPopup)
 	{
-		int id = object->_objectID();
-		lastTriggerObjectID = id;
+		if(object != nullptr) {
+			int id = object->_objectID();
+			lastTriggerObjectID = id;
+		}
 	}
 
 	return ret;
