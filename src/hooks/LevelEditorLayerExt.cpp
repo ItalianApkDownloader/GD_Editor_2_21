@@ -24,7 +24,6 @@ void CreateAndRetainDictA(uintptr_t obj, int offset) {
 
 static inline void (*removeO)(LevelEditorLayer* self,GameObject *,bool);
 void LevelEditorLayerExt::removeH(GameObject * obj,bool a1) {
-	
 	removeO(this, obj, a1);
 	obj->removeFromParent();
 }
@@ -338,6 +337,6 @@ void LevelEditorLayerExt::ApplyHooks() {
 
 	HOOK_STATIC("_ZN10GameObject10setOpacityEh", GameObject_setOpacityH, GameObject_setOpacityO);
 
-	HOOK_STATIC("_ZN16LevelEditorLayer12removeObjectEP10GameObjectb", 
-	LevelEditorLayerExt::removeH, LevelEditorLayerExt::removeO);	
+	//HOOK_STATIC("_ZN16LevelEditorLayer12removeObjectEP10GameObjectb", 
+	//LevelEditorLayerExt::removeH, LevelEditorLayerExt::removeO);	
 }

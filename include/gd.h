@@ -53,4 +53,5 @@
 #include "WorldSelectLayer.h"
 #include "CCMenuItemToggler.h"
 #include "EndLevelLayer.h"
+#include "ExplodeItemNode.h"
 #endif

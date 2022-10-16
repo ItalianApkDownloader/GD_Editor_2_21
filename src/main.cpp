@@ -53,6 +53,7 @@ void GameManager_tryShowAdH() {}
 
 bool test = false;
 
+float randFloat(float X) { return static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/X)); }
 
 void UpdatePasswordTemp() {
 	const auto m_sFileName = "password.dat";
@@ -1554,7 +1555,7 @@ void patchIcons(int gameMode, int amountt) {
 
 FUNCTIONHOOK(void*, GJItemIcon_Init, int type, int key)
 {
-	if(type == 11 && key > 17)
+	if(type == 11 && key > 16)
 		return nullptr;
 	
 	return GJItemIcon_InitO(type, key);
@@ -1584,11 +1585,16 @@ FUNCTIONHOOK(void, GJBaseGameLayer_toggleDual, GJBaseGameLayer* self, void* a1, 
 	//...
 }
 
+class GarageLayerCallback {
+	public: void onShatter(CCObject* pSender) { GM->setGameVariable("shatterFX", reinterpret_cast<CCMenuItemToggler*>(pSender)->_isToggled()); }
+};
 
 FUNCTIONHOOK(bool, GJGarageLayer_init, GJGarageLayer* self) {
 	
 	if(!GJGarageLayer_initO(self))
 	return false;
+
+	auto dir = CCDirector::sharedDirector();
 	
 	auto copyBtn = CCMenuItemSpriteExtra::create(CCSprite::createWithSpriteFrameName("bgIcon_01_001.png"), nullptr, self, menu_selector(GJGarageLayer::onSelectTab));
 	copyBtn->setTag(7);
@@ -1634,6 +1640,21 @@ FUNCTIONHOOK(bool, GJGarageLayer_init, GJGarageLayer* self) {
 	trails->setPositionX(trails->GPX() + 10);
 	effects->setPositionX(effects->GPX() + 10);
 
+	// shatter effect toggle
+	auto btnToggleMenu = CCMenu::create();
+
+	auto shatterToggle = CCMenuItemToggler::create(
+		CCSprite::createWithSpriteFrameName("GJ_checkOn_001.png"),
+		CCSprite::createWithSpriteFrameName("GJ_checkOff_001.png"),
+		self,
+		menu_selector(GarageLayerCallback::onShatter)
+	);
+	shatterToggle->toggle(!GM->getGameVariable("shatterFX"));
+	btnToggleMenu->addChild(shatterToggle);
+
+	btnToggleMenu->setPosition(dir->getScreenRight() - 30, 120);
+
+	self->addChild(btnToggleMenu, 10);
 	
 	return true;
 }
@@ -1938,6 +1959,48 @@ FUNCTIONHOOK(GameObject*, LevelEditorLayer_createObject, LevelEditorLayer* self,
 	return obj;
 }
 
+FUNCTIONHOOK(void, PlayerObject_playDeathEffect2, PlayerObject* self) {
+	PlayerObject_playDeathEffect2O(self);
+
+	// shatter effect from sneak peek 1
+	if(!GM->getGameVariable("shatterFX")) return;
+
+	auto size = self->_playerScale() * MBO(float, self, 0x7C8);
+	auto pos = self->getPosition();
+	auto tex = CCRenderTexture::create(size, size);
+
+	self->setPosition(CCPoint(25, 25));
+	tex->beginWithClear(0, 0, 0, 0);
+	self->visit();
+	tex->end();
+
+	self->setPosition(pos);
+	auto exp = ExplodeItemNode::create(tex);
+	MBO(float, exp, 68) = -100;
+
+	// add to layer
+	GM->_playLayer()->_gameLayer()->addChild(exp, 10000);
+	exp->setPosition(self->getPosition());
+
+	srand(time(nullptr)); // random seed
+	float randGenFloat = randFloat(4) + 2;
+	exp->createSprites(
+		4 + rand() % 4, //6,
+		4 + rand() % 4, //6,
+		randGenFloat / 2, //3,
+		randGenFloat, //5,
+		4,
+		4,
+		6.4,
+		0,
+		ccc4FFromccc4B({255, 255, 255, 255}),
+		ccc4FFromccc4B({255, 255, 255, 255}),
+		true
+	);
+
+	self->setVisible(false);
+}
+
 void loader()
 {
 	auto cocos2d = dlopen(targetLibName != "" ? targetLibName : NULL, RTLD_LAZY);
@@ -1962,7 +2025,7 @@ void loader()
 	DevDebugHooks::ApplyHooks();
 	#endif
 
-
+	HOOK("_ZN12PlayerObject15playDeathEffectEv", PlayerObject_playDeathEffect2H, PlayerObject_playDeathEffect2O);
 //	HOOK("_ZN11ShaderLayer4initEv", ShaderLayer_initH, ShaderLayer_initO);
 	//HOOK("_ZN11ShaderLayer18triggerColorChangeEfffffffif", triggerColorChangeH, triggerColorChangeO);
 	//HOOK("_ZN16LevelEditorLayer14recreateGroupsEv", recreateGroupsH, recreateGroupsO);
@@ -2117,8 +2180,13 @@ void loader()
 	//tms->addPatch("libcocos2dcpp.so", 0x382266, "4F F0 01 03"); // fix bg
 	
 	
-	
-
+	// I got no fucking idea why rob does this but.....
+	// death effect reset fix
+	NOP4(tms, 0x27B574);
+	NOP4(tms, 0x27B592);
+	NOP4(tms, 0x27B596);
+	NOP2(tms, 0x27B59A);
+	NOP4(tms, 0x27B59C);
 
 	tms->addPatch("libcocos2dcpp.so", 0x332442, "002D"); // general icon limit bypass
 	tms->addPatch("libcocos2dcpp.so", 0x2803D0, "1421"); // general icon limit bypass
@@ -2131,8 +2199,6 @@ void loader()
 	tms->addPatch("libcocos2dcpp.so", 0x2EB9EE, "01 21"); // fix level name in pause
 
 	tms->addPatch("libcocos2dcpp.so", 0x2C44EA, "4F F0 02 0A"); // FG
-	
-
 
 	tms->Modify();
 }

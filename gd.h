@@ -44,4 +44,5 @@
 #include "GaragePage.h"
 #include "VideoOptionsLayer.h"
 #include "GJOptionsLayer.h"
+#include "ExplodeItemNode.h"
 #endif
