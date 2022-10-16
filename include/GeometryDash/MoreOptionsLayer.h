@@ -34,5 +34,6 @@ class MoreOptionsLayer : public FLAlertLayer
 		virtual void textInputShouldOffset(CCTextInputNode *,float){};
 		virtual void textInputReturn(CCTextInputNode *){};
 		virtual void googlePlaySignedIn(void){};
+		CCArray* objectsForPage(int);
 
 };

@@ -2,6 +2,7 @@
 #include <bits/stdc++.h>
 #include "hooking.h"
 #include "cocos2d.h"
+#include "GDPSManager.h"
 
 using namespace cocos2d;
 
@@ -286,11 +287,41 @@ FUNCTIONHOOK(void, EditorUI_playerTouchEnded, EditorUI *self, CCTouch *touch, CC
     }
 }
 
+
+FUNCTIONHOOK(void, PlayLayer_updateVisiblity, PlayLayer* self, float delta)
+{
+    PlayLayer_updateVisiblityO(self, delta);
+    
+    auto ui = MBO(UILayer*, self, 0x2CA0);
+
+    if(!MBO(bool, ui, 0x206))
+        return;
+    
+    auto dpad = MEMBERBYOFFSET(CCSprite*, ui, 0x1D8);
+    if(dpad) {
+        dpad->CCSprite::setOpacity(GDPS->opacityLeft);
+        //CCLog("log2");
+    }
+    if(!ui->isTwoPlayer())
+        return;
+    
+
+    auto dpad2 = (CCSprite*)ui->getChildByTag(0xBAE);
+    if(dpad2) {
+        dpad2->CCSprite::setOpacity(GDPS->opacityRight);
+      //  CCLog("log4");
+    }
+}
+
+
+
+
 void DPADHooks::ApplyHooks() {
     HOOK("_ZN7UILayer12ccTouchBeganEPN7cocos2d7CCTouchEPNS0_7CCEventE", UILayer_ccTouchBeganH, UILayer_ccTouchBeganO);
     HOOK("_ZN7UILayer12ccTouchEndedEPN7cocos2d7CCTouchEPNS0_7CCEventE", UILayer_ccTouchEndedH, UILayer_ccTouchEndedO);
     HOOK("_ZN7UILayer12ccTouchMovedEPN7cocos2d7CCTouchEPNS0_7CCEventE", UILayer_ccTouchMovedH, UILayer_ccTouchMovedO);
 
+	HOOK("_ZN9PlayLayer16updateVisibilityEf", PlayLayer_updateVisiblityH, PlayLayer_updateVisiblityO);
     HOOK("_ZN8EditorUI16playerTouchBeganEPN7cocos2d7CCTouchEPNS0_7CCEventE", EditorUI_playerTouchBeganH, EditorUI_playerTouchBeganO);
     HOOK("_ZN8EditorUI16playerTouchEndedEPN7cocos2d7CCTouchEPNS0_7CCEventE", EditorUI_playerTouchEndedH, EditorUI_playerTouchEndedO);
 }

@@ -28,6 +28,8 @@ public:
 	static void createArrayAndAssign(LevelEditorLayer* p,int offset);
 	static std::string NameForNode(cocos2d::CCObject* node);
 	static void logNames(CCArray* objects);
+	static vector<string> getDebugLogVector();
+	static std::string format(std::string, ...);
 	
 	static void createToggleButton(
 	const char *text, 

@@ -107,6 +107,7 @@ CCSprite* spriteCreateH(const char *textureName)
 }
 
 bool isGDPSSettings;
+bool isGDPSSettings2;
 
 void(*OptionsLayerInitO)(OptionsLayer *self);
 void OptionsLayerInitH(OptionsLayer *self)
@@ -123,6 +124,7 @@ void OptionsLayerInitH(OptionsLayer *self)
 		oldSprite,
 		self,
 		menu_selector(OptionsLayer::onGDPSSettings));
+		old_btn->setTag(2);
 
 	old_menu->addChild(old_btn, 100);
 	old_btn->setPositionX(midx - 110);
@@ -2001,6 +2003,67 @@ FUNCTIONHOOK(void, PlayerObject_playDeathEffect2, PlayerObject* self) {
 	self->setVisible(false);
 }
 
+FUNCTIONHOOK(bool, MoreOptionsLayer_init, MoreOptionsLayer* self) {
+	
+	if(!MoreOptionsLayer_initO(self)) 
+		return false;
+	
+	if(!isGDPSSettings2)
+		return true;
+	
+	CCArray* arr = self->objectsForPage(2);
+	
+	CCMenu* menu = MBO(CCMenu*, self, 0x1B4);
+	
+
+	auto txt = CCLabelBMFont::create("Platformer Opacity Left", "bigFont.fnt");
+	txt->setScale(0.5);
+	txt->setVisible(false);
+	txt->setPositionY(txt->getPositionY() + 85);
+	menu->addChild(txt);
+	arr->addObject(txt);
+	
+	auto txt2 = CCLabelBMFont::create("Platformer Opacity Right", "bigFont.fnt");
+	txt2->setScale(0.5);
+	txt2->setVisible(false);
+	txt2->setPositionY(txt2->getPositionY() + 30);
+	menu->addChild(txt2);
+	arr->addObject(txt2);
+	
+	class randomClass {
+		public:
+		void platformOpacityLeft(CCObject* sender) {
+			auto value = reinterpret_cast<SliderThumb *>(sender)->getValue();
+			GDPSManager::sharedState()->opacityLeft = 255 * value;
+		}
+		void platformOpacityRight(CCObject* sender) {
+			auto value = reinterpret_cast<SliderThumb *>(sender)->getValue();
+			GDPSManager::sharedState()->opacityRight = 255 * value;
+		}
+	};
+	
+	auto sl = Slider::create(menu,menu_selector(randomClass::platformOpacityLeft),1);
+	sl->setPositionY(sl->getPositionY() + 60);
+
+	sl->setVisible(false);
+	float value = (float)GDPS->opacityLeft / (float)255;
+	sl->setValue(value);
+	arr->addObject(sl);
+	menu->addChild(sl);
+	
+	auto sl2 = Slider::create(menu,menu_selector(randomClass::platformOpacityRight),1);
+	sl2->setPositionY(sl2->getPositionY() + 5);
+
+	sl2->setVisible(false);
+	float value2 = (float)GDPS->opacityRight / (float)255;
+	sl2->setValue(value2);
+	arr->addObject(sl2);
+	menu->addChild(sl2);
+	
+	isGDPSSettings2 = false;
+	
+	return true;
+}
 void loader()
 {
 	auto cocos2d = dlopen(targetLibName != "" ? targetLibName : NULL, RTLD_LAZY);
@@ -2019,7 +2082,8 @@ void loader()
 	ShaderFix::ApplyHooks();
 	SpeedrunTimer::ApplyHooks();
 	AdvancedLevelInfo::ApplyHooks();
-	ImGuiOverlay::ApplyHooks();
+	//ImGuiOverlay::ApplyHooks();
+	GDPSManager::ApplyHooks();
 
 	#ifdef SHADERDEBUG
 	DevDebugHooks::ApplyHooks();
@@ -2031,11 +2095,10 @@ void loader()
 	//HOOK("_ZN16LevelEditorLayer14recreateGroupsEv", recreateGroupsH, recreateGroupsO);
 //	HOOK("_ZN10GameObject20createAndAddParticleEiPKciN7cocos2d15tCCPositionTypeE", GameObject_createAndAddParticleH, GameObject_createAndAddParticleO);
 	//HOOK("_ZN15GJBaseGameLayer14createParticleEiPKciN7cocos2d15tCCPositionTypeE", createParticleH, createParticleO);
+	//HOOK("_ZN16MoreOptionsLayer14objectsForPageEi", MoreOptionsLayer_objectsForPageH, MoreOptionsLayer_objectsForPageO);
 	
 	HOOK("_ZN16LevelEditorLayer12createObjectEiN7cocos2d7CCPointEb", LevelEditorLayer_createObjectH, LevelEditorLayer_createObjectO);
-
-	HOOK("_ZN22SetupShaderEffectPopup4initEP16EffectGameObjectPN7cocos2d7CCArrayEi", SetupShaderEffectPopup_initH, SetupShaderEffectPopup_initO);
-
+	HOOK("_ZN16MoreOptionsLayer4initEv", MoreOptionsLayer_initH, MoreOptionsLayer_initO);
 	HOOK("_ZN15GJBaseGameLayer17updateCameraBGArtEN7cocos2d7CCPointE", GJBaseGameLayer_updateCameraBGArtH, GJBaseGameLayer_updateCameraBGArtO);
 	
 	HOOK("_ZN22SetupShaderEffectPopup4initEP16EffectGameObjectPN7cocos2d7CCArrayEi", SetupShaderEffectPopup_initH, SetupShaderEffectPopup_initO); //this is the longest symbol i have ever seen
@@ -2130,11 +2193,8 @@ void loader()
 		addToGroupH, addToGroupO);
 		
 		
-	/*
-	HookManager::do_hook(HookManager::getPointerFromSymbol(cocos2d, "_ZN11AppDelegate11trySaveGameEb"), (void*) save_hook, (void **) &save_trp);
-	HookManager::do_hook(HookManager::getPointerFromSymbol(cocos2d, "_ZN7cocos2d11CCFileUtils13addSearchPathEPKc"), (void*) CCFileUtils_addSearchPath_hk, (void **) &CCFileUtils_addSearchPath_trp);
-	HookManager::do_hook(HookManager::getPointerFromSymbol(cocos2d, "_ZN11GameManager10dataLoadedEP13DS_Dictionary"), (void*) &GameManager_dataLoaded_hk, (void **) &dataLoaded_trp);
 	*/
+	
 	
 	HOOK("_ZN17AccountLoginLayer8onSubmitEPN7cocos2d8CCObjectE", AccountSubmitH, AccountSubmitO);
 	HOOK("_ZN17AccountLoginLayer20loginAccountFinishedEii", LoginFinishedH, LoginFinishedO);

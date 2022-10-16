@@ -33,9 +33,9 @@ float SCENE_ALPHA = 0.9f;
 bool SHOW_DEBUG_OPTIONS = false;
 bool SHOW_LOGGER = false;
 bool SHOW_VARS = false;
-bool SHOW_EXPLORER = true;
+bool SHOW_EXPLORER = false;
 bool SHOW_DEMO = false;
-bool SHOW_TEST = false;
+bool SHOW_TEST = true;
 
 
 
@@ -54,8 +54,8 @@ bool IS_ACTIVE = false;
 #include <memory>
 #include <cxxabi.h>
 
-
-vector<string> current_nodes;
+vector<const char*> ImGuiOverlay::debug_print = {"init, empty"};
+vector<const char*> debug_messages = { "init, empty" };
 
 
 std::string get_name_for_node(cocos2d::CCNode* node)
@@ -311,24 +311,37 @@ void imgui_draw_cocos_window(CCNode* self)
 
     ImGui::End();
 }
-
+std::string testdebug = "0";
 void imgui_showTest() {
 	
 // Create a window called "My First Tool", with a menu bar.
-ImGui::PushStyleVar(ImGuiStyleVar_WindowMinSize, {800.f,600.f });
-ImGui::Begin("My First Tool", &SHOW_TEST, ImGuiWindowFlags_MenuBar);
-
-for(string i : current_nodes)
-    Text("%s", i.c_str());
-
-// Display contents in a scrolling region
-ImGui::TextColored(ImVec4(1,1,0,1), "Important Stuff");
-ImGui::BeginChild("Scrolling");
-
-ImGui::EndChild();
-//ImGui::End();
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowMinSize, {800.f,600.f });
+    ImGui::Begin("Debug logs", &SHOW_TEST, ImGuiWindowFlags_MenuBar);
+/*
+for(const char* i : debug_messages) {
+    Text(i);
+    //CCLog(i);
+}
+*/
+if(ImGui::TreeNode("Logs 1")) {
+    Text(testdebug.c_str());
+    ImGui::TreePop();
+}
+ImGui::End();
 }
 
+void AddDebugLine(const char* str) {
+    debug_messages.push_back(str);
+}
+void CleanDebugPrint() {
+    debug_messages.clear();
+}
+void ClearDebugPrint() {
+    debug_messages.clear();
+}
+void EmptyDebugPrint() {
+    debug_messages.clear();
+}
 
 void imgui_tick(void* tex = nullptr)
 {
@@ -393,8 +406,6 @@ FUNCTIONHOOK(void*, Application_run, void* self) {
 
 	auto ret = Application_runO(self);
     
-    for(int i = 0; i < 5; i++)
-    current_nodes.push_back("init, empty");
 	
 	imgui_init();
 	

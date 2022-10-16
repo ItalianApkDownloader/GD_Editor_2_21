@@ -1,16 +1,23 @@
 #include <fstream>
 #include <string>
 #include <sstream>
+#include "hooking.h"
+#include "cocos2d.h"
+
+
+#define FUNCTIONHOOK(returntype, name, ...) \
+returntype (*name##O)(__VA_ARGS__);			\
+returntype name##H(__VA_ARGS__)
 
 //#include <gd.h>
-//#include <CCFileUtils.h>
+#include <CCFileUtils.h>
 #include "GDPSManager.h"
 
 #include "json.hpp"
 #include <cstdio>
 
 using namespace std;
-
+using namespace cocos2d;
 
 
 GDPSManager *s_sharedGDPSManager = nullptr;
@@ -30,7 +37,8 @@ GDPSManager *GDPSManager::sharedState()
 void GDPSManager::encodeDataTo()
 {
 	RSJresource jsonData("{}");
-	jsonData["opacity"] = this->opacity;
+	jsonData["opacityLeft"] = this->opacityLeft;
+	jsonData["opacityRight"] = this->opacityRight;
 	jsonData["password"] = this->password;
 	this->jsonObject = jsonData;
 }
@@ -39,14 +47,16 @@ void GDPSManager::encodeDataTo()
 
 void GDPSManager::dataLoaded()
 {
-	this->opacity = this->jsonObject["opacity"].as<int>(255);
+	this->opacityRight = this->jsonObject["opacityRight"].as<int>(255);
+	this->opacityLeft = this->jsonObject["opacityLeft"].as<int>(255);
 	this->password = this->jsonObject["password"].as<std::string>("0");
 	
 }
 
 void GDPSManager::firstLoad()
 {
-	this->opacity = 255;
+	this->opacityLeft = 255;
+	this->opacityRight = 255;
 	this->password = "0";
 }
 
@@ -69,29 +79,43 @@ void GDPSManager::writeToFile(string path, const char* content)
 void GDPSManager::save()
 {
 	 this->encodeDataTo();
-	 this->writeToFile(this->m_sFileName, jsonObject.as_str().c_str());
+	 this->writeToFile(CCFileUtils::sharedFileUtils()->getWritablePath() + this->m_sFileName, jsonObject.as_str().c_str());
+	 CCLog(jsonObject.as_str().c_str());
 }
 
 void GDPSManager::setup()
 {
-    auto path = this->m_sFileName;
+    auto path = CCFileUtils::sharedFileUtils()->getWritablePath() + this->m_sFileName;
     std::ifstream infile(path.c_str());
     if (infile.good())
     {
         this->load();
+		CCLog("file good");
     }
     else
     {
 		this->jsonObject = RSJresource("{}");
         this->firstLoad();
+		CCLog("file doesnt exist");
     }
 }
 
 void GDPSManager::load()
 {
-	 auto path = m_sFileName;
+	 auto path = CCFileUtils::sharedFileUtils()->getWritablePath() + m_sFileName;
 	 std::ifstream ifs(path);
 	 
 	 this->jsonObject = RSJresource(ifs);
+	 CCLog(jsonObject.as_str().c_str());
 	 this->dataLoaded();
+}
+
+FUNCTIONHOOK(void*, trySaveGame, void* self, bool something) {
+	GDPS->save();
+	return trySaveGameO(self, something);
+}
+
+void GDPSManager::ApplyHooks() {
+	HOOK("_ZN11AppDelegate11trySaveGameEb", trySaveGameH, trySaveGameO);
+	
 }

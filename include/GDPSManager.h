@@ -13,7 +13,8 @@ class GDPSManager{
 	
 public:
 	
-	int opacity;
+	int opacityLeft;
+	int opacityRight;
 	std::string password;
 
 protected:
@@ -35,6 +36,7 @@ public:
     static GDPSManager* sharedState();
 
     void save();
+	static void ApplyHooks();
 
 protected:
     std::string m_sFileName;
