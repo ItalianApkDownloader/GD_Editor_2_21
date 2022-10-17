@@ -2248,6 +2248,10 @@ void loader()
 	NOP2(tms, 0x27B59A);
 	NOP4(tms, 0x27B59C);
 
+	// custom object bypass
+	NOP2(tms, 0x2D7126);
+	tms->addPatch("libcocos2dcpp.so", 0x2D7260, "80 42 00 BF");
+
 	tms->addPatch("libcocos2dcpp.so", 0x332442, "002D"); // general icon limit bypass
 	tms->addPatch("libcocos2dcpp.so", 0x2803D0, "1421"); // general icon limit bypass
 	
