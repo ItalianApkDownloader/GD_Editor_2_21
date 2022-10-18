@@ -85,4 +85,5 @@ public:
 	virtual bool init( );
 	bool getBoolForKey(const char*);
 	void  setBoolForKey(bool,const char*);
+	void setLenVal(int, bool);
 };

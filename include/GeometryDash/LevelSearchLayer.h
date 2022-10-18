@@ -21,7 +21,7 @@ public:
 	CCDictionary* searchDict_; // 0x144
 	CCSprite* demonFilter_; // 0x148
 	CCMenuItemSpriteExtra* specialDemonBtn_; // 0x14C
-	CLASS_MEMBER(CCTextInputNode*, input, 0x134);
+	CLASS_MEMBER(CCTextInputNode*, input, 0x144);
 
 public:
 	virtual ~LevelSearchLayer( );

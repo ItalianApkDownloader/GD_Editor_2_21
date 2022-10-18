@@ -35,6 +35,7 @@
 #include "hooks/SpeedrunTimer.h"
 #include "hooks/AdvancedLevelInfo.h"
 #include "hooks/ImGuiOverlay.h"
+#include "hooks/MoreSearchLayerExt.h"
 
 /*
 		FLAG USED FOR DEVELOPER MODE DEBUGGING LIKE SHADERS
@@ -443,6 +444,7 @@ void *PlayLayer_addObjectH(PlayLayer *self, GameObject *obj)
 		string spider = "70 6F 72 74 61 6C 5F 31 37 5F 62 61 63 6B 5F 30 30 31 2E 70 6E 67";
 		s->addPatch("libcocos2dcpp.so", 0x7E19BA, spider);
 		s->Modify();
+		delete s;
 	}
 
 	if (id == 1933)
@@ -451,6 +453,7 @@ void *PlayLayer_addObjectH(PlayLayer *self, GameObject *obj)
 		string swing = "70 6F 72 74 61 6C 5F 31 38 5F 62 61 63 6B 5F 30 30 31 2E 70 6E 67";
 		p->addPatch("libcocos2dcpp.so", 0x7E19BA, swing);
 		p->Modify();
+		delete p;
 
 	}
 
@@ -1552,6 +1555,8 @@ void patchIcons(int gameMode, int amountt) {
 	
 	tms->Modify();
 	
+	delete tms;
+	
 }
 
 
@@ -2064,6 +2069,116 @@ FUNCTIONHOOK(bool, MoreOptionsLayer_init, MoreOptionsLayer* self) {
 	
 	return true;
 }
+
+
+FUNCTIONHOOK(const char*, CCString_getCString2, void* self) {
+	
+	const char* ret = CCString_getCString2O(self);
+	if(containss(ret, "epic=")) 
+	{
+		
+		const char* toAdd = CCString::createWithFormat("&godlike=%i", GLM->getBoolForKey("legendary_filter_custom"))->getCString();
+		char *s = new char[strlen(ret) + strlen(toAdd) + 1];
+		strcpy(s, ret);
+		strcat(s, toAdd);
+
+		ret = s;
+		
+		
+		//the platformer filter is actually a length filter
+		//however thats buggy if i add it like that so i will just use the old code
+		//to add it in advanced filters
+		if(GLM->getBoolForKey("platform_filter_custom")) {
+			std::string str = ret;
+			str[str.find("len=") + 4] = '5';
+			ret = str.c_str();
+		}
+		
+		CCLog(ret);
+	}
+	
+	return ret;
+}
+
+FUNCTIONHOOK(const char*, GJSearchObject_getKey, void* self) {
+	
+	auto ret = GJSearchObject_getKeyO(self);
+	
+	const char* toAdd = CCString::createWithFormat(
+		"_%i_%i", 
+		GLM->getBoolForKey("legendary_filter_custom"),
+		GLM->getBoolForKey("platform_filter_custom")
+	)->getCString();
+	char *s = new char[strlen(ret) + strlen(toAdd) + 1];
+	strcpy(s, ret);
+	strcat(s, toAdd);
+	ret = s;
+	
+	return ret;
+	
+	
+}
+
+FUNCTIONHOOK(void, LevelSearchLayer_toggleTime, void* self, CCObject* sender) {
+	
+	int tag = sender->getTag();
+	
+	//002F0F24
+	bool idk = CallBySymbol(bool, "libcocos2dcpp.so", "_ZN16LevelSearchLayer9checkTimeEi", void*, int)(self, tag);
+	bool filterOn = idk ^ 1;
+	
+	GLM->setBoolForKey(filterOn, "platform_filter_custom");
+	LevelSearchLayer_toggleTimeO(self, sender);
+}
+
+#include "LevelSearchLayer.h"
+FUNCTIONHOOK(bool, LevelSearchLayer_init, CCLayer* self) {
+	
+	if(!LevelSearchLayer_initO(self)) 
+		return false;
+		
+//	GDPSHelper::createLabels(self, self->getChildren(), {0, 0}, true);
+
+		
+	auto dir = CCDirector::sharedDirector();
+	auto old_menu = CCMenu::create();
+	auto oldSprite = cocos2d::CCSprite::createWithSpriteFrameName("GJ_trashBtn_001.png");
+	oldSprite->setScale(.8);
+	
+
+	auto old_btn = CCMenuItemSpriteExtra::create(
+		oldSprite,
+		oldSprite,
+		self,
+		static_cast<cocos2d::SEL_MenuHandler>(&LevelSearchLayer::onClearString)
+	);
+	old_menu->addChild(old_btn, 900);
+	old_btn->setPositionX(CCMIDX + 200);
+	old_btn->setPositionY(dir->getScreenTop() - 30);
+	old_menu->setPosition({ 0, 0 });
+	self->addChild(old_menu, 900);
+	
+	auto barbg = reinterpret_cast<CCNode*>(self->getChildren()->objectAtIndex(4));
+	barbg->setContentSize(CCSize(410, 40));
+	barbg->setPositionX(barbg->getPositionX() + 20);
+	
+	auto lenbg = reinterpret_cast<CCNode*>(self->getChildren()->objectAtIndex(14));
+	lenbg->setContentSize(CCSize(420, 40));
+	//lenbg->setPositionX(node->getPositionX() + 20);
+	
+	return true;
+}
+
+FUNCTIONHOOK(void, LevelSearchLayer_onClearFilters, void* self) {
+	
+	LevelSearchLayer_onClearFiltersO(self);
+	
+	GLM->setBoolForKey(false, "platform_filter_custom");
+	GLM->setBoolForKey(false, "legendary_filter_custom");
+	
+	CallBySymbol(void, "libcocos2dcpp.so", "_ZN16LevelSearchLayer13toggleTimeNumEib", void* self, int, bool)(self, 5, false);
+}
+
 void loader()
 {
 	auto cocos2d = dlopen(targetLibName != "" ? targetLibName : NULL, RTLD_LAZY);
@@ -2084,11 +2199,16 @@ void loader()
 	AdvancedLevelInfo::ApplyHooks();
 	//ImGuiOverlay::ApplyHooks();
 	GDPSManager::ApplyHooks();
+	MoreSearchLayerExt::ApplyHooks();
 
 	#ifdef SHADERDEBUG
 	DevDebugHooks::ApplyHooks();
 	#endif
-
+	
+	HOOK("_ZN16LevelSearchLayer12clearFiltersEv", LevelSearchLayer_onClearFiltersH, LevelSearchLayer_onClearFiltersO);
+	HOOK("_ZN16LevelSearchLayer4initEv", LevelSearchLayer_initH, LevelSearchLayer_initO);
+	HOOK("_ZN14GJSearchObject6getKeyEv", GJSearchObject_getKeyH, GJSearchObject_getKeyO);
+	HOOK("_ZN16LevelSearchLayer10toggleTimeEPN7cocos2d8CCObjectE", LevelSearchLayer_toggleTimeH, LevelSearchLayer_toggleTimeO);
 	HOOK("_ZN12PlayerObject15playDeathEffectEv", PlayerObject_playDeathEffect2H, PlayerObject_playDeathEffect2O);
 //	HOOK("_ZN11ShaderLayer4initEv", ShaderLayer_initH, ShaderLayer_initO);
 	//HOOK("_ZN11ShaderLayer18triggerColorChangeEfffffffif", triggerColorChangeH, triggerColorChangeO);
@@ -2156,45 +2276,29 @@ void loader()
 	//HOOK("_ZN14LevelInfoLayer4initEP11GJGameLevelb", LevelInfoLayerInitH, LevelInfoLayerInitO);	
 	HOOK("_ZN12LoadingLayer4initEb", LoadingLayer_initH, LoadingLayer_initO);
 
-	HOOK("_ZN7cocos2d8CCSprite6createEPKc",
-		spriteCreateH, spriteCreateO);
-	HOOK("_ZN7cocos2d8CCSprite25createWithSpriteFrameNameEPKc",
-		spriteCreateFrameNameH, spriteCreateFrameNameO);
+	HOOK("_ZN7cocos2d8CCSprite6createEPKc", spriteCreateH, spriteCreateO);
+	HOOK("_ZN7cocos2d8CCSprite25createWithSpriteFrameNameEPKc", spriteCreateFrameNameH, spriteCreateFrameNameO);
 		
-	HOOK("_ZN16GameStatsManager14isItemUnlockedE10UnlockTypei",
-		isIconUnlockedH, isIconUnlockedO);
-	HOOK("_ZN16MoreOptionsLayer9addToggleEPKcS1_S1_",
-		addToggle_hk, addToggle_trp);
-	HOOK("_ZN12OptionsLayer11customSetupEv",
-		OptionsLayerInitH, OptionsLayerInitO);
-	HOOK("_ZNK7cocos2d8CCString10getCStringEv",
-		CCString_getCStringH, CCString_getCStringO);
+	HOOK("_ZN16GameStatsManager14isItemUnlockedE10UnlockTypei", isIconUnlockedH, isIconUnlockedO);
+	HOOK("_ZN16MoreOptionsLayer9addToggleEPKcS1_S1_", addToggle_hk, addToggle_trp);
+	HOOK("_ZN12OptionsLayer11customSetupEv", OptionsLayerInitH, OptionsLayerInitO);
+	HOOK("_ZNK7cocos2d8CCString10getCStringEv", CCString_getCStringH, CCString_getCStringO);
+	HOOK("_ZNK7cocos2d8CCString10getCStringEv", CCString_getCString2H, CCString_getCString2O);
 		
 		
-	HOOK("_ZN16GameLevelManager18ProcessHttpRequestESsSsSs10GJHttpType",
-		LevelProcessH, LevelProcessO);
-	HOOK("_ZN20MusicDownloadManager18ProcessHttpRequestESsSsSs10GJHttpType",
-		MusicProcessH, MusicProcessO);
-	HOOK("_ZN16GJAccountManager18ProcessHttpRequestESsSsSs10GJHttpType",
-		AccountProcessH, AccountProcessO);
+	HOOK("_ZN16GameLevelManager18ProcessHttpRequestESsSsSs10GJHttpType", LevelProcessH, LevelProcessO);
+	HOOK("_ZN20MusicDownloadManager18ProcessHttpRequestESsSsSs10GJHttpType", MusicProcessH, MusicProcessO);
+	HOOK("_ZN16GJAccountManager18ProcessHttpRequestESsSsSs10GJHttpType", AccountProcessH, AccountProcessO);
 		
 		
 		
 		
-	HOOK("_ZN12CreatorLayer19canPlayOnlineLevelsEv",
-		canPlayOnlineLevelsH, canPlayOnlineLevelsO);
-	/*
-	HOOK("_ZN16LevelEditorLayer15getTriggerGroupEi",
-		getTriggerGroupH, getTriggerGroupO);
-		*/
+	HOOK("_ZN12CreatorLayer19canPlayOnlineLevelsEv", canPlayOnlineLevelsH, canPlayOnlineLevelsO);
 
-	/*
-	HOOK("_ZN16LevelEditorLayer10addToGroupEP10GameObjectib",
-		addToGroupH, addToGroupO);
-		
-		
-	*/
+	//HOOK("_ZN16LevelEditorLayer15getTriggerGroupEi", getTriggerGroupH, getTriggerGroupO);
+
 	
+	//HOOK("_ZN16LevelEditorLayer10addToGroupEP10GameObjectib", addToGroupH, addToGroupO);
 	
 	HOOK("_ZN17AccountLoginLayer8onSubmitEPN7cocos2d8CCObjectE", AccountSubmitH, AccountSubmitO);
 	HOOK("_ZN17AccountLoginLayer20loginAccountFinishedEii", LoginFinishedH, LoginFinishedO);
@@ -2233,6 +2337,15 @@ void loader()
 
 	tms->addPatch("libcocos2dcpp.so", 0x2802A6, "2120"); //swing
 	
+	tms->addPatch("libcocos2dcpp.so", 0x2F379A, "062D"); //platformer filter
+	tms->addPatch("libcocos2dcpp.so", 0x302C72, "062E"); //platformer filter
+	
+		
+//	NOP2(tms, 0x2D7126);
+//	NOP4(tms, 0x2D7122);
+
+
+	
 	
 	
 //	tms->addPatch("libcocos2dcpp.so", 0x81121D, "68 74 74 70 3A 2F 2F 77 77 77 2E 62 6F 6F 6D 6C 69 6E 67 73 2E 63 6F 6D 2F 64 61 74 61 62 61 73 65 2F 67 65 74 47 4A 53 6F 6E 67 49 6E 66 6F 2E 70 68 70");
@@ -2265,6 +2378,9 @@ void loader()
 	tms->addPatch("libcocos2dcpp.so", 0x2C44EA, "4F F0 02 0A"); // FG
 
 	tms->Modify();
+	
+	//memory leak goes brrrr
+	delete tms;
 }
 
 JNIEXPORT jint JNI_OnLoad(JavaVM *vm, void *reserved)

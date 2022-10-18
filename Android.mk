@@ -58,6 +58,7 @@ LOCAL_SRC_FILES := 	src/main.cpp \
 					include/imgui/imgui_widgets.cpp \
 					include/imgui/backends/imgui_impl_opengl3.cpp \
 					include/imgui/backends/imgui_impl_android.cpp \
+					src/hooks/MoreSearchLayerExt.cpp \
 					src/hooks/ImGuiOverlay.cpp \
 					src/hooks/AdvancedLevelInfo.cpp \
 					src/hooks/SpeedrunTimer.cpp \

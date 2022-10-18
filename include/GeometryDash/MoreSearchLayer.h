@@ -8,5 +8,6 @@ class MoreSearchLayer : public FLAlertLayer
 public:
 
     void createToggleButton(std::string,void (cocos2d::CCObject::*)(cocos2d::CCObject*),bool,cocos2d::CCMenu *,cocos2d::CCPoint);
+    void onFeatured(CCObject* sender);
 
 };
