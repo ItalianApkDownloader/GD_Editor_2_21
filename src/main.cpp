@@ -82,11 +82,15 @@ FUNCTIONHOOK(bool, UILayer_init, UILayer* self) {
 	#ifdef SHADERDEBUG
 	reinterpret_cast<UILayerDebug*>(self)->doInit();
 	#endif
-
+	auto menu = (CCMenu*)self->getChildren()->objectAtIndex(0);
+	auto pauseBtn = (CCMenuItemSpriteExtra*)self->getChildren()->objectAtIndex(0);
+	pauseBtn->setVisible(!GM->getGameVariable("1000012"));
+	//GDPSHelper::createLabels(menu, menu->getChildren(), {0, 0}, true);
+	
 	if(!MEMBERBYOFFSET(bool, self, 0x206)) return true;
 	
 	DPADHooks::UILayerInit(self);
-
+	
 	return true;
 }   
    
@@ -171,6 +175,7 @@ void addToggle_hk(MoreOptionsLayer *self, const char *title, const char *code, c
 			addToggle_trp(self, "Disable arrow trigger\nfix", "1000010", 0);
 			addToggle_trp(self, "Speedrun Timer", "1000011", "<cr>Red</c> means that the time is <cr>invalid</c>.\n Before starting a speedrun <cr>make sure to die atleast 1 time</c> because the first attempt time takes the enter transition into account and that will always be slower");
 			addToggle_trp(self, "Show FPS", "0115", 0);
+			addToggle_trp(self, "Remove Pause Btn", "1000012", 0);
 			#ifdef DEVDEBUG
 			addToggle_trp(self, "pixel blocks amount\nby level name", "1000012", 0);
 			#endif
@@ -2169,6 +2174,7 @@ FUNCTIONHOOK(bool, LevelSearchLayer_init, CCLayer* self) {
 	return true;
 }
 
+
 FUNCTIONHOOK(void, LevelSearchLayer_onClearFilters, void* self) {
 	
 	LevelSearchLayer_onClearFiltersO(self);
@@ -2179,6 +2185,11 @@ FUNCTIONHOOK(void, LevelSearchLayer_onClearFilters, void* self) {
 	CallBySymbol(void, "libcocos2dcpp.so", "_ZN16LevelSearchLayer13toggleTimeNumEib", void* self, int, bool)(self, 5, false);
 }
 
+
+FUNCTIONHOOK(void, SupportLayer_onEmail, void* self, void* a2) {
+	
+    FLAlertLayer::create( nullptr, "Version", version2str, "OK", nullptr, 250., false, 150. )->show( );
+}
 void loader()
 {
 	auto cocos2d = dlopen(targetLibName != "" ? targetLibName : NULL, RTLD_LAZY);
@@ -2205,6 +2216,7 @@ void loader()
 	DevDebugHooks::ApplyHooks();
 	#endif
 	
+	HOOK("_ZN12SupportLayer7onEmailEPN7cocos2d8CCObjectE", SupportLayer_onEmailH, SupportLayer_onEmailO);
 	HOOK("_ZN16LevelSearchLayer12clearFiltersEv", LevelSearchLayer_onClearFiltersH, LevelSearchLayer_onClearFiltersO);
 	HOOK("_ZN16LevelSearchLayer4initEv", LevelSearchLayer_initH, LevelSearchLayer_initO);
 	HOOK("_ZN14GJSearchObject6getKeyEv", GJSearchObject_getKeyH, GJSearchObject_getKeyO);
@@ -2339,6 +2351,10 @@ void loader()
 	
 	tms->addPatch("libcocos2dcpp.so", 0x2F379A, "062D"); //platformer filter
 	tms->addPatch("libcocos2dcpp.so", 0x302C72, "062E"); //platformer filter
+	
+	
+	//contact -> version in settings -> help
+	tms->addPatch("libcocos2dcpp.so", 0x804FA9, "56 65 72 73 69 6F 6E");
 	
 		
 //	NOP2(tms, 0x2D7126);

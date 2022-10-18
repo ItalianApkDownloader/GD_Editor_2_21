@@ -40,7 +40,8 @@ returntype name##H(__VA_ARGS__)
 #define GPY() getPositionY()
 #define GPX() getPositionX()
 
-#define version2 13
+#define version2 14
+#define version2str "1.4"
 #define DEVDEBUG
 //#define SHADERDEBUG
 //#define EMUI_FIX
