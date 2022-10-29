@@ -1979,7 +1979,8 @@ FUNCTIONHOOK(void, PlayerObject_playDeathEffect2, PlayerObject* self) {
 
 	auto size = self->_playerScale() * MBO(float, self, 0x7C8);
 	auto pos = self->getPosition();
-	auto tex = CCRenderTexture::create(size, size);
+
+	auto tex = CCRenderTexture::create(size * 2, size * 2);
 
 	self->setPosition(CCPoint(25, 25));
 	tex->beginWithClear(0, 0, 0, 0);
