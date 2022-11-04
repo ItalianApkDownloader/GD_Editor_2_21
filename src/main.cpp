@@ -35,7 +35,6 @@
 #include "hooks/AdvancedLevelInfo.h"
 #include "hooks/ImGuiOverlay.h"
 #include "hooks/MoreSearchLayerExt.h"
-#include <iostream>
 
 /*
 		FLAG USED FOR DEVELOPER MODE DEBUGGING LIKE SHADERS
@@ -48,7 +47,6 @@ std::string passwordTemp = "";
 bool colorPopup = true;
 int nFont = 0;
 bool first = true;
-std::string testt = FunctionHelper::itos(3);
 void(*GameManager_tryShowAdO)();
 void GameManager_tryShowAdH() {}
 bool newPixelBlocksApplied;
@@ -114,6 +112,33 @@ CCSprite* spriteCreateH(const char *textureName)
 
 bool isGDPSSettings;
 bool isGDPSSettings2;
+bool isGDPSSettings3;
+
+class GDPSSettings : public OptionsLayer {
+	
+public:
+
+	void onGDPSSettings(CCObject *sender) {
+		isGDPSSettings = true;
+		isGDPSSettings2 = true;
+		isGDPSSettings3 = false;
+		MoreOptionsLayer::create()->show();
+	}
+	
+	void onGDPSSettings3(CCObject *sender) {
+		isGDPSSettings = true;
+		isGDPSSettings2 = false;
+		isGDPSSettings3 = true;
+		MoreOptionsLayer::create()->show();
+	}
+};
+
+FUNCTIONHOOK(void, OptionsLayer_onOptions, CCLayer* self, CCObject* sender) {
+	isGDPSSettings = false;
+	isGDPSSettings2 = false;
+	isGDPSSettings3 = false;
+	OptionsLayer_onOptionsO(self, sender);
+}
 
 void(*OptionsLayerInitO)(OptionsLayer *self);
 void OptionsLayerInitH(OptionsLayer *self)
@@ -125,14 +150,19 @@ void OptionsLayerInitH(OptionsLayer *self)
 	auto layer = reinterpret_cast<CCLayer*> (self->getChildren()->objectAtIndex(0));
 
 	auto oldSprite = cocos2d::CCSprite::createWithSpriteFrameName("accountBtn_settings_001.png");
-	auto old_btn = CCMenuItemSpriteExtra::create(
-		oldSprite,
-		oldSprite,
-		self,
-		menu_selector(OptionsLayer::onGDPSSettings));
-		old_btn->setTag(2);
+	auto old_btn = CCMenuItemSpriteExtra::create(oldSprite, oldSprite, self, menu_selector(GDPSSettings::onGDPSSettings));
+	//old_btn->setTag(2);
+	
+	//auto hackspr = ButtonSprite::create("Hacks", 1, 20, 20, false);
+	auto hackspr = ButtonSprite::create("Hacks");
+	auto hackbtn = CCMenuItemSpriteExtra::create(hackspr, hackspr, self, menu_selector(GDPSSettings::onGDPSSettings3));
 
 	old_menu->addChild(old_btn, 100);
+	old_menu->addChild(hackbtn, 100);
+	
+	hackbtn->setPositionX(midx + 130);
+	hackbtn->setPositionY(midy);
+
 	old_btn->setPositionX(midx - 110);
 	old_btn->setPositionY(midy);
 	old_menu->setPosition({ 0, 0 });
@@ -142,25 +172,10 @@ void OptionsLayerInitH(OptionsLayer *self)
 }
 
 
-
-bool doRequest;
-
-const char *(*getStringO)(LoadingLayer *self);
-const char *getStringH(LoadingLayer *self)
-{
-
-	doRequest = true;
-	GM->setGameVariable("0122", false);
-	GM->setGameVariable("0023", false); //smooth fix
-	GM->setGameVariable("0074", true);  //show restart button
-	newPixelBlocksApplied = GM->getGameVariable("1000014");
-	return "Italian APK Downloader\nCatto_\niAndy_HD3\nTr1NgleBoss\nEitan";
-}
-
 void(*addToggle_trp)(MoreOptionsLayer *self, const char *title, const char *code, const char *desc);
 void addToggle_hk(MoreOptionsLayer *self, const char *title, const char *code, const char *desc)
 {
-	if (isGDPSSettings)
+	if (isGDPSSettings && !isGDPSSettings3)
 	{
 		if (strcmp(title, "Show Orb Guide") == 0)
 		{
@@ -187,10 +202,66 @@ void addToggle_hk(MoreOptionsLayer *self, const char *title, const char *code, c
 			isGDPSSettings = false;
 		}
 	}
+	else if(isGDPSSettings && isGDPSSettings3)
+	{
+		if (strcmp(title, "Show Orb Guide") == 0)
+		{
+			addToggle_trp(self, "Safe Noclip", "200001", 0);
+		}
+	}
 	else
 	{
 		addToggle_trp(self, title, code, desc);
 	}
+}
+
+FUNCTIONHOOK(void, MoreOptionsLayer_onToggle, MoreOptionsLayer* self, CCMenuItemToggler* sender) {
+	
+	bool on = !sender->_isToggled();
+	int gamevariable = sender->getTag();
+	
+	//normal gdps settings
+	if(gamevariable > 1000000 && 200000 > gamevariable) {
+		switch(gamevariable)
+		{
+			case 100005: 
+				if(on)
+				FLAlertLayer::create(nullptr, "DISCLAIMER", "<cg>Pixel blocks</c> are <cr>not official</c> and for that reason levels containing these blocks <cr>will not look good in the official 2.2.</c>\n    <co>(textures will change)\n</c><cr>Don't use pixel blocks if you want your level to be playable in 2.2.</c>", "OK", nullptr, 500, false, 300)->show();
+		}
+	}
+	
+	if(gamevariable > 200000) {
+		
+		patch p;
+		
+		switch(gamevariable) 
+		{		
+			case 200001:
+				p.addPatch(0x0, on ? "onBytes" : "offBytes");
+				p.addPatch(0x0, on ? "onBytes" : "offBytes");
+				p.addPatch(0x0, on ? "onBytes" : "offBytes");
+			break;
+		}
+		p.Modify();
+	}
+	
+	MoreOptionsLayer_onToggleO(self, sender);
+	
+}
+
+
+bool doRequest;
+
+const char *(*getStringO)(LoadingLayer *self);
+const char *getStringH(LoadingLayer *self)
+{
+
+	doRequest = true;
+	GM->setGameVariable("0122", false);
+	GM->setGameVariable("0023", false); //smooth fix
+	GM->setGameVariable("0074", true);  //show restart button
+	newPixelBlocksApplied = GM->getGameVariable("1000014");
+	return "Italian APK Downloader\nCatto_\niAndy_HD3\nTr1NgleBoss\nEitan";
 }
 
 CCSprite * (*spriteCreateFrameNameO)(const char *textureName);
@@ -601,7 +672,7 @@ bool EditorUI_InitH(EditorUI *self, LevelEditorLayer *editor)
 
 	return true;
 }
-
+/*
 int(*onToggleTrampoline)(void *pthis, const char *val);
 void hook_onToggle(void *pthis, const char *val)
 {
@@ -617,6 +688,8 @@ void hook_onToggle(void *pthis, const char *val)
 		}
 	}
 }
+*/
+
 
 bool(*SelectArtLayer_initO)(SelectArtLayer *, SelectArtType);
 bool SelectArtLayer_initH(SelectArtLayer *self, SelectArtType type)
@@ -2334,6 +2407,8 @@ void loader()
 	DevDebugHooks::ApplyHooks();
 	#endif
 	
+	HOOK("_ZN12OptionsLayer9onOptionsEPN7cocos2d8CCObjectE", OptionsLayer_onOptionsH, OptionsLayer_onOptionsO);
+	HOOK("_ZN16MoreOptionsLayer8onToggleEPN7cocos2d8CCObjectE", MoreOptionsLayer_onToggleH, MoreOptionsLayer_onToggleO);
 	HOOK("_ZN18LevelSettingsLayer15selectArtClosedEP14SelectArtLayer", LevelSettingsLayer_selectArtClosedH, LevelSettingsLayer_selectArtClosedO);
 	HOOK("_ZN16LevelSearchLayer13toggleTimeNumEib", LevelSearchLayer_toggleTimeNumH, LevelSearchLayer_toggleTimeNumO);
 	HOOK("_ZN12SupportLayer7onEmailEPN7cocos2d8CCObjectE", SupportLayer_onEmailH, SupportLayer_onEmailO);

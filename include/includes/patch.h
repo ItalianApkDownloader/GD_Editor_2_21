@@ -10,6 +10,10 @@ public:
     void addPatch(const char *libraryName, uintptr_t address,std::string hex){
         patches.push_back(MemoryPatch::createWithHex(libraryName,address,hex));
     }
+	
+	void addPatch(uintptr_t address,std::string hex) {
+		addPatch("libcocos2dcpp.so", address, hex);
+	}
 
     void Modify(){
         for(int k = 0; k < patches.size(); k++){
