@@ -49,7 +49,7 @@ void MenuLayerExt::onRequestCompleted(cocos2d::extension::CCHttpClient *sender, 
 		return;
 	}
 
-	std::vector<char> *buffer = response->getResponseData();
+	//std::vector<char> *buffer = response->getResponseData();
 	GameToolbox *gameToolbox = new GameToolbox();
 	auto resp = GameToolbox::getResponse(response);
 	auto gm = GameManager::sharedState();
@@ -210,7 +210,6 @@ void MenuLayerExt::onStackTrace(CCObject* s) {
         auto path = CCFileUtils::sharedFileUtils()->getWritablePath() + "crash.txt";
 
     std::ifstream ifs( path );
-    std::string content = "File not found.";
 
     std::stringstream ss;
 
@@ -268,24 +267,14 @@ bool MenuLayerExt::init_hk()
 	menu->addChild(myButton3);
 	this->addChild(menu);
 
-	extern vector<const char*> debug_messages;
-	extern string testdebug;
-	for(int i = 0; i < 500; i++)
-	testdebug += (GDPSHelper::format("eeee %d, %d \n", i).c_str());
-	/*
-	for(int i = 0; i < 10; i++) {
-	debug_messages.push_back(CCString::createWithFormat("he\nllo: %d", i)->getCString());
-	}
-	*/
-	for(const char* i : debug_messages)
-		CCLog(i);
+
 	
 		extern bool doRequest;
 		
 		#ifdef EMUI_FIX
 		doRequest = false;
 		#endif
-		/*
+		
 		if(doRequest) {
 		
 			doRequest = false;
@@ -303,7 +292,7 @@ bool MenuLayerExt::init_hk()
 				cocos2d::extension::CCHttpClient::getInstance()->send(request);
 				request->release();
 		}
-		*/
+		
 				
 
 	return ret;
@@ -348,7 +337,7 @@ void MenuLayerExt::onShaderRequestCompleted(cocos2d::extension::CCHttpClient *se
 	}
 
 std::vector<char> *buffer = response->getResponseData();
-	GameToolbox *gameToolbox = new GameToolbox();
+//	GameToolbox *gameToolbox = new GameToolbox();
 	auto resp = GameToolbox::getResponse(response);
 	auto gm = GameManager::sharedState();
 

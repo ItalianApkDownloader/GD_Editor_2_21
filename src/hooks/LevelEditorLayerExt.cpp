@@ -263,7 +263,7 @@ void LevelEditorLayerExt::updateVisibilityH(float delta) {
 	float centerX = rect.origin.x;
 	int startIndex = (int)(float)(floorf(centerX / 100.0) - 1.0);
 	float percentage = (float)(centerX + rect.size.width) / 100.0;
-	int limit = (int)(float)(percentage + 1.0);
+	//int limit = (int)(float)(percentage + 1.0);
 
 	/*
 		UPDATING OBJECTS

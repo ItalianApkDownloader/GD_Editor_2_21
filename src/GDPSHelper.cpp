@@ -102,7 +102,9 @@ void GDPSHelper::createToggleButton(const char *text, CCPoint position, float bo
 
 }
 
-
+void GDPSHelper::createLabels(CCNode* layer) {
+	GDPSHelper::createLabels(layer, layer->getChildren(), {0, 0}, true);
+}
 void GDPSHelper::createLabels(CCNode* layer, CCArray* objects, CCPoint pos, bool logNames) {
 	
 	

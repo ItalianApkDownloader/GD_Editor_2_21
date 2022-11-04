@@ -14,7 +14,6 @@
 #include "../include/FunctionHelper.h"
 #include "CCDrawNode.h"
 
-
 #define IMGUI_IMPL_OPENGL_ES2 k
 
 
@@ -36,6 +35,7 @@
 #include "hooks/AdvancedLevelInfo.h"
 #include "hooks/ImGuiOverlay.h"
 #include "hooks/MoreSearchLayerExt.h"
+#include <iostream>
 
 /*
 		FLAG USED FOR DEVELOPER MODE DEBUGGING LIKE SHADERS
@@ -44,13 +44,14 @@
 */
 
 
-string passwordTemp = "";
+std::string passwordTemp = "";
 bool colorPopup = true;
 int nFont = 0;
 bool first = true;
-string testt = FunctionHelper::itos(3);
+std::string testt = FunctionHelper::itos(3);
 void(*GameManager_tryShowAdO)();
 void GameManager_tryShowAdH() {}
+bool newPixelBlocksApplied;
 
 bool test = false;
 
@@ -152,6 +153,7 @@ const char *getStringH(LoadingLayer *self)
 	GM->setGameVariable("0122", false);
 	GM->setGameVariable("0023", false); //smooth fix
 	GM->setGameVariable("0074", true);  //show restart button
+	newPixelBlocksApplied = GM->getGameVariable("1000014");
 	return "Italian APK Downloader\nCatto_\niAndy_HD3\nTr1NgleBoss\nEitan";
 }
 
@@ -180,7 +182,7 @@ void addToggle_hk(MoreOptionsLayer *self, const char *title, const char *code, c
 			addToggle_trp(self, "pixel blocks amount\nby level name", "1000012", 0);
 			#endif
 			addToggle_trp(self, "Show Trigger\nActivations", "1000013", 0);
-			//addToggle_trp(self, "Show Platformer Hitbox", "100009", 0);
+			addToggle_trp(self, "New pixel blocks", "1000014", 0);
 
 			isGDPSSettings = false;
 		}
@@ -625,6 +627,7 @@ bool SelectArtLayer_initH(SelectArtLayer *self, SelectArtType type)
 	if(type == smartTemplate)
 		return true;
 	
+
 	auto menu = self->_bgSelectMenu();
 	auto array = self->_someArray();
 	
@@ -1377,10 +1380,24 @@ FUNCTIONHOOK(bool, LevelSettingsLayer_init, LevelSettingsLayer* self, LevelSetti
 		auto ground = (CCMenuItemSpriteExtra*)menu->getChildren()->objectAtIndex(22);
 		auto background = (CCMenuItemSpriteExtra*)menu->getChildren()->objectAtIndex(21);
 
-		auto middlegroundspr = (CCSprite*)middleground->getChildren()->objectAtIndex(0);
-		auto groundspr = (CCSprite*)ground->getChildren()->objectAtIndex(0);
-		auto backgroundspr = (CCSprite*)background->getChildren()->objectAtIndex(0);
+		auto middlegroundspr = MBO(CCSprite*, self, 0x22C);
+		auto backgroundspr = MBO(CCSprite*, self, 0x224);
+		auto groundspr = MBO(CCSprite*, self, 0x228);
+		
+		
+		int bgi = MBO(int, GM, 0x2BC);
+		int gi = MBO(int, GM, 0x2C0);
+		int mgi = MBO(int, GM, 0x2C4);
+		
+		const char *bgStr = "bgIcon_%02d_001.png";
+		const char *gStr = "gIcon_%02d_001.png";
 
+		bgStr = CCString::createWithFormat(bgStr, bgi)->getCString();
+		gStr = CCString::createWithFormat(gStr, gi)->getCString();
+		
+		backgroundspr->CCSprite::setDisplayFrame(spriteCache->spriteFrameByName(bgStr));
+		groundspr->CCSprite::setDisplayFrame(spriteCache->spriteFrameByName(gStr));
+	
 		font->setPosition(font->getPositionX() - 70, font->getPositionY() - 10);
 		dual_toggle->setPositionY(dual_toggle->getPositionY() - 55);
 		mini_toggle->setPositionY(mini_toggle->getPositionY() - 60);
@@ -1420,30 +1437,59 @@ FUNCTIONHOOK(bool, LevelSettingsLayer_init, LevelSettingsLayer* self, LevelSetti
 	#ifdef DEVDEBUG
 	//GDPSHelper::createLabels(layer, layer->getChildren(), {0, 0}, true);
 		
-		int a = MBO(int, settings, 0x108);
-		CCLog("a: %d", a);
-		
+
 	#endif
 
 	auto miniToggle = (CCMenuItemToggler*)menu->getChildren()->objectAtIndex(!isStartPos ? 24 : 8);
 
-		
-			auto mini = MBO(bool, settings, 0x110);
-	
-		GDPSHelper::createToggleButton(
+	GDPSHelper::createToggleButton(
 		"",
 		miniToggle->getPosition(),
 		.80, 8,
 		self,
 		menu_selector(LevelSettingsLayer::onMini),
 		menu,
-		mini,
-		true);
-		
-		miniToggle->setPositionY(11111111);
-
+		MBO(bool, settings, 0x110),
+		true
+	);
+	miniToggle->setPositionY(11111111);
 
 	return true;
+}
+
+
+FUNCTIONHOOK(void, LevelSettingsLayer_selectArtClosed, LevelSettingsLayer* self, void* artLayer) {
+	
+	LevelSettingsLayer_selectArtClosedO(self, artLayer);
+	
+	LevelSettingsObject* settings = MBO(LevelSettingsObject*, self, 0x230);
+	
+	bool isStartPos = settings->_isStartPos();
+	if(isStartPos)
+		return;
+
+	auto spriteCache = CCSpriteFrameCache::sharedSpriteFrameCache();
+	
+	auto layer = (CCLayer*)self->getChildren()->objectAtIndex(0);
+	auto menu = (CCMenu*)layer->getChildren()->objectAtIndex(1);
+	
+
+	auto backgroundspr = MBO(CCSprite*, self, 0x224);
+	auto groundspr = MBO(CCSprite*, self, 0x228);
+	
+	int bgi = MBO(int, GM, 0x2BC);
+	int gi = MBO(int, GM, 0x2C0);
+	//int mgi = MBO(int, GM, 0x2C4);
+
+	const char *bgStr = "bgIcon_%02d_001.png";
+	const char *gStr = "gIcon_%02d_001.png";
+
+	bgStr = CCString::createWithFormat(bgStr, bgi)->getCString();
+	gStr = CCString::createWithFormat(gStr, gi)->getCString();
+
+	backgroundspr->CCSprite::setDisplayFrame(spriteCache->spriteFrameByName(bgStr));
+	groundspr->CCSprite::setDisplayFrame(spriteCache->spriteFrameByName(gStr));
+
 }
 
 FUNCTIONHOOK(void, onSelectMode, LevelSettingsLayer* self, CCObject* sender) {
@@ -2096,7 +2142,14 @@ FUNCTIONHOOK(const char*, CCString_getCString2, void* self) {
 		//to add it in advanced filters
 		if(GLM->getBoolForKey("platform_filter_custom")) {
 			std::string str = ret;
-			str[str.find("len=") + 4] = '5';
+			
+			int lenpos = str.find("len=");
+			
+			if(ret[lenpos + 4] != '-')
+				str.insert(str.find("&page"), ",5");
+			else
+				str[lenpos + 4] = '5';
+		
 			ret = str.c_str();
 		}
 		
@@ -2126,24 +2179,36 @@ FUNCTIONHOOK(const char*, GJSearchObject_getKey, void* self) {
 }
 
 FUNCTIONHOOK(void, LevelSearchLayer_toggleTime, void* self, CCObject* sender) {
-	
+	LevelSearchLayer_toggleTimeO(self, sender);
 	int tag = sender->getTag();
+	//CCLog("tag: %d", tag);
+	if(tag != 5)
+		return;
 	
 	//002F0F24
 	bool idk = CallBySymbol(bool, "libcocos2dcpp.so", "_ZN16LevelSearchLayer9checkTimeEi", void*, int)(self, tag);
-	bool filterOn = idk ^ 1;
-	
-	GLM->setBoolForKey(filterOn, "platform_filter_custom");
-	LevelSearchLayer_toggleTimeO(self, sender);
+	bool filterState = idk ^ 1;
+//	CCLog("filter state: %d", idk);
+	GLM->setBoolForKey(idk, "platform_filter_custom");
 }
 
+FUNCTIONHOOK(void, LevelSearchLayer_toggleTimeNum, void* self, int filterNum, bool state) {
+//	CCLog("filternum: %d, on: %d", filterNum, state);
+	LevelSearchLayer_toggleTimeNumO(self, filterNum, state);
+	
+	if(filterNum == 5)
+	GLM->setBoolForKey(state, "platform_filter_custom");
+}
+
+
 #include "LevelSearchLayer.h"
+
 FUNCTIONHOOK(bool, LevelSearchLayer_init, CCLayer* self) {
 	
 	if(!LevelSearchLayer_initO(self)) 
 		return false;
 		
-//	GDPSHelper::createLabels(self, self->getChildren(), {0, 0}, true);
+	//GDPSHelper::createLabels(self, self->getChildren(), {0, 0}, true);
 
 		
 	auto dir = CCDirector::sharedDirector();
@@ -2172,9 +2237,57 @@ FUNCTIONHOOK(bool, LevelSearchLayer_init, CCLayer* self) {
 	lenbg->setContentSize(CCSize(420, 40));
 	//lenbg->setPositionX(node->getPositionX() + 20);
 	
-	return true;
-}
+	
+	//SearchButton::create(char const*,char const*,float,char const*)
 
+
+	auto quickSearch = reinterpret_cast<CCLabelBMFont*>(self->getChildren()->objectAtIndex(8));
+	quickSearch->setVisible(false);
+	
+	auto spr = CallBySymbol(CCSprite*, "libcocos2dcpp.so", "_ZN12SearchButton6createEPKcS1_fS1_", 
+	const char*, const char*, float, const char*)("GJ_longBtn03_001.png", "Demonlist", 0.6, "rankIcon_all_001.png" );
+	
+	auto demonlistbtn = CCMenuItemSpriteExtra::create(
+		spr,
+		spr,
+		self,
+		//static_cast<cocos2d::SEL_MenuHandler>(&LevelSearchLayer::onClearString)
+		static_cast<cocos2d::SEL_MenuHandler>(&LevelSearchLayer::onDemonList)
+	);
+	
+	auto hofspr = CallBySymbol(CCSprite*, "libcocos2dcpp.so", "_ZN12SearchButton6createEPKcS1_fS1_", 
+	const char*, const char*, float, const char*)("GJ_longBtn03_001.png", "Hall of Fame", 0.5, "GJ_diamondsIcon_001.png" );
+	
+	auto hofBtn = CCMenuItemSpriteExtra::create(
+		hofspr,
+		hofspr,
+		self,
+		//static_cast<cocos2d::SEL_MenuHandler>(&LevelSearchLayer::onClearString)
+		static_cast<cocos2d::SEL_MenuHandler>(&CreatorLayer::onFameLevels)
+	);
+	//
+	
+	auto btnsbg = reinterpret_cast<CCSprite*>(self->getChildren()->objectAtIndex(9));
+	auto cs = btnsbg->getContentSize();
+	btnsbg->setContentSize(CCSize(cs.width, cs.height + 35));
+	
+	auto searchBtnMenu = reinterpret_cast<CCMenu*>(self->getChildren()->objectAtIndex(10));
+	searchBtnMenu->setPositionY(searchBtnMenu->getPositionY() - 19);
+	auto dwnbtn = reinterpret_cast<CCMenuItemSpriteExtra*>(searchBtnMenu->getChildren()->objectAtIndex(0));
+	demonlistbtn->setPosition(dwnbtn->GPX(), dwnbtn->GPY() + 35);
+	
+	auto likesbtn = reinterpret_cast<CCMenuItemSpriteExtra*>(searchBtnMenu->getChildren()->objectAtIndex(1));
+	hofBtn->setPosition(likesbtn->GPX(), likesbtn->GPY() + 35);
+
+	searchBtnMenu->addChild(demonlistbtn);
+	searchBtnMenu->addChild(hofBtn);
+	
+	
+	auto filtersLabel = reinterpret_cast<CCLabelBMFont*>(self->getChildren()->objectAtIndex(11));
+	filtersLabel->setVisible(false);
+	
+	return true;			
+}
 
 FUNCTIONHOOK(void, LevelSearchLayer_onClearFilters, void* self) {
 	
@@ -2191,6 +2304,10 @@ FUNCTIONHOOK(void, SupportLayer_onEmail, void* self, void* a2) {
 	
     FLAlertLayer::create( nullptr, "Version", version2str, "OK", nullptr, 250., false, 150. )->show( );
 }
+//cocos2d::CCSpriteFrameCache::removeSpriteFramesFromFile
+
+
+
 void loader()
 {
 	auto cocos2d = dlopen(targetLibName != "" ? targetLibName : NULL, RTLD_LAZY);
@@ -2217,6 +2334,8 @@ void loader()
 	DevDebugHooks::ApplyHooks();
 	#endif
 	
+	HOOK("_ZN18LevelSettingsLayer15selectArtClosedEP14SelectArtLayer", LevelSettingsLayer_selectArtClosedH, LevelSettingsLayer_selectArtClosedO);
+	HOOK("_ZN16LevelSearchLayer13toggleTimeNumEib", LevelSearchLayer_toggleTimeNumH, LevelSearchLayer_toggleTimeNumO);
 	HOOK("_ZN12SupportLayer7onEmailEPN7cocos2d8CCObjectE", SupportLayer_onEmailH, SupportLayer_onEmailO);
 	HOOK("_ZN16LevelSearchLayer12clearFiltersEv", LevelSearchLayer_onClearFiltersH, LevelSearchLayer_onClearFiltersO);
 	HOOK("_ZN16LevelSearchLayer4initEv", LevelSearchLayer_initH, LevelSearchLayer_initO);
@@ -2350,8 +2469,10 @@ void loader()
 
 	tms->addPatch("libcocos2dcpp.so", 0x2802A6, "2120"); //swing
 	
-	tms->addPatch("libcocos2dcpp.so", 0x2F379A, "062D"); //platformer filter
-	tms->addPatch("libcocos2dcpp.so", 0x302C72, "062E"); //platformer filter
+	//platformer filter
+	tms->addPatch("libcocos2dcpp.so", 0x2F379A, "062D"); 
+	tms->addPatch("libcocos2dcpp.so", 0x302C72, "062E");
+	tms->addPatch("libcocos2dcpp.so", 0x2F38E2, "062E");
 	
 	
 	//contact -> version in settings -> help

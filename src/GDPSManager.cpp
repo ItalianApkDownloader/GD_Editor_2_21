@@ -50,7 +50,6 @@ void GDPSManager::dataLoaded()
 	this->opacityRight = this->jsonObject["opacityRight"].as<int>(255);
 	this->opacityLeft = this->jsonObject["opacityLeft"].as<int>(255);
 	this->password = this->jsonObject["password"].as<std::string>("0");
-	
 }
 
 void GDPSManager::firstLoad()
@@ -67,7 +66,7 @@ bool GDPSManager::init()
      return true;
 }
 
-void GDPSManager::writeToFile(string path, const char* content) 
+void GDPSManager::writeToFile(const string path, const char* content) 
 {
 	 ofstream outputFile;
      outputFile.open(path.c_str());
@@ -80,7 +79,7 @@ void GDPSManager::save()
 {
 	 this->encodeDataTo();
 	 this->writeToFile(CCFileUtils::sharedFileUtils()->getWritablePath() + this->m_sFileName, jsonObject.as_str().c_str());
-	 CCLog(jsonObject.as_str().c_str());
+	// CCLog(jsonObject.as_str().c_str());
 }
 
 void GDPSManager::setup()
@@ -90,13 +89,13 @@ void GDPSManager::setup()
     if (infile.good())
     {
         this->load();
-		CCLog("file good");
+	//	CCLog("file good");
     }
     else
     {
 		this->jsonObject = RSJresource("{}");
         this->firstLoad();
-		CCLog("file doesnt exist");
+	//	CCLog("file doesnt exist");
     }
 }
 
@@ -106,7 +105,7 @@ void GDPSManager::load()
 	 std::ifstream ifs(path);
 	 
 	 this->jsonObject = RSJresource(ifs);
-	 CCLog(jsonObject.as_str().c_str());
+	 //CCLog(jsonObject.as_str().c_str());
 	 this->dataLoaded();
 }
 

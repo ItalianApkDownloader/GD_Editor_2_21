@@ -385,7 +385,7 @@ void imgui_init() {
     //edit this value to change main font size
     font->Scale *= 3;
 
-    io.BackendPlatformName = "imgui_impl_cocos2dx";
+    io.BackendPlatformName = "imgui_impl_cocos";
     io.MousePos = ImVec2(-FLT_MAX, -FLT_MAX);
 
     // official example recommends using <Load/Save>IniSettingsToMemory but i can't be bothered rn
@@ -450,7 +450,6 @@ void imgui_start_frame()
     }
 
     ImGuiIO& io = ImGui::GetIO();
-
     ImGui_ImplOpenGL3_NewFrame();
 
     auto eglview = cocos2d::CCEGLView::sharedOpenGLView();

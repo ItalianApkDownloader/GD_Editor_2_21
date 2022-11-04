@@ -44,6 +44,7 @@ public:
 	);
 	
 	static void createLabels(CCNode*, CCArray*, CCPoint pos, bool logNames);
+	static void createLabels(CCNode*);
 
 
 };

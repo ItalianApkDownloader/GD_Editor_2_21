@@ -15,7 +15,7 @@ void MoreSearchLayerExt::addLayerToggle(int row, int column, std::string name, S
 bool MoreSearchLayerExt::init_hk()
 {
     auto ret = init_trp(this);
-    bool selected = GLM->getBoolForKey("platform_filter_custom") ^ 1;
+//    bool selected = GLM->getBoolForKey("platform_filter_custom") ^ 1;
     bool selected2 = GLM->getBoolForKey("legendary_filter_custom") ^ 1;
     //this->addLayerToggle(3,2,"Platformer",menu_selector(MoreSearchLayerExt::onPlatformToggle),selected);
     this->addLayerToggle(3, 0, "Godlike", menu_selector(MoreSearchLayerExt::onLegendaryToggle), selected2);

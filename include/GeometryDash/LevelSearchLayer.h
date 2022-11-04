@@ -45,6 +45,23 @@ public:
 	void onMoreOptions( CCObject* ref );
 	void onSpecialDemon( CCObject* ref );
 
+	void onDemonList(CCObject*) {
+		this->onClose(nullptr);
+		
+		void* SearchObject = CallBySymbol(void*, "libcocos2dcpp.so",
+			"_ZN16LevelSearchLayer15getSearchObjectE10SearchTypeSs",void*, int, std::string)(this, 30, std::string());
+			
+		//lmao i love call by symbol
+		
+		auto scene = CallBySymbol(CCScene*, "libcocos2dcpp.so",
+			"_ZN17LevelBrowserLayer5sceneEP14GJSearchObject",void*)(SearchObject);
+			
+			
+		auto transition = cocos2d::CCTransitionFade::create(0.5, scene);
+		auto dir = cocos2d::CCDirector::sharedDirector( );
+		dir->pushScene( transition );
+	}
+
 	virtual bool init( );
 	virtual void keyBackClicked( );
 
@@ -58,3 +75,13 @@ public:
 		 this->_input()->setString("");
 	 }
 };
+
+/* v3 = (cocos2d::CCDirector *)LevelSearchLayer::onClose(this, 0);
+  v4 = (cocos2d::CCDirector *)cocos2d::CCDirector::sharedDirector(v3);
+  sub_62DCC0(&v11, &byte_7DC8C0, (int)v10);
+  SearchObject = LevelSearchLayer::getSearchObject(this, 4, &v11);
+  v6 = LevelBrowserLayer::scene((LevelBrowserLayer *)SearchObject, (GJSearchObject *)HIDWORD(SearchObject));
+  v8 = (cocos2d::CCScene *)cocos2d::CCTransitionFade::create((cocos2d::CCTransitionFade *)0x3F000000, *(float *)&v6, v7);
+  cocos2d::CCDirector::pushScene(v4, v8);
+  return sub_62B744(&v11);
+  */
