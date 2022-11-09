@@ -324,6 +324,8 @@ public:
     void setOpacity(unsigned char opacity);
 	void setVisible(bool);
     void updateMainOpacity();
+	void makeInvisible();
+	bool isTrigger();
 
     void activateObject();
     void deactivateObject(bool);

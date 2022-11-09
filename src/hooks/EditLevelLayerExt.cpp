@@ -97,6 +97,8 @@ bool EditLevelLayerExt::initH(GJGameLevel* level) {
 }
 
 
+
+
 void EditLevelLayerExt::ApplyHooks() {
 	
 	HOOK_STATIC("_ZN14EditLevelLayer4initEP11GJGameLevel", 

@@ -291,7 +291,7 @@ void LevelEditorLayerExt::updateVisibilityH(float delta) {
 
 
 								// new option "Hide invisible"
-								if(MBO(bool, obj, 0x4AF) || MBO(bool, obj, 0x236) && GM->getGameVariable("0121") && !MBO(bool, obj, 0x405)) {
+								if((MBO(bool, obj, 0x4AF) && GM->getGameVariable("0121")) || MBO(bool, obj, 0x236)  && !MBO(bool, obj, 0x405)) {
 									GameObject_setOpacityH(obj, 0);
 								}
 								else {

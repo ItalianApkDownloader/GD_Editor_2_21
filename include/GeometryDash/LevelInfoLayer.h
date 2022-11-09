@@ -60,6 +60,8 @@ public:
     virtual ~LevelInfoLayer();
 
     bool init( GJGameLevel* level, bool isGauntletSpecial );
+    static LevelInfoLayer* create( GJGameLevel* level, bool isGauntletSpecial );
+    static CCScene* scene( GJGameLevel* level, bool isGauntletSpecial );
 
     void onRate( cocos2d::CCObject* ref );
     void onRateStarsMod( cocos2d::CCObject* ref );

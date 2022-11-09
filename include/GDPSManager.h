@@ -16,6 +16,16 @@ public:
 	int opacityLeft;
 	int opacityRight;
 	std::string password;
+	
+	//news layer
+	bool isNews = false;
+	bool g1;
+	bool g2;
+	bool g3;
+	
+	//news layer new announcements indicator
+	int newsCount = 0;
+	bool showNewNewsIndicator = false;
 
 protected:
 	void logString();

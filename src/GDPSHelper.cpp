@@ -120,7 +120,7 @@ void GDPSHelper::createLabels(CCNode* layer, CCArray* objects, CCPoint pos, bool
 		
 		auto label = CCLabelBMFont::create(FunctionHelper::itos(i).c_str(), "bigFont.fnt");
 		label->setPosition(node->getPosition());
-		label->setScale(.65);
+		label->setScale(.6);
 		menu->addChild(label);
 		
 		if(logNames) {

@@ -28,6 +28,7 @@ public:
     void stopRecording( );
     void removeAllObjects();
     void updateVisibility(float);
+	void onQuit();
 
     void destroyPlayer(PlayerObject* player, GameObject* object);
 };

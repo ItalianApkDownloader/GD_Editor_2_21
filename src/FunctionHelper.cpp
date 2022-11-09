@@ -6,6 +6,66 @@
 //#include <CCFileUtils.h>
 #include "FunctionHelper.h"
 #include <sstream>
+#include <locale>
+
+
+
+std::string FunctionHelper::intToFormatString(int n) {
+
+    if(n < 1000 || n > 100000000)
+    return FunctionHelper::itos(n);
+
+    std::string str = FunctionHelper::thousandSeparator(n);
+    str = str.substr(0, str.find(".") + 2);
+
+    char sufix;
+
+    if(n < 1000000) { sufix = 'K'; return str + sufix; }
+    if(n < 100000000) { sufix = 'M'; return str + sufix;  }
+
+     return FunctionHelper::itos(n);
+}
+
+string FunctionHelper::thousandSeparator(int n)
+{
+	using namespace std;
+    string ans = "";
+  
+    // Convert the given integer
+    // to equivalent string
+    string num = FunctionHelper::itos(n);
+  
+    // Initialise count
+    int count = 0;
+  
+    // Traverse the string in reverse
+    for (int i = num.size() - 1;
+         i >= 0; i--) {
+        count++;
+        ans.push_back(num[i]);
+  
+        // If three characters
+        // are traversed
+        if (count == 3) {
+            ans.push_back('.');
+            count = 0;
+        }
+    }
+  
+    // Reverse the string to get
+    // the desired output
+    reverse(ans.begin(), ans.end());
+  
+    // If the given string is
+    // less than 1000
+    if (ans.size() % 4 == 0) {
+  
+        // Remove ','
+        ans.erase(ans.begin());
+    }
+  
+    return ans;
+}
 
 
 std::string FunctionHelper::itohex(int i)

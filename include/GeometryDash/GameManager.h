@@ -225,11 +225,16 @@ public:
     static GameManager* sharedState( );
 
     bool getGameVariable( const char* g_var );
-    void setGameVariable( const char* g_var, bool toggle );
+	bool ggv(const char* g) {return this->getGameVariable(g); }
 	
-	void setIntGameVariable(const char* variable, int valor);
-int getIntGameVariable(const char* variable);
-
+    void setGameVariable( const char* g_var, bool toggle );
+	void sgv(const char* g, bool t) { this->setGameVariable(g, t); }
+	
+	void setIntGameVariable(const char* variable, int value);
+	void sigv(const char* var, int val) { this->setIntGameVariable(var, val); }
+	
+	int getIntGameVariable(const char* variable);
+	int gigv(const char* var) { this-> getIntGameVariable(var); }
 
     bool hasRatingPower( );
     void setHasRatingPower( int ratingPower );

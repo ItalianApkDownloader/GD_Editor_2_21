@@ -164,6 +164,7 @@ public:
     virtual ~GJGameLevel();
 
     static GJGameLevel* create( );
+	void setLevelID(int);
 
     std::string getAudioFileName( void );
 

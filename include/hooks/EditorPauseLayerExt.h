@@ -14,8 +14,11 @@ public:
 	void onResumeH(CCObject* a1);
 	
 	
-	static inline void* (*customSetupO)(EditorPauseLayer* self);
-	void* customSetupH();
+	static inline void (*customSetupO)(EditorPauseLayer* self);
+	void customSetupH();
+	
+	static inline bool (*initO)(EditorPauseLayer* self, void* editor);
+	bool initH(void* editor);
 	
 	void onDisableShaders(CCObject* sender);
 

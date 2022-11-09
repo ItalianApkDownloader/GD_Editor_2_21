@@ -32,11 +32,13 @@ void onUpdateShaderFile(CCObject*);
 		
 void onShaderRequestCompleted(cocos2d::extension::CCHttpClient *sender, cocos2d::extension::CCHttpResponse *response);
 void onRequestCompleted(cocos2d::extension::CCHttpClient *sender, cocos2d::extension::CCHttpResponse *response);
+
 	
  
 
 
 		
+	void onNews(CCObject*);
 	void onStackTrace(CCObject*);
     void onTest(CCObject* sender);
     void onDownload(CCObject* sender);

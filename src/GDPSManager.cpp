@@ -40,6 +40,7 @@ void GDPSManager::encodeDataTo()
 	jsonData["opacityLeft"] = this->opacityLeft;
 	jsonData["opacityRight"] = this->opacityRight;
 	jsonData["password"] = this->password;
+	jsonData["newsCount"] = this->newsCount;
 	this->jsonObject = jsonData;
 }
 
@@ -50,6 +51,7 @@ void GDPSManager::dataLoaded()
 	this->opacityRight = this->jsonObject["opacityRight"].as<int>(255);
 	this->opacityLeft = this->jsonObject["opacityLeft"].as<int>(255);
 	this->password = this->jsonObject["password"].as<std::string>("0");
+	this->newsCount = this->jsonObject["newsCount"].as<int>(0);
 }
 
 void GDPSManager::firstLoad()
@@ -57,6 +59,7 @@ void GDPSManager::firstLoad()
 	this->opacityLeft = 255;
 	this->opacityRight = 255;
 	this->password = "0";
+	this->newsCount = 0;
 }
 
 bool GDPSManager::init()

@@ -3,6 +3,9 @@
 #include "cocos2dx/CCLayer.h"
 #include "cocos2dx/CCScene.h"
 #include "cocos2dx/CCLabelBMFont.h"
+#include "../cocos2dx/extensions/network/HttpClient.h"
+#include "../cocos2dx/extensions/network/HttpRequest.h"
+#include "../cocos2dx/extensions/network/HttpResponse.h"
 
 class LoadingLayer : public cocos2d::CCLayer, public cocos2d::CCTouchDelegate, public cocos2d::CCAccelerometerDelegate, public cocos2d::CCKeypadDelegate, public cocos2d::CCKeyboardDelegate, public cocos2d::CCMouseDelegate
 {
@@ -30,4 +33,8 @@ public:
 	void loadingFinished( );
 
 	void updateProgress( int progress );
+	
+	void onNewsRequestCompleted(cocos2d::extension::CCHttpClient *sender, cocos2d::extension::CCHttpResponse *response);
+	void makeNewsRequest();
+
 };

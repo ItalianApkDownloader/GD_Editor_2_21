@@ -97,7 +97,7 @@ bool(*isIconUnlockedO)(void *, int, int);
 bool isIconUnlockedH(void *self, int a1, int a2)
 { return true; }
 
-CCSprite * (*spriteCreateO)(const char *textureName);
+CCSprite* (*spriteCreateO)(const char *textureName);
 CCSprite* spriteCreateH(const char *textureName)
 {
 	if (containss(textureName, "GJ_square05.png"))
@@ -206,7 +206,9 @@ void addToggle_hk(MoreOptionsLayer *self, const char *title, const char *code, c
 	{
 		if (strcmp(title, "Show Orb Guide") == 0)
 		{
-			addToggle_trp(self, "Safe Noclip", "200001", 0);
+			addToggle_trp(self, "Safe Noclip", "200001", "Make the player invisible\nbut it doesnt save level progress.");
+			addToggle_trp(self, "Safe Mode", "200002", "Does not save level progress.");
+			addToggle_trp(self, "Disable Shaders", "200003", "Does not save level progress.");
 		}
 	}
 	else
@@ -214,6 +216,7 @@ void addToggle_hk(MoreOptionsLayer *self, const char *title, const char *code, c
 		addToggle_trp(self, title, code, desc);
 	}
 }
+
 
 FUNCTIONHOOK(void, MoreOptionsLayer_onToggle, MoreOptionsLayer* self, CCMenuItemToggler* sender) {
 	
@@ -236,11 +239,20 @@ FUNCTIONHOOK(void, MoreOptionsLayer_onToggle, MoreOptionsLayer* self, CCMenuItem
 		
 		switch(gamevariable) 
 		{		
-			case 200001:
-				p.addPatch(0x0, on ? "onBytes" : "offBytes");
-				p.addPatch(0x0, on ? "onBytes" : "offBytes");
-				p.addPatch(0x0, on ? "onBytes" : "offBytes");
+			case 200001: // Safe NoClip
+				p.addPatch(0x00276df8, on ? "7047" : "2DE9"); // PlayLayer::destroyPlayer
+			//	p.addPatch(0x00276934, on ? "CFE6" : "2DE9"); // PlayLayer::levelComplete
 			break;
+			/*
+			case 200002: // Safe Mode
+				p.addPatch(0x00276934, on ? "CFE6" : "2DE9"); // PlayLayer::levelComplete
+			break;
+			
+
+            case 200003: // No Death Effect (I hope this doesnt effect any codes here since i make the PlayerObject::playerDestroyed to (null)
+				p.addPatch(0x0029c23c, on ? "7047" : "90F8"); // PlayerObject::playerDestroyed
+			break;
+			*/
 		}
 		p.Modify();
 	}
@@ -249,6 +261,26 @@ FUNCTIONHOOK(void, MoreOptionsLayer_onToggle, MoreOptionsLayer* self, CCMenuItem
 	
 }
 
+
+bool isHackActive() {
+	return 
+	GM->ggv("200001") || GM->ggv("200002") || GM->ggv("200003");
+}
+
+class temp {
+	public:
+void showHackAlert(CCObject* sender) {
+	FLAlertLayer::create(nullptr, "DISCLAIMER", "aaaaaaaaaa", "OK", nullptr, 500, false, 300)->show();
+}
+};
+FUNCTIONHOOK(void, PlayLayer_levelCompleted, PlayLayer* self) {
+	
+	if(!isHackActive())
+		PlayLayer_levelCompletedO(self);
+	else {
+		self->onQuit();
+	}
+}
 
 bool doRequest;
 
@@ -518,26 +550,24 @@ void *PlayLayer_addObjectH(PlayLayer *self, GameObject *obj)
 
 	if (id == 1331)
 	{
-		patch *s = new patch();
+		patch s = patch();
 		string spider = "70 6F 72 74 61 6C 5F 31 37 5F 62 61 63 6B 5F 30 30 31 2E 70 6E 67";
-		s->addPatch("libcocos2dcpp.so", 0x7E19BA, spider);
-		s->Modify();
-		delete s;
+		s.addPatch("libcocos2dcpp.so", 0x7E19BA, spider);
+		s.Modify();
 	}
 
 	if (id == 1933)
 	{
-		patch *p = new patch();
+		patch p = patch();
 		string swing = "70 6F 72 74 61 6C 5F 31 38 5F 62 61 63 6B 5F 30 30 31 2E 70 6E 67";
-		p->addPatch("libcocos2dcpp.so", 0x7E19BA, swing);
-		p->Modify();
-		delete p;
-
+		p.addPatch("libcocos2dcpp.so", 0x7E19BA, swing);
+		p.Modify();
 	}
 
 	return PlayLayer_addObjectO(self, obj);
 
 }
+
 
 void showStackTrace() {
 	        auto path = CCFileUtils::sharedFileUtils()->getWritablePath() + "crash.txt";
@@ -596,6 +626,7 @@ bool LoadingLayer_initH(LoadingLayer *self, bool fromReload)
 	#endif
 
 	UpdatePasswordTemp();
+	self->makeNewsRequest();
 	return true;
 
 }
@@ -603,6 +634,7 @@ bool LoadingLayer_initH(LoadingLayer *self, bool fromReload)
 void *(*EditorUI_SelectObjectsO)(EditorUI *self, CCArray *objects, bool a3);
 void *EditorUI_SelectObjectsH(EditorUI *self, CCArray *objects, bool a3)
 {
+	
 	int cl = MBO(int, self->_levelEditor(), 0x2C50);
 	if (cl != -1)
 	{
@@ -629,6 +661,7 @@ void *EditorUI_SelectObjectsH(EditorUI *self, CCArray *objects, bool a3)
 
 		objects->removeObjectsInArray(toDelete);
 	}
+	
 
 	return EditorUI_SelectObjectsO(self, objects, a3);
 }
@@ -1410,17 +1443,16 @@ FUNCTIONHOOK(void, DrawGridLayer_update, DrawGridLayer* self, float delta) {
 
 
 FUNCTIONHOOK(void, triggerShader, void* a1, void* a2) {
-		
 	
-	
-	if(!GM->_inEditor())
-	return triggerShaderO(a1, a2);
-	
-	if(!GM->getGameVariable("69234"))
-	return triggerShaderO(a1, a2);
+	if(GM->_inEditor()) {
+		if(!GM->getGameVariable("69234"))
+			return triggerShaderO(a1, a2);
+	}
+	else {
+		if(!GM->ggv("200003"))
+			return triggerShaderO(a1, a2);
+	}
 
-
-		
 }
 FUNCTIONHOOK(bool, LevelSettingsLayer_init, LevelSettingsLayer* self, LevelSettingsObject* settings, LevelEditorLayer* levelEditor) {
 	
@@ -1611,7 +1643,7 @@ void patchIcons(int gameMode, int amountt) {
 	if(amountt > 255) //2 bytes limit
 		amountt = 255;
 		
-	patch* tms = new patch();
+	patch tms = patch();
 	
 	string amount = FunctionHelper::itohex(amountt);
 	
@@ -1670,17 +1702,14 @@ void patchIcons(int gameMode, int amountt) {
 		
 	}
 	
-	tms->addPatch("libcocos2dcpp.so", countForType, amount + "20"); //GameManager::countForType
-	tms->addPatch("libcocos2dcpp.so", updatePlayerFrame, amount + "29"); //PlayerObjet::updatePlayer(gamemode)Frame
-	tms->addPatch("libcocos2dcpp.so", baseKey, amount + "34"); // GameManager::calculateBaseKeyForIcons
+	tms.addPatch("libcocos2dcpp.so", countForType, amount + "20"); //GameManager::countForType
+	tms.addPatch("libcocos2dcpp.so", updatePlayerFrame, amount + "29"); //PlayerObjet::updatePlayer(gamemode)Frame
+	tms.addPatch("libcocos2dcpp.so", baseKey, amount + "34"); // GameManager::calculateBaseKeyForIcons
 	
 	if(gameMode == 6 || gameMode == 7)
-	tms->addPatch("libcocos2dcpp.so", updatePlayerFrameExtra, amount + "29"); // GJRobotSprite::updateFrame
+	tms.addPatch("libcocos2dcpp.so", updatePlayerFrameExtra, amount + "29"); // GJRobotSprite::updateFrame
 	
-	tms->Modify();
-	
-	delete tms;
-	
+	tms.Modify();	
 }
 
 
@@ -1792,6 +1821,7 @@ FUNCTIONHOOK(bool, GJGarageLayer_init, GJGarageLayer* self) {
 
 bool insideToggleSwingMode;
 
+
 const char *(*CCString_getCStringO)(CCString*);
 const char *CCString_getCStringH(CCString *self)
 {
@@ -1803,11 +1833,11 @@ const char *CCString_getCStringH(CCString *self)
 		const char *toAdd;
 
 		if (containss(ret, "userName"))
-			toAdd = CCString::createWithFormat("&password=%s&gjp=%s&", passwordTemp.c_str(), FunctionHelper::gjp(passwordTemp).c_str())->getCString();
+			toAdd = CCString_getCStringO(CCString::createWithFormat("&password=%s&gjp=%s&", passwordTemp.c_str(), FunctionHelper::gjp(passwordTemp).c_str()));
 		else
-			toAdd = CCString::createWithFormat("&password=%s&gjp=%s&userName=%s", passwordTemp.c_str(), FunctionHelper::gjp(passwordTemp).c_str(), AM->_username().c_str())->getCString();
+			toAdd = CCString_getCStringO(CCString::createWithFormat("&password=%s&gjp=%s&userName=%s", passwordTemp.c_str(), FunctionHelper::gjp(passwordTemp).c_str(), AM->_username().c_str()));
 		
-
+		/*
 		//char *s = new char[strlen(ret) + strlen(toAdd) + strlen(toAdd2) + 1];
 		char *s = new char[strlen(ret) + strlen(toAdd) + 1];
 		strcpy(s, ret);
@@ -1817,6 +1847,9 @@ const char *CCString_getCStringH(CCString *self)
 		//	CCLog(s);
 
 		ret = s;
+		*/ 
+
+		ret = CCString_getCStringO(CCString::createWithFormat("%s%s", ret, toAdd));
 
 	}
 	
@@ -2380,7 +2413,47 @@ FUNCTIONHOOK(void, SupportLayer_onEmail, void* self, void* a2) {
 //cocos2d::CCSpriteFrameCache::removeSpriteFramesFromFile
 
 
+FUNCTIONHOOK(void, LevelCell_loadCustomLevelCell, CCLayer* self) {
+	
+	LevelCell_loadCustomLevelCellO(self);
+	auto layer = (CCLayer*)self->getChildren()->objectAtIndex(1);
+	//CCLog("count: %d", layer->getChildrenCount());
+	//GDPSHelper::createLabels(layer);
+	auto level = MBO(void*, self, 0x198);
+	
+	int likes = MBO(int, level, 0x200) - MBO(int, level, 0x204);
+	int downloads = MBO(int, level, 0x178);
+	int count = layer->getChildrenCount();
+	CCLog("dl: %d, lk: %d, c: %d", downloads, likes, count);
+	
+	if(1000 > downloads && 1000 > likes)
+		return;
+	
+	for(int i = 0; i < count; i++)
+	{
+		auto node = (CCNode*)layer->getChildren()->objectAtIndex(i);
+		
+		if(auto label = dynamic_cast<CCLabelBMFont*>(node))
+		{
+			if(downloads > 1000 && atoi(label->CCLabelBMFont::getString()) == downloads)
+			{
+				label->CCLabelBMFont::setString(FunctionHelper::intToFormatString(downloads).c_str());
+				label->setScale(label->getScale() * 1.1);
+			}
+			else if(likes > 1000 && atoi(label->CCLabelBMFont::getString()) == likes)
+			{
+				label->CCLabelBMFont::setString(FunctionHelper::intToFormatString(likes).c_str());
+				label->setScale(label->getScale() * 1.1);
+			}
+		}
+	}
+}
 
+
+FUNCTIONHOOK(GJGameLevel*, testingshit, CCDictionary* dict, bool a2) {
+	
+	return testingshitO(dict, a2);
+}
 void loader()
 {
 	auto cocos2d = dlopen(targetLibName != "" ? targetLibName : NULL, RTLD_LAZY);
@@ -2407,6 +2480,9 @@ void loader()
 	DevDebugHooks::ApplyHooks();
 	#endif
 	
+	//HOOK("_ZN11GJGameLevel6createEPN7cocos2d12CCDictionaryEb", testingshitH, testingshitO);
+	HOOK("_ZN9LevelCell19loadCustomLevelCellEv", LevelCell_loadCustomLevelCellH, LevelCell_loadCustomLevelCellO);
+	HOOK("_ZN9PlayLayer13levelCompleteEv", PlayLayer_levelCompletedH, PlayLayer_levelCompletedO);
 	HOOK("_ZN12OptionsLayer9onOptionsEPN7cocos2d8CCObjectE", OptionsLayer_onOptionsH, OptionsLayer_onOptionsO);
 	HOOK("_ZN16MoreOptionsLayer8onToggleEPN7cocos2d8CCObjectE", MoreOptionsLayer_onToggleH, MoreOptionsLayer_onToggleO);
 	HOOK("_ZN18LevelSettingsLayer15selectArtClosedEP14SelectArtLayer", LevelSettingsLayer_selectArtClosedH, LevelSettingsLayer_selectArtClosedO);
@@ -2417,7 +2493,6 @@ void loader()
 	HOOK("_ZN14GJSearchObject6getKeyEv", GJSearchObject_getKeyH, GJSearchObject_getKeyO);
 	HOOK("_ZN16LevelSearchLayer10toggleTimeEPN7cocos2d8CCObjectE", LevelSearchLayer_toggleTimeH, LevelSearchLayer_toggleTimeO);
 	HOOK("_ZN12PlayerObject15playDeathEffectEv", PlayerObject_playDeathEffect2H, PlayerObject_playDeathEffect2O);
-//	HOOK("_ZN11ShaderLayer4initEv", ShaderLayer_initH, ShaderLayer_initO);
 	//HOOK("_ZN11ShaderLayer18triggerColorChangeEfffffffif", triggerColorChangeH, triggerColorChangeO);
 	//HOOK("_ZN16LevelEditorLayer14recreateGroupsEv", recreateGroupsH, recreateGroupsO);
 //	HOOK("_ZN10GameObject20createAndAddParticleEiPKciN7cocos2d15tCCPositionTypeE", GameObject_createAndAddParticleH, GameObject_createAndAddParticleO);
@@ -2511,10 +2586,10 @@ void loader()
 	HOOK("_ZN17AccountLoginLayer20loginAccountFinishedEii", LoginFinishedH, LoginFinishedO);
 	HOOK("_ZN12LoadingLayer16getLoadingStringEv", getStringH, getStringO);
 	
-	patch *tms = new patch();
+	patch tms = patch();
 	
-	#define NOP4(a, b) a->addPatch("libcocos2dcpp.so", b, "00 BF 00 BF")
-	#define NOP2(a, b) a->addPatch("libcocos2dcpp.so", b, "00 BF")
+	#define NOP4(a, b) a.addPatch("libcocos2dcpp.so", b, "00 BF 00 BF")
+	#define NOP2(a, b) a.addPatch("libcocos2dcpp.so", b, "00 BF")
 
 	//ads
 	NOP4(tms, 0x2726A6);
@@ -2530,9 +2605,7 @@ void loader()
 	
 
 	NOP4(tms, 0x2EDA9E); //versus
-//	NOP4(tms, 0x2EDA74); //gauntlets
-	
-	//https://cdn.discordapp.com/attachments/997593414684135485/1014791808666042438/icons.rar
+	NOP4(tms, 0x26FF0E); //free levels runaction
 	
 	patchIcons(1, 154); //cube
 	patchIcons(2, 169); //ship
@@ -2542,16 +2615,16 @@ void loader()
 	patchIcons(6, 68); //robot
 	patchIcons(7, 69); //spider
 
-	tms->addPatch("libcocos2dcpp.so", 0x2802A6, "2120"); //swing
+	tms.addPatch("libcocos2dcpp.so", 0x2802A6, "2120"); //swing
 	
 	//platformer filter
-	tms->addPatch("libcocos2dcpp.so", 0x2F379A, "062D"); 
-	tms->addPatch("libcocos2dcpp.so", 0x302C72, "062E");
-	tms->addPatch("libcocos2dcpp.so", 0x2F38E2, "062E");
+	tms.addPatch("libcocos2dcpp.so", 0x2F379A, "062D"); 
+	tms.addPatch("libcocos2dcpp.so", 0x302C72, "062E");
+	tms.addPatch("libcocos2dcpp.so", 0x2F38E2, "062E");
 	
 	
 	//contact -> version in settings -> help
-	tms->addPatch("libcocos2dcpp.so", 0x804FA9, "56 65 72 73 69 6F 6E");
+	tms.addPatch("libcocos2dcpp.so", 0x804FA9, "56 65 72 73 69 6F 6E");
 	
 		
 //	NOP2(tms, 0x2D7126);
@@ -2561,9 +2634,9 @@ void loader()
 	
 	
 	
-//	tms->addPatch("libcocos2dcpp.so", 0x81121D, "68 74 74 70 3A 2F 2F 77 77 77 2E 62 6F 6F 6D 6C 69 6E 67 73 2E 63 6F 6D 2F 64 61 74 61 62 61 73 65 2F 67 65 74 47 4A 53 6F 6E 67 49 6E 66 6F 2E 70 68 70");
+//	tms.addPatch("libcocos2dcpp.so", 0x81121D, "68 74 74 70 3A 2F 2F 77 77 77 2E 62 6F 6F 6D 6C 69 6E 67 73 2E 63 6F 6D 2F 64 61 74 61 62 61 73 65 2F 67 65 74 47 4A 53 6F 6E 67 49 6E 66 6F 2E 70 68 70");
 	
-	//tms->addPatch("libcocos2dcpp.so", 0x382266, "4F F0 01 03"); // fix bg
+	//tms.addPatch("libcocos2dcpp.so", 0x382266, "4F F0 01 03"); // fix bg
 	
 	
 	// I got no fucking idea why rob does this but.....
@@ -2576,24 +2649,32 @@ void loader()
 
 	// custom object bypass
 	NOP2(tms, 0x2D7126);
-	tms->addPatch("libcocos2dcpp.so", 0x2D7260, "80 42 00 BF");
+	tms.addPatch("libcocos2dcpp.so", 0x2D7260, "80 42 00 BF");
 
-	tms->addPatch("libcocos2dcpp.so", 0x332442, "002D"); // general icon limit bypass
-	tms->addPatch("libcocos2dcpp.so", 0x2803D0, "1421"); // general icon limit bypass
+	tms.addPatch("libcocos2dcpp.so", 0x332442, "002D"); // general icon limit bypass
+	tms.addPatch("libcocos2dcpp.so", 0x2803D0, "1421"); // general icon limit bypass
 	
 	
-	tms->addPatch("libcocos2dcpp.so", 0x2C437C, "16 29"); // explorers song bypass fix in levelsettingslayer
-	tms->addPatch("libcocos2dcpp.so", 0x2C4384, "16 21"); // explorers song bypass fix in levelsettingslayer 2
-	tms->addPatch("libcocos2dcpp.so", 0x2C43A6, "16 29"); // explorers song bypass fix in levelsettingslayer 3
 	
-	tms->addPatch("libcocos2dcpp.so", 0x2EB9EE, "01 21"); // fix level name in pause
+	// levelsettingslayer | all gd custom songs bypass, not only explorers/dash
+	tms.addPatch("libcocos2dcpp.so", 0x2C437C, "27 29"); 
+	tms.addPatch("libcocos2dcpp.so", 0x2C4384, "27 21");
+	tms.addPatch("libcocos2dcpp.so", 0x2C43A6, "27 29");
+	
+	//filters | all gd custom song bypass, not only explorers/dash
+	tms.addPatch("libcocos2dcpp.so", 0x2F165C, "28 28");
+	tms.addPatch("libcocos2dcpp.so", 0x2F1622, "28 21");
+	tms.addPatch("libcocos2dcpp.so", 0x2F161C, "28 29");
+	
+//002F165C
 
-	tms->addPatch("libcocos2dcpp.so", 0x2C44EA, "4F F0 02 0A"); // FG
+	tms.addPatch("libcocos2dcpp.so", 0x2EB9EE, "01 21"); // fix level name in pause
 
-	tms->Modify();
+	tms.addPatch("libcocos2dcpp.so", 0x2C44EA, "4F F0 02 0A"); // FG
+
+	tms.Modify();
 	
 	//memory leak goes brrrr
-	delete tms;
 }
 
 JNIEXPORT jint JNI_OnLoad(JavaVM *vm, void *reserved)
@@ -2605,3 +2686,85 @@ JNIEXPORT jint JNI_OnLoad(JavaVM *vm, void *reserved)
 
 	return JNI_VERSION_1_6;
 }
+
+/*
+
+#include <iostream>
+#include <locale>
+
+
+#include <bits/stdc++.h>
+using namespace std;
+  
+// Function to put thousands
+// separators in the given integer
+string thousandSeparator(int n)
+{
+    string ans = "";
+  
+    // Convert the given integer
+    // to equivalent string
+    string num = to_string(n);
+  
+    // Initialise count
+    int count = 0;
+  
+    // Traverse the string in reverse
+    for (int i = num.size() - 1;
+         i >= 0; i--) {
+        count++;
+        ans.push_back(num[i]);
+  
+        // If three characters
+        // are traversed
+        if (count == 3) {
+            ans.push_back('.');
+            count = 0;
+        }
+    }
+  
+    // Reverse the string to get
+    // the desired output
+    reverse(ans.begin(), ans.end());
+  
+    // If the given string is
+    // less than 1000
+    if (ans.size() % 4 == 0) {
+  
+        // Remove ','
+        ans.erase(ans.begin());
+    }
+  
+    return ans;
+}
+
+#include <vector>
+#include <string>
+#include <iostream>
+
+std::string intToFormatString(int n) {
+
+    if(n < 1000 || n > 100000000)
+    return std::to_string(n);
+
+    std::string str = thousandSeparator(n);
+  //  str = str.substr(0, str.find(".") + 2);
+
+    char sufix;
+
+    if(n < 1000000) { sufix = 'K'; return str + sufix; }
+    if(n < 100000000) { sufix = 'M'; return str + sufix;  }
+
+     return std::to_string(n);
+}
+
+std::vector<long long int> n = {1000, 10000, 100000, 1000000, 10000000};
+int main()
+{
+    // imbue the output stream with a locale.
+    for(int i : n) {
+    std::cout << intToFormatString(i) << '\n';
+}
+}
+
+*/

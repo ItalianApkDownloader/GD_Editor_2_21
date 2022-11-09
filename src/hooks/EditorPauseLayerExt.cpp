@@ -51,8 +51,8 @@ void EditorPauseLayerExt::onResumeH(CCObject* a1){
 
 
 	
-	static inline void* (*customSetupO)(EditorPauseLayer* self);
-	void* EditorPauseLayerExt::customSetupH() {
+static inline void (*customSetupO)(EditorPauseLayer* self);
+void EditorPauseLayerExt::customSetupH() {
 	
 	
 	extern bool play;
@@ -62,28 +62,48 @@ void EditorPauseLayerExt::onResumeH(CCObject* a1){
 		this->runAction(CCCallFuncO::create(this, callfuncO_selector(EditorPauseLayer::onSaveAndPlay), this));
 	}
 		
-		auto ret = customSetupO(this);
+	customSetupO(this);
 		
-		auto menu = CCMenu::create();
-		menu->setPosition(0, 0);
+	auto menu = CCMenu::create();
+	menu->setPosition(0, 0);
 		
-		GDPSHelper::createToggleButton(
-		"Disable Shaders",
-		{CCMIDX - 200, CCBOTTOM + 24},
-		.55, 8,
-		this,
-		menu_selector(EditorPauseLayerExt::onDisableShaders),
-		menu,
-		GM->getGameVariable("69234"),
-		true);
-		
-		this->addChild(menu);
-		
-
-		
-		return ret;
-	}
+	GDPSHelper::createToggleButton(
+	"Disable Shaders",
+	{CCMIDX - 200, CCBOTTOM + 24},
+	.55, 8,
+	this,
+	menu_selector(EditorPauseLayerExt::onDisableShaders),
+	menu,
+	GM->getGameVariable("69234"),
+	true);
 	
+	this->addChild(menu);
+	
+	//GDPSHelper::createLabels(this);
+	
+}
+
+static inline bool (*initO)(EditorPauseLayer* self, void* editor);
+bool EditorPauseLayerExt::initH(void* editor) {
+	
+	if(!initO(this, editor)) return false;
+	
+	for(int i = 15; i < 18; i++) {
+		auto label = (CCLabelBMFont*)this->getChildren()->objectAtIndex(i);
+		label->setPositionX(label->getPositionX() + 125);
+	}
+	//GDPSHelper::createLabels(this);
+	
+	auto sprite = CCSprite::createWithSpriteFrameName("GJ_optionsBtn_001.png");
+	sprite->setScale(.6);
+	auto optionsBtn = CCMenuItemSpriteExtra::create(sprite, nullptr, this, menu_selector(MenuLayer::onOptions));
+	auto bottomMenu2 = CCMenu::createWithItem(optionsBtn);
+	//reinterpret_cast<CCSprite *>(bottomMenu2)->setPosition({0, 0});
+	reinterpret_cast<CCSprite *>(bottomMenu2)->setPosition({CCMIDX + 270, CCTOP - 10});
+	this->addChild(bottomMenu2);
+	
+	return true;
+}
 	
 void EditorPauseLayerExt::onDisableShaders(CCObject* sender) {
 	
@@ -101,6 +121,8 @@ void EditorPauseLayerExt::ApplyHooks() {
 	HOOK_STATIC("_ZN16EditorPauseLayer11customSetupEv", 
 	EditorPauseLayerExt::customSetupH, EditorPauseLayerExt::customSetupO);
 	
+	HOOK_STATIC("_ZN16EditorPauseLayer4initEP16LevelEditorLayer", 
+	EditorPauseLayerExt::initH, EditorPauseLayerExt::initO);
 	
 
 }

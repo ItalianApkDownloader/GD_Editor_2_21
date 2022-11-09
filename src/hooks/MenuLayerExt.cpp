@@ -14,6 +14,7 @@
 #include "../obfuscate.h"
 #include "../layers/advancedOptionsLayer.h"
 #include "../layers/CreditsLayer.h"
+#include "../Geometrydash/InfoLayer.h"
 //#include "../layers/ToolsLayer.h"
 #include "../../include/hooks/MenuLayerExt.h"
 #include "../../include/imgui/imgui.h"
@@ -26,9 +27,6 @@
 
 
 
-
-template <class T>
-extern void *getPointer(T value);
 
 void MenuLayerExt::onRequestCompleted(cocos2d::extension::CCHttpClient *sender, cocos2d::extension::CCHttpResponse *response)
 {
@@ -50,7 +48,7 @@ void MenuLayerExt::onRequestCompleted(cocos2d::extension::CCHttpClient *sender, 
 	}
 
 	//std::vector<char> *buffer = response->getResponseData();
-	GameToolbox *gameToolbox = new GameToolbox();
+	//GameToolbox *gameToolbox = new GameToolbox();
 	auto resp = GameToolbox::getResponse(response);
 	auto gm = GameManager::sharedState();
 
@@ -241,6 +239,49 @@ bool MenuLayerExt::init_hk()
 {
 	CCLog("Menu Init!");
 	auto ret = init_trp(this);
+//	GDPSHelper::createLabels(this);
+	
+	int j = 0;
+	
+	for(int i = 0; i < this->getChildrenCount(); i++)
+	{
+		if(auto btnmenu = dynamic_cast<CCMenu*>(this->getChildren()->objectAtIndex(i)))
+		{
+			if(j != 1)
+			{
+				j++;
+				continue;
+			}
+			else 
+			{
+				auto spr = CCSprite::createWithSpriteFrameName(GDPS->showNewNewsIndicator ? "GJ_newBtn_001.png" : "GJ_changeSongBtn_001.png");
+				spr->setScale(GDPS->showNewNewsIndicator ? 1 : 1.35);
+				auto freebtn = (CCNode*)btnmenu->getChildren()->lastObject();
+				btnmenu->removeChild(freebtn, false);
+				auto newsbtn = CCMenuItemSpriteExtra::create(spr, spr, this, menu_selector(MenuLayerExt::onNews));
+				
+				if(GDPS->showNewNewsIndicator)
+				{
+					GDPS->showNewNewsIndicator = false;
+					auto v136 = cocos2d::CCScaleTo::create(0.5, 1.2);
+					auto v157 = cocos2d::CCEaseInOut::create(v136, 2);
+					auto v139 = cocos2d::CCScaleTo::create(0.5, 1.1);
+					auto v141 = cocos2d::CCEaseInOut::create(v139, 2);
+					auto v142 = cocos2d::CCSequence::create(v157, v141, nullptr);
+					auto v144 = cocos2d::CCRepeatForever::create(v142);
+					newsbtn->runAction(v144);
+				}
+				
+				btnmenu->addChild(newsbtn, 2);
+				btnmenu->getChildren()->exchangeObjectAtIndex(4, 3);
+				btnmenu->getChildren()->exchangeObjectAtIndex(3, 2);
+				
+				btnmenu->alignItemsHorizontallyWithPadding(5);
+				btnmenu->addChild(freebtn);
+				break;
+			}
+		}
+	}
 
 	extern bool first;
 	if (first)
@@ -267,37 +308,205 @@ bool MenuLayerExt::init_hk()
 	menu->addChild(myButton3);
 	this->addChild(menu);
 
-
 	
-		extern bool doRequest;
+	
+	extern bool doRequest;
 		
-		#ifdef EMUI_FIX
+	#ifdef EMUI_FIX
+	doRequest = false;
+	#endif
+	
+	if(doRequest) {
+	
 		doRequest = false;
-		#endif
+		CCLog("try request");
 		
-		if(doRequest) {
+		 cocos2d::extension::CCHttpRequest* request = new (std::nothrow) cocos2d::extension::CCHttpRequest();
+		request->setUrl("http://game.gdpseditor.com/server/game/version2.php");
 		
-			doRequest = false;
+		request->setRequestType(cocos2d::extension::CCHttpRequest::kHttpPost);
 
-			CCLog("try request");
+		request->setResponseCallback(this,callfuncND_selector(MenuLayerExt::onRequestCompleted));
+		request->setTag("Post test2");
+		cocos2d::extension::CCHttpClient::getInstance()->send(request);
+		request->release();
+	}
+	/*
+	auto m = CCMenu::create();
+	auto hackspr = ButtonSprite::create(GDPS->showNewNewsIndicator ? "News!!" : "zzz news");
+	
+	if(GDPS->showNewNewsIndicator) GDPS->showNewNewsIndicator = false;
+	
+	auto hackbtn = CCMenuItemSpriteExtra::create(hackspr, hackspr, this, menu_selector(MenuLayerExt::onNews));
+	m->addChild(hackbtn);
+	hackbtn->setPositionX(-200);
+	addChild(m);
+	
+	
+	CCLog("count: %d", reinterpret_cast<CCNode*>(this->getChildren()->objectAtIndex(4))->getChildrenCount());
+	
+	auto arr = this->getChildren();
+	
+	for(int i = 0; i < arr->count(); i++) {
 		
-			 cocos2d::extension::CCHttpRequest* request = new (std::nothrow) cocos2d::extension::CCHttpRequest();
-			request->setUrl("http://game.gdpseditor.com/server/game/version2.php");
+		if(CCMenu* menu = dynamic_cast<CCMenu*>((CCNode*)arr->objectAtIndex(i))) {
 			
-				request->setRequestType(cocos2d::extension::CCHttpRequest::kHttpPost);
-
-
-				request->setResponseCallback(this,callfuncND_selector(MenuLayerExt::onRequestCompleted));
-				request->setTag("Post test2");
-				cocos2d::extension::CCHttpClient::getInstance()->send(request);
-				request->release();
+			if(menu->getChildrenCount() != 5)
+				continue;
+			
+			CCLog("index: %d, count: %d", i, menu->getChildrenCount());
+			auto newarr = CCArray::createWithArray(menu->getChildren());
+			newarr->removeLastObject(true);
+			
+			auto spr = CCSprite::createWithSpriteFrameName("GJ_changeSongBtn_001");
+			auto newsbtn = CCMenuItemSpriteExtra::create(spr, nullptr, this, menu_selector(MenuLayerExt::onNews));
+			newsbtn->setPositionY(reinterpret_cast<CCNode*>(newarr->objectAtIndex(0))->getPositionY());
+			
+			newarr->insertObject(newsbtn, 2);
+			auto newmenu = CCMenu::createWithArray(newarr);
+			newmenu->setPosition(menu->getPosition());
+			newmenu->alignItemsHorizontallyWithPadding(15);
+			addChild(newmenu);
+			
+			for(int j = 0; j < 3; j++)
+				menu->getChildren()->removeObjectAtIndex(j, false);
+			
+			
+			
+			
+			break;
 		}
-		
-				
-
+	}
+	
+*/
 	return ret;
 };
 
+
+void LoadingLayer::onNewsRequestCompleted(cocos2d::extension::CCHttpClient *sender, cocos2d::extension::CCHttpResponse *response)
+{
+	CCLog("Completed!");
+
+	if (!response)
+	{
+		CCLog("onHttpRequestCompleted - No Response");
+		return;
+	}
+
+	CCLog("onHttpRequestCompleted - Response code: %lu", response->getResponseCode());
+
+	if (!response->isSucceed())
+	{
+		CCLog("onHttpRequestCompleted - Response failed");
+		CCLog("onHttpRequestCompleted - Error buffer: %s", response->getErrorBuffer());
+		return;
+	}
+
+	//std::vector<char> *buffer = response->getResponseData();
+	//GameToolbox *gameToolbox = new GameToolbox();
+	auto resp = GameToolbox::getResponse(response);
+	CCLog("newscount: %d, response: %s", GDPS->newsCount, resp.c_str());
+	if(atoi(resp.c_str()) > GDPS->newsCount) {
+		GDPS->newsCount = atoi(resp.c_str());
+		GDPS->showNewNewsIndicator = true;
+	}
+	
+	
+}
+
+void LoadingLayer::makeNewsRequest() {
+	
+	cocos2d::extension::CCHttpRequest* request = new (std::nothrow) cocos2d::extension::CCHttpRequest();
+	request->setUrl("http://game.gdpseditor.com/server/game/getNewsCount.php");
+		
+	request->setRequestType(cocos2d::extension::CCHttpRequest::kHttpPost);
+
+	request->setResponseCallback(this,callfuncND_selector(LoadingLayer::onNewsRequestCompleted));
+	request->setTag("Post test2");
+	cocos2d::extension::CCHttpClient::getInstance()->send(request);
+	request->release();
+}
+void MenuLayerExt::onNews(CCObject* sender) {
+	
+	
+	
+	auto level = GJGameLevel::create();
+	level->setLevelID(455895);
+	
+	//config of comments, save user choice -> set custom -> restore user choice when exiting layer
+	
+	bool g1 = GM->ggv("0089");
+	bool g2 = GM->ggv("0088");
+	bool g3 = GM->ggv("0069");
+	
+	GDPS->g1 = g1;
+	GDPS->g2 = g2;
+	GDPS->g3 = g3;
+	GDPS->isNews = true;
+
+	GM->sgv("0089", true); //sort by time
+	GM->sgv("0088", false); //make comments big 
+	GM->sgv("0069", false); //hide description
+	
+	auto il = InfoLayer::create(level, nullptr);
+	il->loadPage(0, false);
+	
+	auto layer = (CCLayer*)il->getChildren()->objectAtIndex(0);
+	
+	for(int i = 3; i <= 4; i++) {
+		auto someLabel = (CCLabelBMFont*)layer->getChildren()->objectAtIndex(i);
+		someLabel->setVisible(false);
+	}
+	
+	auto m1 = (CCMenu*)layer->getChildren()->objectAtIndex(1);
+	auto creatorbtn = (CCMenuItemSpriteExtra*)m1->getChildren()->objectAtIndex(0);
+	auto creatorLabel = (CCLabelBMFont*)creatorbtn->getChildren()->objectAtIndex(0);
+	creatorLabel->CCLabelBMFont::setString("Announcements");
+	creatorLabel->CCLabelBMFont::setColor({255, 255, 255});
+	creatorLabel->CCLabelBMFont::setScale(creatorLabel->getScale() * 1.5);
+	
+	auto btn = (CCMenuItemSpriteExtra*)m1->getChildren()->objectAtIndex(1);
+	btn->setPositionY(99999);
+	
+	btn = (CCMenuItemSpriteExtra*)m1->getChildren()->objectAtIndex(2);
+	btn->setPositionY(99999);
+
+	btn = (CCMenuItemSpriteExtra*)m1->getChildren()->objectAtIndex(5);
+	btn->setPositionY(99999);
+
+	auto m2 = (CCMenu*)layer->getChildren()->objectAtIndex(4);
+	auto m3 = (CCMenu*)layer->getChildren()->objectAtIndex(6);
+	auto m4 = (CCMenu*)layer->getChildren()->objectAtIndex(8);
+	m4->setPositionY(99999);
+	
+//	GDPSHelper::createLabels(m1);
+	
+	il->InfoLayer::show();
+}
+
+FUNCTIONHOOK(void, InfoLayer_onClose, InfoLayer* self, CCObject* sender) {
+		
+	
+	if(GDPS->isNews) {
+		GDPS->isNews = false;
+		CCLog("close is news");
+		GM->sgv("0089", GDPS->g1);
+		GM->sgv("0088", GDPS->g2);
+		GM->sgv("0069", GDPS->g3);
+	}
+
+	InfoLayer_onCloseO(self, sender);
+}
+
+FUNCTIONHOOK(InfoLayer*, InfoLayer_create, GJGameLevel* level, void* a) {
+	
+	bool g1 = GM->ggv("0089");
+	bool g2 = GM->ggv("0088");
+	bool g3 = GM->ggv("0069");
+	
+	CCLog("89: %d | 88: %d | 69: %d", g1, g2, g3);
+	return InfoLayer_createO(level, a);
+}
 
 void MenuLayerExt::onUpdateShaderFile(CCObject* sender) {
 	
@@ -376,5 +585,8 @@ void MenuLayerExt::ApplyHooks() {
 	
 	HOOK_STATIC("_ZN9MenuLayer4initEv",
 	MenuLayerExt::init_hk, MenuLayerExt::init_trp);
+	
+	HOOK("_ZN9InfoLayer7onCloseEPN7cocos2d8CCObjectE", InfoLayer_onCloseH, InfoLayer_onCloseO);
+	HOOK("_ZN9InfoLayer6createEP11GJGameLevelP11GJUserScore", InfoLayer_createH, InfoLayer_createO);
 	
 }
