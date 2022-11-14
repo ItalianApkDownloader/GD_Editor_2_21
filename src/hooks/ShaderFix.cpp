@@ -5,7 +5,9 @@
 #include "hooking.h"
 #include "cocos2d.h"
 
+#include "CCDirector.h"
 #include "CCGLProgram.h"
+#include "ccGLStateCache.h"
 
 using namespace cocos2d;
 
@@ -117,6 +119,69 @@ FUNCTIONHOOK(void, ShaderLayer_preChromaticGlitchShader, CCLayer* self)
     }
 }
 
+// compileShader func from latest cocos2dx v2 lmao
+FUNCTIONHOOK(bool, CCGLProgram_compileShader, CCGLProgram *self,  GLuint * shader, GLenum type, const GLchar* source)
+{
+    GLint status;
+ 
+    if (!source)
+    {
+        return false;
+    }
+    
+    const GLchar *sources[] = {
+#if (CC_TARGET_PLATFORM != CC_PLATFORM_WIN32 && CC_TARGET_PLATFORM != CC_PLATFORM_LINUX && CC_TARGET_PLATFORM != CC_PLATFORM_MAC)
+#if CC_TARGET_PLATFORM == CC_PLATFORM_NACL
+        "precision highp float;\n"
+#else
+        (type == GL_VERTEX_SHADER ? "precision highp float;\n" : "precision mediump float;\n"),
+#endif
+#endif
+        "uniform mat4 CC_PMatrix;\n"
+        "uniform mat4 CC_MVMatrix;\n"
+        "uniform mat4 CC_MVPMatrix;\n"
+        "uniform vec4 CC_Time;\n"
+        "uniform vec4 CC_SinTime;\n"
+        "uniform vec4 CC_CosTime;\n"
+        "uniform vec4 CC_Random01;\n"
+        "//CC INCLUDES END\n\n",
+        source,
+    };
+
+    *shader = glCreateShader(type);
+    glShaderSource(*shader, sizeof(sources)/sizeof(*sources), sources, NULL);
+    glCompileShader(*shader);
+
+    glGetShaderiv(*shader, GL_COMPILE_STATUS, &status);
+
+    if (! status)
+    {
+        GLsizei length;
+		glGetShaderiv(*shader, GL_SHADER_SOURCE_LENGTH, &length);
+		GLchar* src = (GLchar *)malloc(sizeof(GLchar) * length);
+		
+		glGetShaderSource(*shader, length, NULL, src);
+		CCLog("cocos2d: ERROR: Failed to compile shader:\n%s", src);
+        
+        if (type == GL_VERTEX_SHADER)
+        {
+            CCLog("cocos2d: %s", self->vertexShaderLog());
+        }
+        else
+        {
+            CCLog("cocos2d: %s", self->fragmentShaderLog());
+        }
+        free(src);
+
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_WINRT)
+        return false;
+#else
+		abort();
+#endif
+    }
+    return (status == GL_TRUE);
+}
+
 void ShaderFix::ApplyHooks() 
 {
     HOOK("_ZN11ShaderLayer20preColorChangeShaderEv", ShaderLayer_preColorChangeShaderH, ShaderLayer_preColorChangeShaderO);
@@ -124,4 +189,6 @@ void ShaderFix::ApplyHooks()
     HOOK("_ZN11ShaderLayer18preShockWaveShaderEv", ShaderLayer_preShockWaveShaderH, ShaderLayer_preShockWaveShaderO);
     HOOK("_ZN11ShaderLayer15preGlitchShaderEv", ShaderLayer_preGlitchShaderH, ShaderLayer_preGlitchShaderO);
     HOOK("_ZN11ShaderLayer24preChromaticGlitchShaderEv", ShaderLayer_preChromaticGlitchShaderH, ShaderLayer_preChromaticGlitchShaderO);
+
+    HOOK("_ZN7cocos2d11CCGLProgram13compileShaderEPjjPKc", CCGLProgram_compileShaderH, CCGLProgram_compileShaderO);
 }

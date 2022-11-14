@@ -98,7 +98,7 @@ namespace idk {
 
             char *demangled = __cxxabiv1::__cxa_demangle(symbol, 0, 0, &status); 
 
-            auto data = string_format( "[ <cg>%02d</c> ] PC: <cr>%p</c>\nS: <cy>%s</c>", idx, addr, (NULL != demangled && 0 == status) ? demangled : symbol );
+            auto data = string_format( "[%02d] S: %s", idx, (NULL != demangled && 0 == status) ? demangled : symbol );
            CCLog("DATA: %s", data.c_str() );
 
             if ( demangled != nullptr )
