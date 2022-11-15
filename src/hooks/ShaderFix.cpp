@@ -19,7 +19,7 @@ returntype name##H(__VA_ARGS__)
 #define RESET2F(program, location) program->setUniformLocationWith2f(location, 0, 0)
 #define RESET3F(program, location) program->setUniformLocationWith3f(location, 0, 0, 0)
 #define RESET4F(program, location) program->setUniformLocationWith4f(location, 0, 0, 0, 0)
-
+/*
 // color change
 FUNCTIONHOOK(void, ShaderLayer_preColorChangeShader, CCLayer* self) 
 {
@@ -118,6 +118,40 @@ FUNCTIONHOOK(void, ShaderLayer_preChromaticGlitchShader, CCLayer* self)
             RESET1F(program, MBO(int, self, i));
     }
 }
+*/
+
+CCGLProgram* getGLProgram(CCLayer* shaderLayer)
+{
+    auto spr = MBO(CCSprite*, shaderLayer, 0x154);
+	return spr->getShaderProgram();
+}
+FUNCTIONHOOK(void, ShaderLayer_performCalculations, CCLayer* self)
+{
+    ShaderLayer_performCalculationsO(self);
+    CCGLProgram* glProgram = getGLProgram(self);
+
+    
+    glProgram->setUniformLocationWith1i(glProgram->getUniformLocationForName("_shockWaveOn"), (MBO(double, self, 0x1A0) > 0.0));
+    glProgram->setUniformLocationWith1i(glProgram->getUniformLocationForName("_shockLineOn"), (MBO(double, self, 0x210) > 0.0));
+    glProgram->setUniformLocationWith1i(glProgram->getUniformLocationForName("_glitchOn"), (MBO(bool, self, 0x26C)));
+    // fuj chromatic. always on.
+    glProgram->setUniformLocationWith1i(glProgram->getUniformLocationForName("_cGOn"), !(!MBO(bool, self, 0x2C0) || MBO(float, self, 0x2AC) == 0 && MBO(float, self, 0x2B0) == 0 && MBO(float, self, 0x2BC) == 0));
+    glProgram->setUniformLocationWith1i(glProgram->getUniformLocationForName("_lensCircleOn"), (MBO(float, self, 0x2F4) > 0.0f));
+    // fuj blurs. always on.
+    glProgram->setUniformLocationWith1i(glProgram->getUniformLocationForName("_bulgeOn"), (MBO(float, self, 0x37C) > 0.0f));
+    // fuj pinch. always on.
+    glProgram->setUniformLocationWith1i(glProgram->getUniformLocationForName("_grayscaleOn"), (MBO(float, self, 0x3BC) > 0.0f));
+    glProgram->setUniformLocationWith1i(glProgram->getUniformLocationForName("_sepiaOn"), (MBO(float, self, 0x3D8) > 0.0f));
+    glProgram->setUniformLocationWith1i(glProgram->getUniformLocationForName("_invertColorOn"), (MBO(float, self, 0x3E0) > 0.0f));
+    glProgram->setUniformLocationWith1i(glProgram->getUniformLocationForName("_hueShiftOn"), (MBO(float, self, 0x3F8) != 0.0f));
+    glProgram->setUniformLocationWith1i(glProgram->getUniformLocationForName("_colorChangeOn"), !(MBO(float, self, 0x404) == 1.0
+		&& MBO(float, self, 0x408) == 1.0
+		&& MBO(float, self, 0x40C) == 1.0
+		&& MBO(float, self, 0x410) == 0.0
+		&& MBO(float, self, 0x414) == 0.0
+		&& MBO(float, self, 0x418) == 0.0));
+    glProgram->setUniformLocationWith1i(glProgram->getUniformLocationForName("_splitScreenOn"), (MBO(float, self, 0x424) != 0.0f || MBO(float, self, 0x428) != 0.0f));
+}
 
 // compileShader func from latest cocos2dx v2 lmao
 FUNCTIONHOOK(bool, CCGLProgram_compileShader, CCGLProgram *self,  GLuint * shader, GLenum type, const GLchar* source)
@@ -184,11 +218,13 @@ FUNCTIONHOOK(bool, CCGLProgram_compileShader, CCGLProgram *self,  GLuint * shade
 
 void ShaderFix::ApplyHooks() 
 {
-    HOOK("_ZN11ShaderLayer20preColorChangeShaderEv", ShaderLayer_preColorChangeShaderH, ShaderLayer_preColorChangeShaderO);
+    /*HOOK("_ZN11ShaderLayer20preColorChangeShaderEv", ShaderLayer_preColorChangeShaderH, ShaderLayer_preColorChangeShaderO);
     HOOK("_ZN11ShaderLayer18preShockLineShaderEv", ShaderLayer_preShockLineShaderH, ShaderLayer_preShockLineShaderO);
     HOOK("_ZN11ShaderLayer18preShockWaveShaderEv", ShaderLayer_preShockWaveShaderH, ShaderLayer_preShockWaveShaderO);
     HOOK("_ZN11ShaderLayer15preGlitchShaderEv", ShaderLayer_preGlitchShaderH, ShaderLayer_preGlitchShaderO);
     HOOK("_ZN11ShaderLayer24preChromaticGlitchShaderEv", ShaderLayer_preChromaticGlitchShaderH, ShaderLayer_preChromaticGlitchShaderO);
-
+*/
     HOOK("_ZN7cocos2d11CCGLProgram13compileShaderEPjjPKc", CCGLProgram_compileShaderH, CCGLProgram_compileShaderO);
+
+    HOOK("_ZN11ShaderLayer19performCalculationsEv", ShaderLayer_performCalculationsH, ShaderLayer_performCalculationsO);
 }

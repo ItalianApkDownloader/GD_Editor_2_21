@@ -44,7 +44,7 @@ returntype name##H(__VA_ARGS__)
 #define version2str "1.4"
 #define DEVDEBUG
 //#define SHADERDEBUG
-//#define EMUI_FIX
+#define EMUI_FIX
 
 #define CallBySymbol(returntype, library, symbol, ...) (*(returntype(*)(__VA_ARGS__))reinterpret_cast<void*>(dlsym(dlopen(library, RTLD_LAZY), symbol)))
 

@@ -1875,7 +1875,7 @@ const char *CCString_getCStringH(CCString *self)
 
 	}
 	
-	if(containss(ret, "splitscreen") && containss(ret, "shockWaveUV") && containss(ret, "chromaticGlitchUV")) {
+	if(containss(ret, "uniform float _screenAspect") && containss(ret, "GDPS") && containss(ret, "uberShader.fsh")) {
 		CCLog("enter if");
 		auto path = CCFileUtils::sharedFileUtils()->getWritablePath() + "uberShader.fsh";
 
