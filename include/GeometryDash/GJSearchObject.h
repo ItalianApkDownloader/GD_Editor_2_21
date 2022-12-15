@@ -6,6 +6,7 @@
 class GJSearchObject : public cocos2d::CCNode
 {
 public:
+
 public:
     GJSearchObject();
     virtual ~GJSearchObject();

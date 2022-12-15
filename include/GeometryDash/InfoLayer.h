@@ -6,6 +6,7 @@
 #include "GJGameLevel.h"
 #include "LoadingLayer.h"
 #include "FLAlertLayer.h"
+#include "GJUserScore.h"
 
 class InfoLayer : public FLAlertLayer
 {

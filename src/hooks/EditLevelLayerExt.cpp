@@ -50,9 +50,6 @@ bool EditLevelLayerExt::initH(GJGameLevel* level) {
 	
 	auto ret = initO(this, level);
 	
-	extern int customAmountByLevelName;
-	customAmountByLevelName = 0;
-	
 	auto menu = MEMBERBYOFFSET(CCMenu*, this, 0x14C);
 	
 	auto editBtn = (CCMenuItemSpriteExtra *)menu->getChildren()->objectAtIndex(0);
@@ -100,8 +97,6 @@ bool EditLevelLayerExt::initH(GJGameLevel* level) {
 
 
 void EditLevelLayerExt::ApplyHooks() {
-	
 	HOOK_STATIC("_ZN14EditLevelLayer4initEP11GJGameLevel", 
 	EditLevelLayerExt::initH, EditLevelLayerExt::initO);
-	
-}		
+}

@@ -1,8 +1,7 @@
 #ifndef __GJUSERSCORE_H__
 #define __GJUSERSCORE_H__
 
-#include <gd.h>
-
+#include "CCNode.h"
 class GJUserScore : public cocos2d::CCNode
 {
 public:

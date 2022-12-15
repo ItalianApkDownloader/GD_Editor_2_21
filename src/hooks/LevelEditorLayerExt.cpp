@@ -35,18 +35,7 @@ bool LevelEditorLayerExt::initH(GJGameLevel* level)
 	CCLog("Editor Init!");
 	if (!dynamic_cast<GJBaseGameLayer*>(this)->init())
 		return false;
-	
-	#ifdef DEVDEBUG
-	//custom pixel block ammount for testing
-	if(FunctionHelper::isNumber(level->_levelName()) && GM->getGameVariable("1000012")) {
-		extern int customAmountByLevelName;
-		customAmountByLevelName = atoi(level->_levelName().c_str());
-	}
-	else {
-		extern int customAmountByLevelName;
-		customAmountByLevelName = 0;
-	}
-	#endif
+
 	auto gm = GameManager::sharedState();
 	gm->_inEditor() = true;
 

@@ -1,5 +1,5 @@
 #pragma once
-#include "FLAlertLayer.h"
+#include "SetupTriggerPopup.h"
 
 class SetupPickupTriggerPopup : public SetupTriggerPopup
 {

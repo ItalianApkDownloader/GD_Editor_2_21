@@ -53,6 +53,7 @@ public:
     void updateCollide(PlayerCollisionDirection, int);
     void didHitHead();
     void stopDashing();
+	void updatePlayerSpriteExtra(std::string);
 
     void updateCollideLeft(float, int);
     void updateCollideRight(float, int);

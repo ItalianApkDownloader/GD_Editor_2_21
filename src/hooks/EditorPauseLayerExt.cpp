@@ -53,14 +53,6 @@ void EditorPauseLayerExt::onResumeH(CCObject* a1){
 	
 static inline void (*customSetupO)(EditorPauseLayer* self);
 void EditorPauseLayerExt::customSetupH() {
-	
-	
-	extern bool play;
-		
-	if(play) {
-		play = false;
-		this->runAction(CCCallFuncO::create(this, callfuncO_selector(EditorPauseLayer::onSaveAndPlay), this));
-	}
 		
 	customSetupO(this);
 		

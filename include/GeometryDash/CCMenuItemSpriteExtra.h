@@ -22,7 +22,7 @@ public:
     int m_unk_10;
     int m_unk_14;
     int m_unk_18;
-    CCPoint m_itemPosition;            //0x140
+    cocos2d::CCPoint m_itemPosition;            //0x140
     int m_unk_24;
     int m_unk_28;
     int m_unk_2c;

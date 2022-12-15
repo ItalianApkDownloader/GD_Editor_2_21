@@ -52,21 +52,18 @@ LOCAL_C_INCLUDES += $(LOCAL_PATH)/include/KittyMemory \
 LOCAL_C_INCLUDES += $(LOCAL_PATH)/include/layers \
 
 LOCAL_SRC_FILES := 	src/main.cpp \
-					include/imgui/imgui.cpp \
-					include/imgui/imgui_demo.cpp \
-					include/imgui/imgui_draw.cpp \
-					include/imgui/imgui_tables.cpp \
-					include/imgui/imgui_widgets.cpp \
-					include/imgui/backends/imgui_impl_opengl3.cpp \
-					include/imgui/backends/imgui_impl_android.cpp \
+					src/hooks/MenuLayerExt.cpp \
+					src/fmt/format.cc \
+					src/fmt/ostream.cc \
+					src/fmt/posix.cc \
+					src/fmt/printf.cc \
+					src/hooks/SwingIconFix.cpp \
 					src/hooks/MoreSearchLayerExt.cpp \
-					src/hooks/ImGuiOverlay.cpp \
 					src/hooks/AdvancedLevelInfo.cpp \
 					src/hooks/SpeedrunTimer.cpp \
 					src/GDPSHelper.cpp \
 					src/GDPSManager.cpp \
 					src/FunctionHelper.cpp \
-					src/hooks/MenuLayerExt.cpp \
 					src/hooks/EditorPauseLayerExt.cpp \
 					src/hooks/EditLevelLayerExt.cpp \
 					src/hooks/LevelEditorLayerExt.cpp \

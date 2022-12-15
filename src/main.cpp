@@ -14,27 +14,22 @@
 #include "../include/FunctionHelper.h"
 #include "CCDrawNode.h"
 
-#define IMGUI_IMPL_OPENGL_ES2 k
-
-
 #include <unwind.h>
 #include <sys/stat.h>
+#include "fmt/format.h"
 
-
-#include "hooks/MultiplayerLayerExt.h"
 #include "hooks/MenuLayerExt.h"
 #include "hooks/EditLevelLayerExt.h"
 #include "hooks/LevelEditorLayerExt.h"
 #include "hooks/EditorPauseLayerExt.h"
-#include "hooks/PauseLayerExt.h"
 #include "hooks/ShaderDebug.h"
 #include "hooks/DPADControl.h"
 #include "hooks/CollisionFix.h"
 #include "hooks/ShaderFix.h"
 #include "hooks/SpeedrunTimer.h"
 #include "hooks/AdvancedLevelInfo.h"
-#include "hooks/ImGuiOverlay.h"
 #include "hooks/MoreSearchLayerExt.h"
+#include "hooks/SwingIconFix.h"
 
 /*
 		FLAG USED FOR DEVELOPER MODE DEBUGGING LIKE SHADERS
@@ -44,14 +39,11 @@
 
 
 std::string passwordTemp = "";
-bool colorPopup = true;
 int nFont = 0;
 bool first = true;
 void(*GameManager_tryShowAdO)();
 void GameManager_tryShowAdH() {}
-bool newPixelBlocksApplied;
 
-bool test = false;
 
 float randFloat(float X) { return static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/X)); }
 
@@ -184,20 +176,14 @@ void addToggle_hk(MoreOptionsLayer *self, const char *title, const char *code, c
 			addToggle_trp(self, "Instantly open editor\nat startup", "100003", 0);
 			//addToggle_trp(self, "Disable editor\nobject visibility", "100004", 0);
 			addToggle_trp(self, "Enable pixel blocks\nin the editor", "100005", 0);
-			addToggle_trp(self, "Enable Playtest", "100006", 0);
 			addToggle_trp(self, "Hide Platformer\nbuttons", "10007", 0);
 			addToggle_trp(self, "Swap platformer\njump sides", "100011", 0);
-			addToggle_trp(self, "Playtest as\nSave and Play", "100008", "Playtest button makes the save and play action");
 			addToggle_trp(self, "Practice Music", "0125", 0);
 			addToggle_trp(self, "Disable arrow trigger\nfix", "1000010", 0);
 			addToggle_trp(self, "Speedrun Timer", "1000011", "<cr>Red</c> means that the time is <cr>invalid</c>.\n Before starting a speedrun <cr>make sure to die atleast 1 time</c> because the first attempt time takes the enter transition into account and that will always be slower");
 			addToggle_trp(self, "Show FPS", "0115", 0);
 			addToggle_trp(self, "Remove Pause Btn", "1000012", 0);
-			#ifdef DEVDEBUG
-			addToggle_trp(self, "pixel blocks amount\nby level name", "1000012", 0);
-			#endif
 			addToggle_trp(self, "Show Trigger\nActivations", "1000013", 0);
-			addToggle_trp(self, "New pixel blocks", "1000014", 0);
 
 			isGDPSSettings = false;
 		}
@@ -292,7 +278,6 @@ const char *getStringH(LoadingLayer *self)
 	GM->setGameVariable("0122", false);
 	GM->setGameVariable("0023", false); //smooth fix
 	GM->setGameVariable("0074", true);  //show restart button
-	newPixelBlocksApplied = GM->getGameVariable("1000014");
 	return "Italian APK Downloader\nCatto_\niAndy_HD3\nTr1NgleBoss\nEitan";
 }
 
@@ -430,8 +415,6 @@ inline long mid_num(const std::string &s)
 	return std::strtol(&s[s.find('_') + 1], nullptr, 10);
 }
 
-int customAmountByLevelName = 0;
-
 FUNCTIONHOOK(GameObject*, GameObject_create, int key)
 {
 	auto tb = ObjectToolbox::sharedState()->intKeyToFrame(key);
@@ -447,14 +430,7 @@ FUNCTIONHOOK(GameObject*, GameObject_create, int key)
 			return GameObject_createO(1);
 
 		auto pixelKey = mid_num(tb);
-		#ifdef DEVDEBUG
-		if(customAmountByLevelName != 0)
-			return GameObject_createO(pixelKey > customAmountByLevelName ? 136 : key);
-		else
-			return GameObject_createO(pixelKey > 140 ? 136 : key);
-		#else
-			return GameObject_createO(pixelKey > 140 ? 136 : key);
-		#endif
+		return GameObject_createO(pixelKey > 140 ? 136 : key);
 	}
 
 	return GameObject_createO(key);
@@ -534,9 +510,8 @@ void *(*GameObject_customSetupO)(GameObject *obj);
 void *GameObject_customSetupH(GameObject *obj){
 	auto ret = GameObject_customSetupO(obj);
 
-	auto id = obj->_objectID();
 
-	if(id == 2100){
+	if(obj->_objectID() == 2100){
 		obj->_objectID() = 1598;
 	}
 
@@ -556,7 +531,7 @@ void *PlayLayer_addObjectH(PlayLayer *self, GameObject *obj)
 		s.Modify();
 	}
 
-	if (id == 1933)
+	else if (id == 1933)
 	{
 		patch p = patch();
 		string swing = "70 6F 72 74 61 6C 5F 31 38 5F 62 61 63 6B 5F 30 30 31 2E 70 6E 67";
@@ -808,7 +783,6 @@ bool AccountRegisterLayer_InitH(AccountRegisterLayer*)
 	cocos2d::CCApplication::sharedApplication()->openURL("http://game.gdpseditor.com/server/tools/account/registerAccount.php");
 }
 
-#include "SetupTriggerPopup.h"
 #include "SetupPickupTriggerPopup.h"
 
 bool(*SetupPickupTriggerO)(SetupPickupTriggerPopup *, EffectGameObject *, cocos2d::CCArray *, float, float);
@@ -845,454 +819,11 @@ bool SetupPickupTriggerH(SetupPickupTriggerPopup *self, EffectGameObject *object
 
 }
 
-int lastTriggerObjectID = 0;
-
-bool(*SetupTriggerPopupO)(SetupTriggerPopup *, EffectGameObject *, cocos2d::CCArray *, float, float);
-bool SetupTriggerPopupH(SetupTriggerPopup *self, EffectGameObject *object, cocos2d::CCArray *objects, float x, float y)
-{
-	auto ret = SetupTriggerPopupO(self, object, objects, x, y);
-
-	if (objects == nullptr || objects->count() > 1)
-	{
-		lastTriggerObjectID = 0;
-		return ret;
-
-	}
-
-	if (colorPopup)
-	{
-		if(object != nullptr) {
-			int id = object->_objectID();
-			lastTriggerObjectID = id;
-		}
-	}
-
-	return ret;
-
-}
-#include "SetupAreaMoveTriggerPopup.h"
-#include "InfoAlertButton.h"
-#include "ColorSelectPopup.h"
-
-void *(*ColorSelectPopupInitO)(ColorSelectPopup *, EffectGameObject *, cocos2d::CCArray *, ColorAction *);
-void *ColorSelectPopupInitH(ColorSelectPopup *self, EffectGameObject *object, cocos2d::CCArray *objects, ColorAction *a4)
-{
-	colorPopup = false;
-	auto ret = ColorSelectPopupInitO(self, object, objects, a4);
-	colorPopup = true;
-	return ret;
-}
-
-string areaArrows = "<cg>Arrows pointing outwards means the effect is applied when the center id approaches the target id.</c>\n\
-<cp>Arrows pointing inwards will apply the area effect on the target id. Center id will  remove the area effect when it approacves the target id.</c>\n\
-<cl>Line means the area effect will ignore y/x depending on how the line is placed.</c>\n\
-<cy>EffectID: gives the area effect an id which can be stopped or changed by an animate area trigger.</c>";
-
-
-
-bool(*infoButton)(string, string, float);
-bool infoButton_hk(string title, string desc, float a3)
-{
-	auto ret = infoButton(title, desc, a3);
-
-	if (GM->_inEditor() && colorPopup && lastTriggerObjectID != 0)
-	{
-		switch (lastTriggerObjectID)
-		{
-			case 901:	//move
-				desc += "\n-<cp>x/y modifier 4 locks to the camera if lock to camera is enabled</c>";
-				return infoButton(title, desc, a3);
-				break;
-
-			case 1346:	//rotate 
-				desc += "\n- <cp>Follow p follows the players icon rotation. Some modes don't work with this.</c>";
-				return infoButton(title, desc, a3);
-				break;
-
-			case 2067:	//scale
-				desc += "\n- <cp>Scaling a singular object uses  the objects rotated x/y instead of grid x/y.</c>";
-				return infoButton(title, desc, a3);
-				break;
-
-			case 1585:	//aninamte
-				desc += "\n- <cp>Can also animate particle effects and animated object.</c>";
-				return infoButton(title, desc, a3);
-				break;
-
-			case 2062:	//camera edge
-				return infoButton("Camera Edge Trigger", "Stops the camera on a target ID.\n\
-			Direction is based on the players directions.\n\
-			Target id 0 unlocks camera egdes.\n\
-			This only works when having a direction selected", a3);
-				break;
-
-			case 1914:	// static camera
-				return infoButton("Static Camera", "Locks the camera to a specific object.\nOnly X and Y will will lock the camera to only scroll horizontally and vertically respectfully.\nExit Static moves the camera back to the player. This does not require a group.\nfollow ignores move time. Set move time to 0 to avoid the camera to instantly jump to the target.", a3);
-				break;
-
-			case 1817:	//pickup trigger
-				return infoButton("Pickup Trigger", "Adds or subtracts a value from a counter.\nOverwrite count sets the value of the counter to that of the pickup trigger.", a3);
-				break;
-
-			case 1814:	//follow player Y
-				return infoButton("Follow Player Y", "makes objects follow the Y position of the player\nOffset controls how much higher or lower the object should follow. \nDelay controls how much time passes until the object goes to the player Y position.\nMax Speed controls how fast the object should follow the players Y position\nSpeed multiplies the Max Speed.", a3);
-				break;
-
-			case 1916:	//camera offset
-				return infoButton("Camera Offset", "Offsets the camera by X or Y.\nThe movement will be based on the original camera position, not the current one. This means offsetting the camera twice won't double the offset", a3);
-				break;
-
-			case 2016:	//camera guide
-				return infoButton("Camera Guide", "Shows the position of the camera if the player was to spawn on the exact position of the Guide Trigger.\n <cg>The green line shows the entire visible area.</c>\n <cy>The yellow lines show where objects start to fade in and out.</c>", a3);
-				break;
-
-			case 1934:	//song trigger
-				return infoButton(title, "<cy>Sets the time of the song in ms.</c>\n <cr>This means 1000ms = 1 second</c>", a3);
-				break;
-
-			case 1935:	//timewarp
-				return infoButton("Timewarp", "Changes the speed of the game like a speedhack", a3);
-				break;
-
-			case 1811:	//instant count
-				return infoButton("Instant Count", "Only checks for the number count of an item ID channel one time instead of continuously checking until being stopped. Equals checks for if the item ID count is the exact same as the set number, smaller and larger check for if the number is smaller or larger.", a3);
-				break;
-
-			case 2925:	//camera mode
-				return infoButton("Camera Mode", "Enabled free mode for gamemodes with locked camera.\n\
-			Padding determines when the camera moves with the player on y.\n\
-			Easing eases the camera. (Who could've expected that!)", a3);
-				break;
-
-			case 2999:	//Middle Ground Trigger
-				return infoButton("Middle Ground Trigger", "It moves the middle ground on Y.", a3);
-				break;
-
-			case 2899:	//options trigger
-				return infoButton("Options Trigger", "Changes how the game behaves and what it should render.", a3);
-				break;
-
-			case 2903:	//gradient trigger
-				desc += "\n <cg>Uses base and detail color. Does not work with hsv.</c>\n\
-<cb>You can choose on what layer the gradient should be.</c>\n\
-<co>Rotating the gradient trigger also rotates the gradient.</c>\n\
-<cp>Vertex mode uses math instead of textures to create the gradient. U D L R (BL BR TL TR in vertex mode) places the egdes of the gradient on center ids.</c>\n\
-<cr>Change the ID if you use more gradients.\n\
-The maximum amount of ids is 255.</c>";
-				return infoButton("Gradient Trigger", desc, a3);
-				break;
-
-			case 3006:	//Area Move 
-				{
-					string areaBase = "<cg>Length: 30 = 1 gridspace.</c>\n\
-<cy>Offset: offsets the area effect</c>";
-
-					string areaExtra = "\n<co>Easing/ease out: determines the shape of the dropoff of the area effect</c>\n\
-	<cr>OffsetY: Offset of the area effect in the Y axis.</c>\n\
-	<cp>ModFront/Back: modifier for easing.</c>\n\
-	<cl>Deadzone: the range at which the area effect is completly applied from the egde of the area effect to the center.</c>";
-
-					return infoButton("Area Move Trigger", areaBase + areaExtra, a3);
-					break;
-				}
-
-			case 3007: //Area Rotate
-				{
-
-					string aR2 = "\n<co>Easing/ease out: determines the shape of the dropoff of the area effect</c>\n\
-	<cr>OffsetY: Offset of the area effect in the Y axis.</c>\n\
-	<cp>ModFront/Back: modifier for easing.</c>\n\
-	<cl>Deadzone: the range at which the area effect is completly applied from the egde of the area effect to the center.</c>";
-
-					string aR3 = "\n<cg>Rotation: the amount of degrees the objects will spin. Ignores locked rotation objects but also doesnt change the hitbox.</c>";
-
-					string des1 = aR2 + aR3;
-
-					return infoButton("Area Rotate Trigger", des1, a3);
-
-					break;
-				}
-
-			case 3008: //Area Scale
-				{
-
-					string aR2 = "\n<co>Easing/ease out: determines the shape of the dropoff of the area effect</c>\n\
-	<cr>OffsetY: Offset of the area effect in the Y axis.</c>\n\
-	<cp>ModFront/Back: modifier for easing.</c>\n\
-	<cl>Deadzone: the range at which the area effect is completly applied from the egde of the area effect to the center.</c>";
-
-					string aR3 = "\n<cg>Scalex/y: Scales objects by their relative x/y unless a p group is used.</c>";
-					string des1 =  aR2 + aR3;
-
-					return infoButton("Area Scale Trigger", des1, a3);
-
-				}
-
-				break;
-
-			case 3009: //Area Fade
-				{
-
-					string aR2 = "\n<cr>OffsetY: Offset of the area effect in the Y axis.</c>\n\
-	<cp>ModFront/Back: modifier for easing.</c>\n\
-	<cl>Deadzone: the range at which the area effect is completly applied from the egde of the area effect to the center.</c>";
-
-					string aR3 = "\n<co>Opacity: the opacity the object should be set to.</c>";
-					string des1 = aR2 + aR3;
-
-					return infoButton("Area Fade Trigger", des1, a3);
-
-				}
-
-				break;
-
-			case 3010: //Area Tint
-				{
-
-					string aR2 = "\n<cr>OffsetY: Offset of the area effect in the Y axis.</c>\n\
-	<cp>ModFront/Back: modifier for easing.</c>\n\
-	<cl>Deadzone: the range at which the area effect is completly applied from the egde of the area effect to the center.</c>";
-
-					string aR3 = "\n <co>Color channel: to what colors the objects should change</c>\n\
-			<cr>%: the intensity of the effect.</c>\n\
-		<cg>Hsv: uses hsv instead of a color channel.</c>";
-
-					string des1 = aR2 + aR3;
-
-					return infoButton("Area Tint Trigger", des1, a3);
-
-				}
-
-				break;
-
-			case 3011:	//All Area Anim Triggers
-			case 3012:
-			case 3013:
-			case 3014:
-			case 3015:
-				return infoButton("Area Anim Trigger", "<cg>Animates an area effect.</c>\n\
-<cj>Leave NA to not change that value</c>\n\
-<co>Duration: the amount of time it takes to apply the effect.</c>\n\
-<cy>Use EID: Use Effect ID</c>", a3);
-				break;
-
-		}
-	}
-
-	return ret;
-}
-
-
-bool(*SetupAreaMoveTriggerPopupO)(SetupAreaMoveTriggerPopup *, EffectGameObject *, cocos2d::CCArray *);
-bool SetupAreaMoveTriggerPopuH(SetupAreaMoveTriggerPopup *self, EffectGameObject *object, cocos2d::CCArray *objects)
-{
-	auto ret = SetupAreaMoveTriggerPopupO(self, object, objects);
-
-	colorPopup = false;
-
-	auto layer2 = (CCLayer*) self->getChildren()->objectAtIndex(0);
-	auto menu = (CCMenu*) layer2->getChildren()->objectAtIndex(1);
-	auto reference = (CCMenuItemSpriteExtra*) menu->getChildren()->objectAtIndex(36);
-	auto reference2 = (CCMenuItemSpriteExtra*) menu->getChildren()->objectAtIndex(1);
-
-	string movedist = "<cg>Movedist: how far the objects move.</c>\n\
-<cy>MoveAngle: In what direction the objects move.</c>\n\
-<cl>Relative: move direction is determined by the center.</c>\n\
-<cp>XY mode: uses grid XY to move objects.</c>";
-
-	auto btn = InfoAlertButton::create("Effect Options", areaArrows, 1);
-	btn->setPositionX(CCLEFT - 190);
-	btn->setPositionY(reference->getPositionY());
-
-	auto btn2 = InfoAlertButton::create("Area Move Trigger", movedist, 1);
-	btn2->setPositionY(reference2->getPositionY());
-	btn2->setPositionX(reference2->getPositionX() + 35);
-
-	auto array = CCArray::create();
-	array->addObject(btn);
-	self->addObjectsToPage(array, 1);
-
-	btn->setVisible(reference->isVisible());
-
-	menu->addChild(btn);
-	menu->addChild(btn2);
-
-	colorPopup = true;
-
-	return ret;
-
-}
-
-bool(*SetupAreaRotateTriggerPopupO)(SetupAreaRotateTriggerPopup *, EffectGameObject *, cocos2d::CCArray *);
-bool SetupAreaRotateTriggerPopupH(SetupAreaRotateTriggerPopup *self, EffectGameObject *object, cocos2d::CCArray *objects)
-{
-	auto ret = SetupAreaRotateTriggerPopupO(self, object, objects);
-
-	colorPopup = false;
-
-	auto layer2 = (CCLayer*) self->getChildren()->objectAtIndex(0);
-	auto menu = (CCMenu*) layer2->getChildren()->objectAtIndex(1);
-	auto reference = (CCMenuItemSpriteExtra*) menu->getChildren()->objectAtIndex(36);
-
-	auto btn = InfoAlertButton::create("Effect Options", areaArrows, 1);
-	btn->setPositionX(CCLEFT - 190);
-	btn->setPositionY(reference->getPositionY());
-
-	auto array = CCArray::create();
-	array->addObject(btn);
-	self->addObjectsToPage(array, 1);
-
-	btn->setVisible(reference->isVisible());
-	menu->addChild(btn);
-
-	colorPopup = true;
-
-	return ret;
-
-}
-
-bool(*SetupAreaTransformTriggerPopupO)(SetupAreaTransformTriggerPopup *, EffectGameObject *, cocos2d::CCArray *);
-bool SetupAreaTransformTriggerPopupH(SetupAreaTransformTriggerPopup *self, EffectGameObject *object, cocos2d::CCArray *objects)
-{
-	auto ret = SetupAreaTransformTriggerPopupO(self, object, objects);
-
-	colorPopup = false;
-
-	auto layer2 = (CCLayer*) self->getChildren()->objectAtIndex(0);
-	auto menu = (CCMenu*) layer2->getChildren()->objectAtIndex(1);
-	auto reference = (CCMenuItemSpriteExtra*) menu->getChildren()->objectAtIndex(36);
-
-	auto btn = InfoAlertButton::create("Effect Options", areaArrows, 1);
-	btn->setPositionX(CCLEFT - 190);
-	btn->setPositionY(reference->getPositionY());
-
-	auto array = CCArray::create();
-	array->addObject(btn);
-	self->addObjectsToPage(array, 1);
-
-	btn->setVisible(reference->isVisible());
-	menu->addChild(btn);
-
-	colorPopup = true;
-
-	return ret;
-
-}
-
 FUNCTIONHOOK(const char*, GameManager_getMGTexture, GameManager* self, int a2) {
 
 	//avoid temp variables
 	GM->loadMiddleground(2);
 	return CCString::createWithFormat("fg_%02d.png", a2)->getCString();
-}
-
-bool(*SetupAreaFadeTriggerPopupO)(SetupAreaFadeTriggerPopup *, EffectGameObject *, cocos2d::CCArray *);
-bool SetupAreaFadeTriggerPopupH(SetupAreaFadeTriggerPopup *self, EffectGameObject *object, cocos2d::CCArray *objects)
-{
-	auto ret = SetupAreaFadeTriggerPopupO(self, object, objects);
-
-	colorPopup = false;
-
-	auto layer2 = (CCLayer*) self->getChildren()->objectAtIndex(0);
-	auto menu = (CCMenu*) layer2->getChildren()->objectAtIndex(1);
-	auto reference = (CCMenuItemSpriteExtra*) menu->getChildren()->objectAtIndex(36);
-
-	auto btn = InfoAlertButton::create("Effect Options", areaArrows, 1);
-	btn->setPositionX(CCLEFT - 190);
-	btn->setPositionY(reference->getPositionY());
-
-	auto array = CCArray::create();
-	array->addObject(btn);
-	self->addObjectsToPage(array, 1);
-
-	btn->setVisible(reference->isVisible());
-	menu->addChild(btn);
-
-	colorPopup = true;
-
-	return ret;
-
-}
-
-bool(*SetupAreaTintTriggerPopupO)(SetupAreaTintTriggerPopup *, EffectGameObject *, cocos2d::CCArray *);
-bool SetupAreaTintTriggerPopupH(SetupAreaTintTriggerPopup *self, EffectGameObject *object, cocos2d::CCArray *objects)
-{
-	auto ret = SetupAreaTintTriggerPopupO(self, object, objects);
-
-	colorPopup = false;
-
-	auto layer2 = (CCLayer*) self->getChildren()->objectAtIndex(0);
-	auto menu = (CCMenu*) layer2->getChildren()->objectAtIndex(1);
-	auto reference = (CCMenuItemSpriteExtra*) menu->getChildren()->objectAtIndex(36);
-
-	auto btn = InfoAlertButton::create("Effect Options", areaArrows, 1);
-	btn->setPositionX(CCLEFT - 190);
-	btn->setPositionY(reference->getPositionY());
-
-	auto array = CCArray::create();
-	array->addObject(btn);
-	self->addObjectsToPage(array, 1);
-
-	btn->setVisible(reference->isVisible());
-	menu->addChild(btn);
-
-	colorPopup = true;
-
-	return ret;
-
-}
-
-
-
-FLAlertLayer* fl;
-
-void LevelEditorLayerExt::onEnablePlaytest(CCObject* sender) {
-	
-	GM->setGameVariable("100006", true); 
-	auto node = (CCNode*)sender;
-	node->setPositionY(10000);
-}
-
-bool play;
-
-void(*EditorUI_onPlaytestO)(EditorUI *self, CCObject *a2);
-void EditorUI_onPlaytestH(EditorUI *self, CCObject *a2)
-{
-	//need to add comments because im confusing myself LOL
-	//if playtest disabled
-	if(GM->getGameVariable("100008") && GM->getGameVariable("100006")) {
-		play = true;
-		self->runAction(CCCallFuncO::create(self, callfuncO_selector(EditorUI::onPause), self));
-		return;
-	}
-	
-	if (!GM->getGameVariable("100006")) {
-		
-	string desc = "<co>Playtest has a lot of bugs and crashes</c>\n\
-				<cr>its use is not recommended!</c>\n\
-				<cg>You can enable playtest at your own risk</c>\n\
-				<cr>don't complain about it and don't ask for a fix!</c>";
-		fl = FLAlertLayer::create(nullptr, "Playtest disabled", desc, "OK", nullptr, 470, false, 200);
-
-		auto menu = fl->_btnMenu();
-		auto children = menu->getChildren();
-		auto okBtn = reinterpret_cast<CCNode *>(children->objectAtIndex(0));
-
-		auto sprite = ButtonSprite::create("Enable", 80, 30, 30, 5);
-		auto btn = CCMenuItemSpriteExtra::create(sprite, sprite, fl, menu_selector(LevelEditorLayerExt::onEnablePlaytest));
-		btn->setPositionX(okBtn->getPositionX() + 60);
-
-		okBtn->setPositionX(okBtn->getPositionX() - 40);
-		menu->addChild(btn);
-
-		//  fl->m_pLayer->addChild(sprite, 50);
-		fl->show();
-	}
-	
-	else {
-		return EditorUI_onPlaytestO(self, a2);
-	}
-
 }
 
 void(*togglePracticeModeO)(PlayLayer *self, bool *on);
@@ -1853,73 +1384,10 @@ const char *CCString_getCStringH(CCString *self)
 
 	}
 	
-	if(insideToggleSwingMode) {
-	
-		int swingKey = MBO(int, GM, 0x224);
-		//CCLog("swingKey: %d", swingKey);
-		if(swingKey == 1)
-		return ret;
-		
-
-		if(containss(ret, "swing_01_001.png"))
-		return CCString_getCStringO(CCString::createWithFormat("swing_%02d_001.png", swingKey));
-	
-		if(containss(ret, "swing_01_2_001.png"))
-		return CCString_getCStringO(CCString::createWithFormat("swing_%02d_2_001.png", swingKey));
-	
-		if(containss(ret, "swing_01_glow_001.png"))
-		return CCString_getCStringO(CCString::createWithFormat("swing_%02d_glow_001.png", swingKey));
-	
-		if(containss(ret, "swing_01_extra_001.png"))
-		return CCString_getCStringO(CCString::createWithFormat("swing_%02d_extra_001.png", swingKey));
-
-	}
-	
-	if(containss(ret, "uniform float _screenAspect") && containss(ret, "GDPS") && containss(ret, "uberShader.fsh")) {
-		CCLog("enter if");
-		auto path = CCFileUtils::sharedFileUtils()->getWritablePath() + "uberShader.fsh";
-
-		std::ifstream ifs( path );
-
-		std::stringstream ss;
-
-		if (ifs.good())
-		{
-			CCLog("opening file!!!");
-			std::string sLine;
-			while (getline(ifs, sLine))
-			{
-				ss << sLine << std::endl;
-			}
-			ifs.close();
-			CCLog("returning updated shader!!!");
-			return ss.str().c_str();
-		}
-		else
-		{
-			CCLog("file not found");
-			ifs.close();
-			return ret;
-		}		
-	}
-
 	return ret;
 
 }
 
-FUNCTIONHOOK(void*, toggleSwingMode, PlayerObject* self,  bool a1, bool a2) {
-
-	insideToggleSwingMode = true;
-	
-	if(a1)  //bitch icon wont load sometimes
-	GM->loadIcon(MBO(int, GM, 0x224), 7, MBO(int, GM, 0xBE0));
-
-	auto ret = toggleSwingModeO(self, a1, a2);
-	
-	insideToggleSwingMode = false;
-	
-	return ret;
-}
 
 #include "SongInfoLayer.h"
 int eSongID = 0;
@@ -2025,33 +1493,6 @@ FUNCTIONHOOK(void, PauseLayer_customSetup, PauseLayer* self) {
 	self->addChild(bottomMenu2);
 	
 }
-
-/* change swing portal color (not working)
-	
-FUNCTIONHOOK(CCParticleSystemQuad*, createParticle, GJBaseGameLayer* self, int a1, char const* a2, int a3, void* a4) {
-	
-	CCLog("a1: %d, a2: %s, a3: %d", a1, a2, a3);
-	
-	auto ret = createParticleO(self, a1, a2, a3, a4);
-	
-		ret->CCParticleSystem::setStartColor({255, 0, 0, 100});
-		ret->CCParticleSystem::setEndColor({255, 0, 0, 100});
-	
-
-	return ret;
-	
-}
-
-FUNCTIONHOOK(GameObject*, GameObject_createAndAddParticle, GameObject* obj, int a1, char const* a2, int a3, void* a4) {
-	
-	auto ret = reinterpret_cast<CCParticleSystem*>(GameObject_createAndAddParticleO(obj, a1, a2, a3, a4));
-
-		ret->CCParticleSystem::setStartColor({255, 0, 0, 100});
-		ret->CCParticleSystem::setEndColor({255, 0, 0, 100});
-		
-	return reinterpret_cast<GameObject*>(ret);
-}
-*/
 
 FUNCTIONHOOK(void, onMoreGames, MenuLayer* self, CCObject* sender) {
 	
@@ -2395,14 +1836,14 @@ FUNCTIONHOOK(bool, LevelSearchLayer_init, CCLayer* self) {
 	return true;			
 }
 
-FUNCTIONHOOK(void, LevelSearchLayer_onClearFilters, void* self) {
+FUNCTIONHOOK(void, LevelSearchLayer_onClearFilters, LevelSearchLayer* self) {
 	
 	LevelSearchLayer_onClearFiltersO(self);
 	
 	GLM->setBoolForKey(false, "platform_filter_custom");
 	GLM->setBoolForKey(false, "legendary_filter_custom");
 	
-	CallBySymbol(void, "libcocos2dcpp.so", "_ZN16LevelSearchLayer13toggleTimeNumEib", void* self, int, bool)(self, 5, false);
+	self->toggleTimeNum(5, false);
 }
 
 
@@ -2472,9 +1913,9 @@ void loader()
 	ShaderFix::ApplyHooks();
 	SpeedrunTimer::ApplyHooks();
 	AdvancedLevelInfo::ApplyHooks();
-	//ImGuiOverlay::ApplyHooks();
 	GDPSManager::ApplyHooks();
 	MoreSearchLayerExt::ApplyHooks();
+	SwingIconFix::ApplyHooks();
 
 	#ifdef SHADERDEBUG
 	DevDebugHooks::ApplyHooks();
@@ -2509,7 +1950,6 @@ void loader()
 	HOOK("_ZN12SupportLayer9onRestoreEPN7cocos2d8CCObjectE", SupportLayer_onRestoreH, SupportLayer_onRestoreO);
 	HOOK("_ZN23SetupObjectOptionsPopup4initEP10GameObjectPN7cocos2d7CCArrayEP15SetGroupIDLayer", SetupObjectOptionsPopup_initH, SetupObjectOptionsPopup_initO);
 	HOOK("_ZN13SongInfoLayer4initESsSsSsSsSsSsi", SongInfoLayer_initH, SongInfoLayer_initO);
-	HOOK("_ZN12PlayerObject15toggleSwingModeEbb", toggleSwingModeH, toggleSwingModeO);
 	HOOK("_ZN13GJGarageLayer4initEv", GJGarageLayer_initH, GJGarageLayer_initO);
 	HOOK("_ZN10GJItemIcon17createBrowserItemE10UnlockTypei", GJItemIcon_InitH, GJItemIcon_InitO);
 	//HOOK("_ZN11GameManager8loadIconEiii", someHookToLogStuffH, someHookToLogStuffO);
@@ -2534,16 +1974,9 @@ void loader()
 	HOOK("_ZN13EndLevelLayer6onEditEPN7cocos2d8CCObjectE", EndLevelLayer_onEditH, EndLevelLayer_onEditO);
 	
 	HOOK("_ZN9PlayLayer18togglePracticeModeEb", togglePracticeModeH, togglePracticeModeO);
-	HOOK("_ZN8EditorUI10onPlaytestEPN7cocos2d8CCObjectE", EditorUI_onPlaytestH, EditorUI_onPlaytestO);
-	HOOK("_ZN25SetupAreaTintTriggerPopup4initEP17EnterEffectObjectPN7cocos2d7CCArrayE", SetupAreaTintTriggerPopupH, SetupAreaTintTriggerPopupO);
-	HOOK("_ZN25SetupAreaFadeTriggerPopup4initEP17EnterEffectObjectPN7cocos2d7CCArrayE", SetupAreaFadeTriggerPopupH, SetupAreaFadeTriggerPopupO);
-	HOOK("_ZN30SetupAreaTransformTriggerPopup4initEP17EnterEffectObjectPN7cocos2d7CCArrayE", SetupAreaTransformTriggerPopupH, SetupAreaTransformTriggerPopupO);
-	HOOK("_ZN27SetupAreaRotateTriggerPopup4initEP17EnterEffectObjectPN7cocos2d7CCArrayE", SetupAreaRotateTriggerPopupH, SetupAreaRotateTriggerPopupO);
-	HOOK("_ZN25SetupAreaMoveTriggerPopup4initEP17EnterEffectObjectPN7cocos2d7CCArrayE", SetupAreaMoveTriggerPopuH, SetupAreaMoveTriggerPopupO);
-	HOOK("_ZN16ColorSelectPopup4initEP16EffectGameObjectPN7cocos2d7CCArrayEP11ColorAction", ColorSelectPopupInitH, ColorSelectPopupInitO);
-	HOOK("_ZN15InfoAlertButton6createESsSsf", infoButton_hk, infoButton);
+	
+	
 	HOOK("_ZN9PlayLayer9addObjectEP10GameObject", PlayLayer_addObjectH, PlayLayer_addObjectO);
-	HOOK("_ZN17SetupTriggerPopup4initEP16EffectGameObjectPN7cocos2d7CCArrayEff", SetupTriggerPopupH, SetupTriggerPopupO);
 	HOOK("_ZN23SetupPickupTriggerPopup4initEP16EffectGameObjectPN7cocos2d7CCArrayE", SetupPickupTriggerH, SetupPickupTriggerO);
 	HOOK("_ZN20AccountRegisterLayer4initEv", AccountRegisterLayer_InitH, AccountRegisterLayer_InitO);
 	HOOK("_ZN11GameManager12getMGTextureEi", GameManager_getMGTextureH, GameManager_getMGTextureO);
