@@ -3,6 +3,7 @@
 
 using namespace std;
 #include <android/log.h>
+#include <fmt/format.h>
 
 #define CREATE_FUNC(__TYPE__) \
 static __TYPE__* create() \
@@ -44,7 +45,7 @@ returntype name##H(__VA_ARGS__)
 #define version2str "1.4"
 #define DEVDEBUG
 //#define SHADERDEBUG
-#define EMUI_FIX
+//#define EMUI_FIX
 
 #define CallBySymbol(returntype, library, symbol, ...) (*(returntype(*)(__VA_ARGS__))reinterpret_cast<void*>(dlsym(dlopen(library, RTLD_LAZY), symbol)))
 
@@ -58,6 +59,7 @@ returntype name##H(__VA_ARGS__)
 #define TAG "cocos2x"
 
 #define CCLog(...) ((void)__android_log_print(3, TAG, __VA_ARGS__))
+#define fmtlog(...) CCLog("%s", fmt::format(__VA_ARGS__).c_str())
 #define ccp(__X__,__Y__) cocos2d::CCPointMake((float)(__X__), (float)(__Y__))
 
 // actions

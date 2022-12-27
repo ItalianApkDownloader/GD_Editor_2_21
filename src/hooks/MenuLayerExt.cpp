@@ -184,7 +184,7 @@ void MenuLayerExt::updateUserProfileButtonH() {
 
  //   this->_playerUsernameLabel()->setVisible(true);
 	auto profileBtn = MBO(CCMenuItemSpriteExtra*, this, 0x150);
-    profileBtn->setVisible(true);
+	profileBtn->setVisible(true);
 
 
 
@@ -195,32 +195,14 @@ void MenuLayerExt::updateUserProfileButtonH() {
 
 void MenuLayerExt::onStackTrace(CCObject* s) {
 	
-        auto path = CCFileUtils::sharedFileUtils()->getWritablePath() + "crash.txt";
-
-    std::ifstream ifs( path );
-
-    std::stringstream ss;
-
-    if ( ifs.good() )
-    {
-        std::string sLine;
-
-        int i = 0;
-        while ( i < 19 )
-        {
-            getline(ifs, sLine);
-            ss << sLine << std::endl;
-            i++;
-        }
-    }
-    else 
-        ss << "File not found.";
-
-    ifs.close( );
-
-    // saber::logging::log( "%s ALL DATA", content.c_str() );
-    FLAlertLayer::create( nullptr, "Stack Trace", ss.str(), "Exit", nullptr, 450., true, 300. )->show( );
-
+	auto path = CCFileUtils::sharedFileUtils()->getWritablePath() + "crash.txt";
+	std::ifstream ifs( path );
+	std::stringstream ss;
+	if (ifs.good())
+	{
+		system("mkdir sdcard/GDPSEditor");
+		system("cp -F crash.txt GDPSEditor");
+	}
 }
 
 
@@ -285,20 +267,6 @@ bool MenuLayerExt::init_hk()
 	FMOD->setBackgroundMusicVolume(0);
 
 	#endif
-
-	auto menu = CCMenu::create();
-	menu->setPosition(CCLEFT + 35, CCTOP - 50);
-	auto btn3 = CCSprite::createWithSpriteFrameName("garageRope_001.png");
-	auto myButton3 = CCMenuItemSpriteExtra::create(
-		btn3,
-		btn3,
-		this,
-	menu_selector(MenuLayerExt::onUpdateShaderFile));
-
-	menu->addChild(myButton3);
-	this->addChild(menu);
-
-	
 	
 	extern bool doRequest;
 		
@@ -545,7 +513,7 @@ std::vector<char> *buffer = response->getResponseData();
 	
 	
 	   auto path = CCFileUtils::sharedFileUtils()->getWritablePath() + "uberShader.fsh";
-        std::ofstream outfile;
+		std::ofstream outfile;
 		outfile.open(path);
 		outfile << resp;
 		outfile.close();

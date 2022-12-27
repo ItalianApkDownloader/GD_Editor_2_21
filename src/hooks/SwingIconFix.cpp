@@ -6,7 +6,7 @@
 #include "GDPSHelper.h"
 #include "FunctionHelper.h"
 #include "gd.h"
-#include "../fmt/format.h"
+
 
 FUNCTIONHOOK(bool, PlayLayer_init, PlayLayer* self, GJGameLevel* level, bool a2, bool a3) {
 	
@@ -28,7 +28,7 @@ FUNCTIONHOOK(bool, PlayLayer_init, PlayLayer* self, GJGameLevel* level, bool a2,
 	constexpr std::array<uintptr_t, 5> addrs = {0x299484, 0x29948C, 0x299498, 0x2994A8, 0x299552};
 	patch p;
 	
-	for(auto adr : addrs)
+	for(auto& adr : addrs)
 		p.addPatch("libcocos2dcpp.so", adr, patchstr);
 	
 	p.Modify();

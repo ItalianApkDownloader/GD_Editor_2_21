@@ -51,12 +51,12 @@ LOCAL_C_INCLUDES += $(LOCAL_PATH)/include/hooks \
 LOCAL_C_INCLUDES += $(LOCAL_PATH)/include/KittyMemory \
 LOCAL_C_INCLUDES += $(LOCAL_PATH)/include/layers \
 
-LOCAL_SRC_FILES := 	src/main.cpp \
-					src/hooks/MenuLayerExt.cpp \
-					src/fmt/format.cc \
+LOCAL_SRC_FILES :=	src/fmt/format.cc \
 					src/fmt/ostream.cc \
 					src/fmt/posix.cc \
 					src/fmt/printf.cc \
+					src/main.cpp \
+					src/hooks/MenuLayerExt.cpp \
 					src/hooks/SwingIconFix.cpp \
 					src/hooks/MoreSearchLayerExt.cpp \
 					src/hooks/AdvancedLevelInfo.cpp \

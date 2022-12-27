@@ -50,6 +50,7 @@ public:
 	void onSpecialDemon( CCObject* ref );
 	GJSearchObject* getSearchObject(SearchType, std::string);
 	void toggleTimeNum(int, bool);
+	bool checkTime(int);
 
 	void onDemonList(CCObject*) {
 		this->onClose(nullptr);

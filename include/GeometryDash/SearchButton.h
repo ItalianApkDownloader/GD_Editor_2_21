@@ -15,6 +15,5 @@ public:
 	virtual ~SearchButton( );
 
 	static SearchButton* create( const char* buttonSprite, const char* label, float size, const char* sprite );
-
 	bool init( const char* buttonSprite, const char* label, float size, const char* sprite );
 };

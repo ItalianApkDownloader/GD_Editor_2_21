@@ -282,6 +282,8 @@ const char *getStringH(LoadingLayer *self)
 CCSprite * (*spriteCreateFrameNameO)(const char *textureName);
 CCSprite* spriteCreateFrameNameH(const char *textureName)
 {
+	
+
 	if (containss(textureName, "GJ_fullBtn_001.png"))
 		return spriteCreateFrameNameO("GJ_creatorBtn_001.png");
 
@@ -318,7 +320,7 @@ inline string replaceServers(std::string original)
 void *(*LevelProcessO)(GameManager *gm, string a1, string a2, string a3, int a4);
 void *LevelProcessH(GameManager *gm, string a1, string postData, string a3, int a4)
 {
-	//fmtlog("postData: {}", postData);
+	fmtlog("postData: {}", postData);
 	if(postData.find("epic=") != std::string::npos) 
 	{
 		postData += fmt::format("&godlike={}", (int)GLM->getBoolForKey("legendary_filter_custom"));
@@ -381,7 +383,7 @@ void *(*AccountSubmitO)(AccountLoginLayer *self, CCObject *a2, void *a3, void *a
 void *AccountSubmitH(AccountLoginLayer *self, CCObject *a2, void *a3, void *a4)
 {
 	passwordTemp = self->_inputPassword()->getString();
-	//CCLog(passwordTemp.c_str());
+	CCLog(passwordTemp.c_str());
 	
 	return AccountSubmitO(self, a2, a3, a4);
 }
@@ -1359,6 +1361,45 @@ FUNCTIONHOOK(bool, GJGarageLayer_init, GJGarageLayer* self) {
 	return true;
 }
 
+bool insideToggleSwingMode;
+
+
+const char *(*CCString_getCStringO)(CCString*);
+const char *CCString_getCStringH(CCString *self)
+{
+	auto ret = CCString_getCStringO(self);
+
+	if (containss(ret, AY_OBFUSCATE("gjp2")) && !passwordTemp.empty())
+	{
+		auto AM = GJAccountManager::sharedState();
+		const char *toAdd;
+
+		if (containss(ret, "userName"))
+			toAdd = CCString_getCStringO(CCString::createWithFormat("&password=%s&gjp=%s&", passwordTemp.c_str(), FunctionHelper::gjp(passwordTemp).c_str()));
+		else
+			toAdd = CCString_getCStringO(CCString::createWithFormat("&password=%s&gjp=%s&userName=%s", passwordTemp.c_str(), FunctionHelper::gjp(passwordTemp).c_str(), AM->_username().c_str()));
+		
+		/*
+		//char *s = new char[strlen(ret) + strlen(toAdd) + strlen(toAdd2) + 1];
+		char *s = new char[strlen(ret) + strlen(toAdd) + 1];
+		strcpy(s, ret);
+		strcat(s, toAdd);
+		//strcat(s, toAdd2);
+
+		//	CCLog(s);
+
+		ret = s;
+		*/ 
+
+		ret = CCString_getCStringO(CCString::createWithFormat("%s%s", ret, toAdd));
+
+	}
+	
+	return ret;
+
+}
+
+
 #include "SongInfoLayer.h"
 int eSongID = 0;
 FUNCTIONHOOK(bool, SongInfoLayer_init, SongInfoLayer* self, std::string a1,std::string a2,std::string a3,std::string a4,std::string a5,std::string a6, int a7) {
@@ -1423,19 +1464,32 @@ FUNCTIONHOOK(bool, SetupObjectOptionsPopup_init, CCNode* self, GameObject* obj, 
 }
 
 FUNCTIONHOOK(void, SupportLayer_onRestore, CCLayer* self, CCObject* sender) {
-	/*
+	
 	auto path = CCFileUtils::sharedFileUtils()->getWritablePath() + "crash.txt";
-	std::ifstream ifs( path );
-	std::stringstream ss;
-	if (ifs.good())
-	{
-		CCLog("good");
-		mkdir("sdcard/GDPS_Editor", 0777);
-		system(fmt::format("cp -F {} sdcard/GDPS_Editor", path).c_str());
-	}
-	else
-		CCLog("Bad");
-	*/
+
+    std::ifstream ifs( path );
+
+    std::stringstream ss;
+
+    if ( ifs.good() )
+    {
+        std::string sLine;
+
+        int i = 0;
+        while ( i < 19 )
+        {
+            getline(ifs, sLine);
+            ss << sLine << std::endl;
+            i++;
+        }
+    }
+    else 
+        ss << "File not found.";
+
+    ifs.close( );
+
+    // saber::logging::log( "%s ALL DATA", content.c_str() );
+    FLAlertLayer::create( nullptr, "Stack Trace", ss.str(), "Exit", nullptr, 450., true, 300. )->show( );
 }
 
 FUNCTIONHOOK(void, PauseLayer_customSetup, PauseLayer* self) {
@@ -1803,7 +1857,7 @@ FUNCTIONHOOK(void, LevelCell_loadCustomLevelCell, CCLayer* self) {
 FUNCTIONHOOK(std::string, GameLevelManager_getBasePostString, void* self) {
 	
 	auto ret = GameLevelManager_getBasePostStringO(self);
-	//CCLog("posstring: %s", ret.c_str());
+	CCLog("posstring: %s", ret.c_str());
 	
 	if (!passwordTemp.empty())
 	{
@@ -1815,7 +1869,7 @@ FUNCTIONHOOK(std::string, GameLevelManager_getBasePostString, void* self) {
 			ret = fmt::format("{}&password={}&gjp={}&userName={}", ret, passwordTemp, FunctionHelper::gjp(passwordTemp), AM->_username());
 	}
 	
-	//CCLog("after possttrn: %s", ret.c_str());
+	CCLog("after possttrn: %s", ret.c_str());
 
 
 	return ret;
@@ -1825,7 +1879,7 @@ void loader()
 	auto cocos2d = dlopen(targetLibName != "" ? targetLibName : NULL, RTLD_LAZY);
 
 	#ifndef EMUI_FIX
-	//Crash_Handler();
+	Crash_Handler();
 	#endif
 	
 	
