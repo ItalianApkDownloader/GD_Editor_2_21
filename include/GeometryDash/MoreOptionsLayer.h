@@ -28,7 +28,8 @@ class MoreOptionsLayer : public FLAlertLayer
         toggleGP(void);
 		*/
 		static MoreOptionsLayer* create();
-        void addToggle(char const*,char const*,char const*){};
+		void onClose(CCObject*);
+        void addToggle(char const*,char const*,char const*);
 		virtual bool init(void){};
 		virtual void keyBackClicked(){};
 		virtual void textInputShouldOffset(CCTextInputNode *,float){};

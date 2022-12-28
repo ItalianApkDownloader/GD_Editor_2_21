@@ -47,5 +47,6 @@ public:
     virtual void keyBackClicked(void);
     virtual void keyDown(cocos2d::enumKeyCodes);
 	virtual void onBtn1(CCObject*);
+	virtual void incrementForcePrio();
     void show(void);
 };

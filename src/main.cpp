@@ -28,6 +28,7 @@
 #include "hooks/AdvancedLevelInfo.h"
 #include "hooks/MoreSearchLayerExt.h"
 #include "hooks/SwingIconFix.h"
+#include "hooks/Options.h"
 
 /*
 		FLAG USED FOR DEVELOPER MODE DEBUGGING LIKE SHADERS
@@ -35,13 +36,19 @@
 		!!!!!!!!!!!!!!!!!!!!!!!! COMMENT OUT BEFORE RELEASING APK !!!!!!!!!!!!!!!!!!!!!!!!
 */
 
+__attribute__((naked)) void asmtest() {
+	asm("nop;"
+		"mov R1, #4;"
+		"add R1, #4;"
+	);
+}
+
 
 std::string passwordTemp = "";
 int nFont = 0;
 bool first = true;
 void(*GameManager_tryShowAdO)();
 void GameManager_tryShowAdH() {}
-
 
 float randFloat(float X) { return static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/X)); }
 
@@ -100,106 +107,6 @@ CCSprite* spriteCreateH(const char *textureName)
 	return spriteCreateO("pixel.png");
 }
 
-bool isGDPSSettings;
-bool isGDPSSettings2;
-bool isGDPSSettings3;
-
-class GDPSSettings : public OptionsLayer {
-	
-public:
-
-	void onGDPSSettings(CCObject *sender) {
-		isGDPSSettings = true;
-		isGDPSSettings2 = true;
-		isGDPSSettings3 = false;
-		MoreOptionsLayer::create()->show();
-	}
-	
-	void onGDPSSettings3(CCObject *sender) {
-		isGDPSSettings = true;
-		isGDPSSettings2 = false;
-		isGDPSSettings3 = true;
-		MoreOptionsLayer::create()->show();
-	}
-};
-
-FUNCTIONHOOK(void, OptionsLayer_onOptions, CCLayer* self, CCObject* sender) {
-	isGDPSSettings = false;
-	isGDPSSettings2 = false;
-	isGDPSSettings3 = false;
-	OptionsLayer_onOptionsO(self, sender);
-}
-
-void(*OptionsLayerInitO)(OptionsLayer *self);
-void OptionsLayerInitH(OptionsLayer *self)
-{
-	auto dir = CCDirector::sharedDirector();
-	auto midx = dir->getScreenRight() / 2;
-	auto midy = dir->getScreenTop() / 2;
-	auto old_menu = CCMenu::create();
-	auto layer = reinterpret_cast<CCLayer*> (self->getChildren()->objectAtIndex(0));
-
-	auto oldSprite = cocos2d::CCSprite::createWithSpriteFrameName("accountBtn_settings_001.png");
-	auto old_btn = CCMenuItemSpriteExtra::create(oldSprite, oldSprite, self, menu_selector(GDPSSettings::onGDPSSettings));
-	//old_btn->setTag(2);
-	
-	//auto hackspr = ButtonSprite::create("Hacks", 1, 20, 20, false);
-	auto hackspr = ButtonSprite::create("Hacks");
-	auto hackbtn = CCMenuItemSpriteExtra::create(hackspr, hackspr, self, menu_selector(GDPSSettings::onGDPSSettings3));
-
-	old_menu->addChild(old_btn, 100);
-	old_menu->addChild(hackbtn, 100);
-	
-	hackbtn->setPositionX(midx + 130);
-	hackbtn->setPositionY(midy);
-
-	old_btn->setPositionX(midx - 110);
-	old_btn->setPositionY(midy);
-	old_menu->setPosition({ 0, 0 });
-	layer->addChild(old_menu, 100);
-
-	return OptionsLayerInitO(self);
-}
-
-
-void(*addToggle_trp)(MoreOptionsLayer *self, const char *title, const char *code, const char *desc);
-void addToggle_hk(MoreOptionsLayer *self, const char *title, const char *code, const char *desc)
-{
-	if (isGDPSSettings && !isGDPSSettings3)
-	{
-		if (strcmp(title, "Show Orb Guide") == 0)
-		{
-			//   addToggle_trp(self, "Robtop Servers", "100001", "Change servers to robtop servers");
-			//   addToggle_trp(self, "Force Platformer", "100002", "All levels are platformer mode");
-			addToggle_trp(self, "Instantly open editor\nat startup", "100003", 0);
-			//addToggle_trp(self, "Disable editor\nobject visibility", "100004", 0);
-			addToggle_trp(self, "Enable pixel blocks\nin the editor", "100005", 0);
-			addToggle_trp(self, "Hide Platformer\nbuttons", "10007", 0);
-			addToggle_trp(self, "Swap platformer\njump sides", "100011", 0);
-			addToggle_trp(self, "Practice Music", "0125", 0);
-			addToggle_trp(self, "Disable arrow trigger\nfix", "1000010", 0);
-			addToggle_trp(self, "Speedrun Timer", "1000011", "<cr>Red</c> means that the time is <cr>invalid</c>.\n Before starting a speedrun <cr>make sure to die atleast 1 time</c> because the first attempt time takes the enter transition into account and that will always be slower");
-			addToggle_trp(self, "Show FPS", "0115", 0);
-			addToggle_trp(self, "Remove Pause Btn", "1000012", 0);
-			addToggle_trp(self, "Show Trigger\nActivations", "1000013", 0);
-
-			isGDPSSettings = false;
-		}
-	}
-	else if(isGDPSSettings && isGDPSSettings3)
-	{
-		if (strcmp(title, "Show Orb Guide") == 0)
-		{
-			addToggle_trp(self, "Safe Noclip", "200001", "Make the player invisible\nbut it doesnt save level progress.");
-			addToggle_trp(self, "Safe Mode", "200002", "Does not save level progress.");
-			addToggle_trp(self, "Disable Shaders", "200003", "Does not save level progress.");
-		}
-	}
-	else
-	{
-		addToggle_trp(self, title, code, desc);
-	}
-}
 
 
 FUNCTIONHOOK(void, MoreOptionsLayer_onToggle, MoreOptionsLayer* self, CCMenuItemToggler* sender) {
@@ -1564,68 +1471,6 @@ FUNCTIONHOOK(void, PlayerObject_playDeathEffect2, PlayerObject* self) {
 	self->setVisible(false);
 }
 
-FUNCTIONHOOK(bool, MoreOptionsLayer_init, MoreOptionsLayer* self) {
-	
-	if(!MoreOptionsLayer_initO(self)) 
-		return false;
-	
-	if(!isGDPSSettings2)
-		return true;
-	
-	CCArray* arr = self->objectsForPage(2);
-	
-	CCMenu* menu = MBO(CCMenu*, self, 0x1B4);
-	
-
-	auto txt = CCLabelBMFont::create("Platformer Opacity Left", "bigFont.fnt");
-	txt->setScale(0.5);
-	txt->setVisible(false);
-	txt->setPositionY(txt->getPositionY() + 85);
-	menu->addChild(txt);
-	arr->addObject(txt);
-	
-	auto txt2 = CCLabelBMFont::create("Platformer Opacity Right", "bigFont.fnt");
-	txt2->setScale(0.5);
-	txt2->setVisible(false);
-	txt2->setPositionY(txt2->getPositionY() + 30);
-	menu->addChild(txt2);
-	arr->addObject(txt2);
-	
-	class randomClass {
-		public:
-		void platformOpacityLeft(CCObject* sender) {
-			auto value = reinterpret_cast<SliderThumb *>(sender)->getValue();
-			GDPSManager::sharedState()->opacityLeft = 255 * value;
-		}
-		void platformOpacityRight(CCObject* sender) {
-			auto value = reinterpret_cast<SliderThumb *>(sender)->getValue();
-			GDPSManager::sharedState()->opacityRight = 255 * value;
-		}
-	};
-	
-	auto sl = Slider::create(menu,menu_selector(randomClass::platformOpacityLeft),1);
-	sl->setPositionY(sl->getPositionY() + 60);
-
-	sl->setVisible(false);
-	float value = (float)GDPS->opacityLeft / (float)255;
-	sl->setValue(value);
-	arr->addObject(sl);
-	menu->addChild(sl);
-	
-	auto sl2 = Slider::create(menu,menu_selector(randomClass::platformOpacityRight),1);
-	sl2->setPositionY(sl2->getPositionY() + 5);
-
-	sl2->setVisible(false);
-	float value2 = (float)GDPS->opacityRight / (float)255;
-	sl2->setValue(value2);
-	arr->addObject(sl2);
-	menu->addChild(sl2);
-	
-	isGDPSSettings2 = false;
-	
-	return true;
-}
-
 
 FUNCTIONHOOK(const char*, GJSearchObject_getKey, void* self) {
 	
@@ -1841,6 +1686,7 @@ void loader()
 	GDPSManager::ApplyHooks();
 	MoreSearchLayerExt::ApplyHooks();
 	SwingIconFix::ApplyHooks();
+	Options::ApplyHooks();
 
 	#ifdef SHADERDEBUG
 	DevDebugHooks::ApplyHooks();
@@ -1850,7 +1696,6 @@ void loader()
 	HOOK("_ZN16GameLevelManager17getBasePostStringEv", GameLevelManager_getBasePostStringH, GameLevelManager_getBasePostStringO);
 	HOOK("_ZN9LevelCell19loadCustomLevelCellEv", LevelCell_loadCustomLevelCellH, LevelCell_loadCustomLevelCellO);
 	HOOK("_ZN9PlayLayer13levelCompleteEv", PlayLayer_levelCompletedH, PlayLayer_levelCompletedO);
-	HOOK("_ZN12OptionsLayer9onOptionsEPN7cocos2d8CCObjectE", OptionsLayer_onOptionsH, OptionsLayer_onOptionsO);
 	HOOK("_ZN16MoreOptionsLayer8onToggleEPN7cocos2d8CCObjectE", MoreOptionsLayer_onToggleH, MoreOptionsLayer_onToggleO);
 	HOOK("_ZN18LevelSettingsLayer15selectArtClosedEP14SelectArtLayer", LevelSettingsLayer_selectArtClosedH, LevelSettingsLayer_selectArtClosedO);
 	HOOK("_ZN16LevelSearchLayer13toggleTimeNumEib", LevelSearchLayer_toggleTimeNumH, LevelSearchLayer_toggleTimeNumO);
@@ -1861,7 +1706,6 @@ void loader()
 	HOOK("_ZN16LevelSearchLayer10toggleTimeEPN7cocos2d8CCObjectE", LevelSearchLayer_toggleTimeH, LevelSearchLayer_toggleTimeO);
 	HOOK("_ZN12PlayerObject15playDeathEffectEv", PlayerObject_playDeathEffect2H, PlayerObject_playDeathEffect2O);
 	HOOK("_ZN16LevelEditorLayer12createObjectEiN7cocos2d7CCPointEb", LevelEditorLayer_createObjectH, LevelEditorLayer_createObjectO);
-	HOOK("_ZN16MoreOptionsLayer4initEv", MoreOptionsLayer_initH, MoreOptionsLayer_initO);
 	HOOK("_ZN15GJBaseGameLayer17updateCameraBGArtEN7cocos2d7CCPointE", GJBaseGameLayer_updateCameraBGArtH, GJBaseGameLayer_updateCameraBGArtO);
 	HOOK("_ZN22SetupShaderEffectPopup4initEP16EffectGameObjectPN7cocos2d7CCArrayEi", SetupShaderEffectPopup_initH, SetupShaderEffectPopup_initO); //this is the longest symbol i have ever seen
 	HOOK("_ZN9MenuLayer11onMoreGamesEPN7cocos2d8CCObjectE", onMoreGamesH, onMoreGamesO);
@@ -1900,8 +1744,7 @@ void loader()
 	HOOK("_ZN7cocos2d8CCSprite6createEPKc", spriteCreateH, spriteCreateO);
 	HOOK("_ZN7cocos2d8CCSprite25createWithSpriteFrameNameEPKc", spriteCreateFrameNameH, spriteCreateFrameNameO);
 	HOOK("_ZN16GameStatsManager14isItemUnlockedE10UnlockTypei", isIconUnlockedH, isIconUnlockedO);
-	HOOK("_ZN16MoreOptionsLayer9addToggleEPKcS1_S1_", addToggle_hk, addToggle_trp);
-	HOOK("_ZN12OptionsLayer11customSetupEv", OptionsLayerInitH, OptionsLayerInitO);
+	//HOOK("_ZN12OptionsLayer11customSetupEv", OptionsLayerInitH, OptionsLayerInitO);
 	HOOK("_ZN16GameLevelManager18ProcessHttpRequestESsSsSs10GJHttpType", LevelProcessH, LevelProcessO);
 	HOOK("_ZN20MusicDownloadManager18ProcessHttpRequestESsSsSs10GJHttpType", MusicProcessH, MusicProcessO);
 	HOOK("_ZN16GJAccountManager18ProcessHttpRequestESsSsSs10GJHttpType", AccountProcessH, AccountProcessO);
@@ -2010,85 +1853,3 @@ JNIEXPORT jint JNI_OnLoad(JavaVM *vm, void *reserved)
 
 	return JNI_VERSION_1_6;
 }
-
-/*
-
-#include <iostream>
-#include <locale>
-
-
-#include <bits/stdc++.h>
-using namespace std;
-  
-// Function to put thousands
-// separators in the given integer
-string thousandSeparator(int n)
-{
-    string ans = "";
-  
-    // Convert the given integer
-    // to equivalent string
-    string num = to_string(n);
-  
-    // Initialise count
-    int count = 0;
-  
-    // Traverse the string in reverse
-    for (int i = num.size() - 1;
-         i >= 0; i--) {
-        count++;
-        ans.push_back(num[i]);
-  
-        // If three characters
-        // are traversed
-        if (count == 3) {
-            ans.push_back('.');
-            count = 0;
-        }
-    }
-  
-    // Reverse the string to get
-    // the desired output
-    reverse(ans.begin(), ans.end());
-  
-    // If the given string is
-    // less than 1000
-    if (ans.size() % 4 == 0) {
-  
-        // Remove ','
-        ans.erase(ans.begin());
-    }
-  
-    return ans;
-}
-
-#include <vector>
-#include <string>
-#include <iostream>
-
-std::string intToFormatString(int n) {
-
-    if(n < 1000 || n > 100000000)
-    return std::to_string(n);
-
-    std::string str = thousandSeparator(n);
-  //  str = str.substr(0, str.find(".") + 2);
-
-    char sufix;
-
-    if(n < 1000000) { sufix = 'K'; return str + sufix; }
-    if(n < 100000000) { sufix = 'M'; return str + sufix;  }
-
-     return std::to_string(n);
-}
-
-std::vector<long long int> n = {1000, 10000, 100000, 1000000, 10000000};
-int main()
-{
-    // imbue the output stream with a locale.
-    for(int i : n) {
-    std::cout << intToFormatString(i) << '\n';
-}
-}
-
-*/

@@ -11,3 +11,9 @@ public:
     void setBarVisibility(bool);
     float getValue();
 };
+
+class SliderThumb {
+public:
+    float getValue();
+};
+

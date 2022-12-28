@@ -104,15 +104,34 @@ FUNCTIONHOOK(void, PlayerObject_collidedWithObjectInternal, PlayerObject* self, 
 
 		//CCLog("v34: %f, v35: %f", v34, v35);
 		//CCLog("MinX: %f; MaxX: %f; MinY: %f; MaxY: %f;", rect.getMinX(), rect.getMaxX(), rect.getMinY(), rect.getMaxY());
+		fmtlog("1 | noJump: {}: isFLying: {}", noJump, self->isFlying());
 		if(self->_isGravityFlipped()) {
+			fmtlog("5 | noJump: {}: isFLying: {}", noJump, self->isFlying());
 			if(v34 > rect.getMinX() && v35 > rect.getMinX()) {
+				
 				noJump = false;
+				fmtlog("2 | noJump: false isFLying: {}", self->isFlying());
+
 				goto DOSTUFF;
 			}
 		}
 		else if(v34 < rect.getMaxX() && v35 < rect.getMaxX()) {
 			noJump = false;
+			fmtlog("3 | noJump: false isFLying: {}", self->isFlying());
 			goto DOSTUFF;
+		}
+		else if(v34 < rect.getMinY() && v35 < rect.getMinY()) {
+			noJump = false;
+			fmtlog("4 | noJump: false isFLying: {}", self->isFlying());
+			goto DOSTUFF;
+		}
+		else {
+		CCLog("YOU BUGGED OR YOU GONNA DIE VERY SOON");
+		//according to my testing
+		//this else only gets executed when you are very close to dying 
+		//OR when the actual arrow bug happens
+		//and this seems to fix it (not 100% sure)
+		noJump = false;
 		}
 
 	DOSTUFF:
@@ -213,9 +232,9 @@ FUNCTIONHOOK(void, PlayerObject_collidedWithObjectInternal, PlayerObject* self, 
 		pos = self->getPosition();
 
 		// avoid wall collision mumbo jumbo
-		CCLog("TB collision");
+		//CCLog("TB collision");
 		if(CCRect(playerRect2.origin.x, playerRect2.origin.y + 2.5, playerRect2.size.width, scaleFactorUndiv - 5).intersectsRect(rect)) {
-			CCLog("TB collision yessssssssssssssssssssssssssssss");
+		//	CCLog("TB collision yessssssssssssssssssssssssssssss");
 			if ((pos.x + scaleFactor - 6 > rect.getMinX()) && (point2.x + scaleFactor - 6 > rect.getMinX())) {
 			//if(!(v34 <= rect.getMinX() || v35 <= rect.getMinX())) {
 				//CCLog("collided");

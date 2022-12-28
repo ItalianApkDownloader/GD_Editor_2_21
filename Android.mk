@@ -56,6 +56,7 @@ LOCAL_SRC_FILES :=	src/fmt/format.cc \
 					src/fmt/posix.cc \
 					src/fmt/printf.cc \
 					src/main.cpp \
+					src/hooks/Options.cpp \
 					src/hooks/MenuLayerExt.cpp \
 					src/hooks/SwingIconFix.cpp \
 					src/hooks/MoreSearchLayerExt.cpp \

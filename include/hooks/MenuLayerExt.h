@@ -89,10 +89,6 @@ void onRequestCompleted(cocos2d::extension::CCHttpClient *sender, cocos2d::exten
 
 
 
-class SliderThumb {
-public:
-    float getValue();
-};
 
 /*
 class Slider : public CCSprite{
