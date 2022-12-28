@@ -265,7 +265,6 @@ bool MenuLayerExt::init_hk()
 	
 	#ifdef DEVDEBUG
 	FMOD->setBackgroundMusicVolume(0);
-
 	#endif
 	
 	extern bool doRequest;
