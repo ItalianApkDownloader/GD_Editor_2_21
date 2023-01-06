@@ -44,6 +44,8 @@ __attribute__((naked)) void asmtest() {
 }
 
 
+
+
 std::string passwordTemp = "";
 int nFont = 0;
 bool first = true;
@@ -96,10 +98,10 @@ bool isIconUnlockedH(void *self, int a1, int a2)
 
 CCSprite* (*spriteCreateO)(const char *textureName);
 CCSprite* spriteCreateH(const char *textureName)
-{
+{/*
 	if (containss(textureName, "GJ_square05.png"))
 	return spriteCreateO("GJ_square04.png");
-
+*/	//CCLog("%s", textureName);
 	auto ret = spriteCreateO(textureName);
 	if (ret != nullptr)
 		return ret;
@@ -108,70 +110,6 @@ CCSprite* spriteCreateH(const char *textureName)
 }
 
 
-
-FUNCTIONHOOK(void, MoreOptionsLayer_onToggle, MoreOptionsLayer* self, CCMenuItemToggler* sender) {
-	
-	bool on = !sender->_isToggled();
-	int gamevariable = sender->getTag();
-	
-	//normal gdps settings
-	if(gamevariable > 1000000 && 200000 > gamevariable) {
-		switch(gamevariable)
-		{
-			case 100005: 
-				if(on)
-				FLAlertLayer::create(nullptr, "DISCLAIMER", "<cg>Pixel blocks</c> are <cr>not official</c> and for that reason levels containing these blocks <cr>will not look good in the official 2.2.</c>\n    <co>(textures will change)\n</c><cr>Don't use pixel blocks if you want your level to be playable in 2.2.</c>", "OK", nullptr, 500, false, 300)->show();
-		}
-	}
-	
-	if(gamevariable > 200000) {
-		
-		patch p;
-		
-		switch(gamevariable) 
-		{		
-			case 200001: // Safe NoClip
-				p.addPatch(0x00276df8, on ? "7047" : "2DE9"); // PlayLayer::destroyPlayer
-			//	p.addPatch(0x00276934, on ? "CFE6" : "2DE9"); // PlayLayer::levelComplete
-			break;
-			/*
-			case 200002: // Safe Mode
-				p.addPatch(0x00276934, on ? "CFE6" : "2DE9"); // PlayLayer::levelComplete
-			break;
-			
-
-            case 200003: // No Death Effect (I hope this doesnt effect any codes here since i make the PlayerObject::playerDestroyed to (null)
-				p.addPatch(0x0029c23c, on ? "7047" : "90F8"); // PlayerObject::playerDestroyed
-			break;
-			*/
-		}
-		p.Modify();
-	}
-	
-	MoreOptionsLayer_onToggleO(self, sender);
-	
-}
-
-
-bool isHackActive() {
-	return 
-	GM->ggv("200001") || GM->ggv("200002") || GM->ggv("200003");
-}
-
-class temp {
-	public:
-void showHackAlert(CCObject* sender) {
-	FLAlertLayer::create(nullptr, "DISCLAIMER", "aaaaaaaaaa", "OK", nullptr, 500, false, 300)->show();
-}
-};
-FUNCTIONHOOK(void, PlayLayer_levelCompleted, PlayLayer* self) {
-	
-	if(!isHackActive())
-		PlayLayer_levelCompletedO(self);
-	else {
-		self->onQuit();
-	}
-}
 
 bool doRequest;
 
@@ -188,10 +126,11 @@ const char *getStringH(LoadingLayer *self)
 
 CCSprite * (*spriteCreateFrameNameO)(const char *textureName);
 CCSprite* spriteCreateFrameNameH(const char *textureName)
-{
+{/*
 	if (containss(textureName, "GJ_fullBtn_001.png"))
 		return spriteCreateFrameNameO("GJ_creatorBtn_001.png");
-
+*/
+	//CCLog("frame: %s", textureName);
 	auto ret = spriteCreateFrameNameO(textureName);
 	if (ret != nullptr)
 		return ret;
@@ -205,19 +144,21 @@ CCSprite* spriteCreateFrameNameH(const char *textureName)
 #include "cocos2dx/extensions/network/HttpResponse.h"
 #include "obfuscate.h"
 
-const char *gdpseditor = AY_OBFUSCATE("http://game.gdpseditor.com/server");
-const char *boomlings = AY_OBFUSCATE("http://www.boomlings.com/database");
+
 
 //epic servers obfuscate moment
 
 inline string replaceServers(std::string original)
 {
+	const char *gdpseditor = AY_OBFUSCATE("http://game.gdpseditor.com/server");
+	//const char *boomlings = AY_OBFUSCATE("http://www.boomlings.com/database");
+
 	if(original.find("gdpseditor.com") != std::string::npos)
 		return original;
 	
 	int c = strlen(gdpseditor);
 	for (int i = 0; i < c; i++)
-		original[i] = gdpseditor[i];
+		original.at(i) = gdpseditor[i];
 
 	return original;
 }
@@ -442,16 +383,14 @@ void *PlayLayer_addObjectH(PlayLayer *self, GameObject *obj)
 	if (id == 1331)
 	{
 		patch s = patch();
-		string spider = "70 6F 72 74 61 6C 5F 31 37 5F 62 61 63 6B 5F 30 30 31 2E 70 6E 67";
-		s.addPatch("libcocos2dcpp.so", 0x7E19BA, spider);
+		s.addPatch("libcocos2dcpp.so", 0x7E19BA, "70 6F 72 74 61 6C 5F 31 37 5F 62 61 63 6B 5F 30 30 31 2E 70 6E 67");
 		s.Modify();
 	}
 
 	else if (id == 1933)
 	{
 		patch p = patch();
-		string swing = "70 6F 72 74 61 6C 5F 31 38 5F 62 61 63 6B 5F 30 30 31 2E 70 6E 67";
-		p.addPatch("libcocos2dcpp.so", 0x7E19BA, swing);
+		p.addPatch("libcocos2dcpp.so", 0x7E19BA, "70 6F 72 74 61 6C 5F 31 38 5F 62 61 63 6B 5F 30 30 31 2E 70 6E 67");
 		p.Modify();
 	}
 
@@ -899,7 +838,6 @@ FUNCTIONHOOK(void, triggerShader, void* a1, void* a2) {
 		if(!GM->ggv("200003"))
 			return triggerShaderO(a1, a2);
 	}
-
 }
 FUNCTIONHOOK(bool, LevelSettingsLayer_init, LevelSettingsLayer* self, LevelSettingsObject* settings, LevelEditorLayer* levelEditor) {
 	
@@ -1606,43 +1544,7 @@ FUNCTIONHOOK(void, SupportLayer_onEmail, void* self, void* a2) {
 	
     FLAlertLayer::create( nullptr, "Version", version2str, "OK", nullptr, 250., false, 150. )->show( );
 }
-//cocos2d::CCSpriteFrameCache::removeSpriteFramesFromFile
 
-
-FUNCTIONHOOK(void, LevelCell_loadCustomLevelCell, CCLayer* self) {
-	
-	LevelCell_loadCustomLevelCellO(self);
-	auto layer = (CCLayer*)self->getChildren()->objectAtIndex(1);
-	//CCLog("count: %d", layer->getChildrenCount());
-	//GDPSHelper::createLabels(layer);
-	auto level = MBO(void*, self, 0x198);
-	
-	int likes = MBO(int, level, 0x200) - MBO(int, level, 0x204);
-	int downloads = MBO(int, level, 0x178);
-	int count = layer->getChildrenCount();
-	
-	if(1000 > downloads && 1000 > likes)
-		return;
-	
-	for(int i = 0; i < count; i++)
-	{
-		auto node = (CCNode*)layer->getChildren()->objectAtIndex(i);
-		
-		if(auto label = dynamic_cast<CCLabelBMFont*>(node))
-		{
-			if(downloads > 1000 && atoi(label->CCLabelBMFont::getString()) == downloads)
-			{
-				label->CCLabelBMFont::setString(FunctionHelper::intToFormatString(downloads).c_str());
-				label->setScale(label->getScale() * 1.1);
-			}
-			else if(likes > 1000 && atoi(label->CCLabelBMFont::getString()) == likes)
-			{
-				label->CCLabelBMFont::setString(FunctionHelper::intToFormatString(likes).c_str());
-				label->setScale(label->getScale() * 1.1);
-			}
-		}
-	}
-}
 
 
 FUNCTIONHOOK(std::string, GameLevelManager_getBasePostString, void* self) {
@@ -1665,14 +1567,12 @@ FUNCTIONHOOK(std::string, GameLevelManager_getBasePostString, void* self) {
 
 	return ret;
 }
+
+#include "definitions.h"
 void loader()
 {
 	auto cocos2d = dlopen(targetLibName != "" ? targetLibName : NULL, RTLD_LAZY);
 
-	#ifndef EMUI_FIX
-	//Crash_Handler();
-	#endif
-	
 	
 	MenuLayerExt::ApplyHooks();
 	EditLevelLayerExt::ApplyHooks();
@@ -1682,21 +1582,21 @@ void loader()
 	CollisionFix::ApplyHooks();
 	ShaderFix::ApplyHooks();
 	SpeedrunTimer::ApplyHooks();
-	AdvancedLevelInfo::ApplyHooks();
+	//AdvancedLevelInfo::ApplyHooks();
 	GDPSManager::ApplyHooks();
 	MoreSearchLayerExt::ApplyHooks();
 	SwingIconFix::ApplyHooks();
 	Options::ApplyHooks();
+	AbbreviatedLabels::ApplyHooks();
+	Hacks::ApplyHooks();
+	Emojis::ApplyHooks();
 
 	#ifdef SHADERDEBUG
 	DevDebugHooks::ApplyHooks();
 	#endif
 	
-	//HOOK("_ZN11GJGameLevel6createEPN7cocos2d12CCDictionaryEb", testingshitH, testingshitO);
+	
 	HOOK("_ZN16GameLevelManager17getBasePostStringEv", GameLevelManager_getBasePostStringH, GameLevelManager_getBasePostStringO);
-	HOOK("_ZN9LevelCell19loadCustomLevelCellEv", LevelCell_loadCustomLevelCellH, LevelCell_loadCustomLevelCellO);
-	HOOK("_ZN9PlayLayer13levelCompleteEv", PlayLayer_levelCompletedH, PlayLayer_levelCompletedO);
-	HOOK("_ZN16MoreOptionsLayer8onToggleEPN7cocos2d8CCObjectE", MoreOptionsLayer_onToggleH, MoreOptionsLayer_onToggleO);
 	HOOK("_ZN18LevelSettingsLayer15selectArtClosedEP14SelectArtLayer", LevelSettingsLayer_selectArtClosedH, LevelSettingsLayer_selectArtClosedO);
 	HOOK("_ZN16LevelSearchLayer13toggleTimeNumEib", LevelSearchLayer_toggleTimeNumH, LevelSearchLayer_toggleTimeNumO);
 	HOOK("_ZN12SupportLayer7onEmailEPN7cocos2d8CCObjectE", SupportLayer_onEmailH, SupportLayer_onEmailO);
@@ -1781,7 +1681,32 @@ void loader()
 	patchIcons(5, 96); //wave
 	patchIcons(6, 68); //robot
 	patchIcons(7, 69); //spider
+	
+	
+	tms.addPatch("libcocos2dcpp.so", 0x267CCE, "4FF0 FF03"); //text input length bypass
+	tms.addPatch("libcocos2dcpp.so", 0x267CB0, "00BF 00BF"); //text input character byp/s
+	
+	tms.addPatch("libcocos2dcpp.so", 0x2EEBCA, "B9EB090F"); //creator layer opened door sprite
+	
+	//chest secondary layer bypass - just freezes
+	//tms.addPatch("libcocos2dcpp.so", 0x459222, "A442"); //chest type (tier) bypass
+	//tms.addPatch("libcocos2dcpp.so", 0x459212, "0A33"); //chest type (tier) bypass
 
+	tms.addPatch("libcocos2dcpp.so", 0x457E3C, "4FF0 0100"); //unlock first shop
+	tms.addPatch("libcocos2dcpp.so", 0x45877C, "4FF0 0100"); //unlock second shop
+	tms.addPatch("libcocos2dcpp.so", 0x3D42F0, "B642"); //shop buy item bypass
+	tms.addPatch("libcocos2dcpp.so", 0x33F51A, "8042"); //shop buy item bypass
+	tms.addPatch("libcocos2dcpp.so", 0x33F528, "00BF 00BF"); //shop buy dont substract orbs
+	
+	tms.addPatch("libcocos2dcpp.so", 0x340770, "4FF0 0000"); //actual chest open key amount bypass
+	tms.addPatch("libcocos2dcpp.so", 0x457102, "4FF0 0000"); //actual chest open key amount bypass
+	tms.addPatch("libcocos2dcpp.so", 0x456962, "AAF1 FF03"); //chest remove grey locked texture
+	tms.addPatch("libcocos2dcpp.so", 0x455D3E, "8042"); //50x100x200 chest bypass
+	tms.addPatch("libcocos2dcpp.so", 0x2EDF08, "4FF0 0100"); //unlock chest room
+	
+	tms.addPatch("libcocos2dcpp.so", 0x2EDD1E, "8842"); //unlock vault of secrets 2
+	
+	
 	tms.addPatch("libcocos2dcpp.so", 0x2802A6, "2120"); //swing
 	
 	//platformer filter

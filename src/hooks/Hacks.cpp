@@ -1,0 +1,67 @@
+#include <bits/stdc++.h>
+#include "hooking.h"
+#include "cocos2d.h"
+#include "patch.h"
+#include "GDPSHelper.h"
+#include "GDPSManager.h"
+#include "FunctionHelper.h"
+#include "gd.h"
+#include "../definitions.h"
+
+
+
+FUNCTIONHOOK(void, MoreOptionsLayer_onToggle, MoreOptionsLayer* self, CCMenuItemToggler* sender) {
+	
+	bool on = !sender->_isToggled();
+	int gamevariable = sender->getTag();
+	
+	if(gamevariable > 200000) {
+		
+		patch p;
+		
+		switch(gamevariable) 
+		{		
+			case 200001: // Safe NoClip
+				p.addPatch(0x00276df8, on ? "7047" : "2DE9"); // PlayLayer::destroyPlayer
+			//	p.addPatch(0x00276934, on ? "CFE6" : "2DE9"); // PlayLayer::levelComplete
+			break;
+			/*
+			case 200002: // Safe Mode
+				p.addPatch(0x00276934, on ? "CFE6" : "2DE9"); // PlayLayer::levelComplete
+			break;
+			
+
+            case 200003: // No Death Effect (I hope this doesnt effect any codes here since i make the PlayerObject::playerDestroyed to (null)
+				p.addPatch(0x0029c23c, on ? "7047" : "90F8"); // PlayerObject::playerDestroyed
+			break;
+			*/
+		}
+		p.Modify();
+	}
+	
+	MoreOptionsLayer_onToggleO(self, sender);
+	
+}
+
+bool isHackActive() {
+	return 
+	GM->ggv("200001") || GM->ggv("200002") || GM->ggv("200003");
+}
+
+FUNCTIONHOOK(void, PlayLayer_levelCompleted, PlayLayer* self) {
+	
+	if(!isHackActive())
+		PlayLayer_levelCompletedO(self);
+	else {
+		self->onQuit();
+	}
+}
+
+
+void Hacks::ApplyHooks() 
+{
+	//HOOK("_ZN15GJBaseGameLayer14toggleDualModeEP10GameObjectbP12PlayerObjectb", GJBaseGameLayer_toggleDualModeH, GJBaseGameLayer_toggleDualModeO);
+	//HOOK("_ZN9PlayLayer4initEP11GJGameLevelbb", PlayLayer_init2H, PlayLayer_init2O);
+	HOOK("_ZN9PlayLayer13levelCompleteEv", PlayLayer_levelCompletedH, PlayLayer_levelCompletedO);
+	HOOK("_ZN16MoreOptionsLayer8onToggleEPN7cocos2d8CCObjectE", MoreOptionsLayer_onToggleH, MoreOptionsLayer_onToggleO);
+}

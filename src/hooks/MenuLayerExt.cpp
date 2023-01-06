@@ -14,7 +14,7 @@
 #include "hooking.h"
 #include "../FunctionHelper.h"
 #include "../GDPSHelper.h"
-
+#include "SearchButton.h"
 
 
 
@@ -111,7 +111,6 @@ void MenuLayerExt::onRequestCompleted(cocos2d::extension::CCHttpClient *sender, 
 
 void MenuLayerExt::showUpdateAlert(string version, string weight, string date, string changelog)
 {
-	CCLog("aaa");
 	string v = "";
 	for (int i = 0; i < version.length(); i++)
 	{
@@ -119,13 +118,10 @@ void MenuLayerExt::showUpdateAlert(string version, string weight, string date, s
 		if (i < version.length() - 1)
 			v = v + ".";
 	}
-	CCLog("bbb");
 
 	string description = "Version: " + v + "\nRelease Date: " + date + "\nSize: " + weight + " MB" + "\n\n\Changelog:\n" + changelog + "\n\nWould you like to download the new update?";
-	CCLog("ccc");
 
 	alert = FLAlertLayer::create(nullptr, "New update!", description.c_str(), "NO", nullptr, 400, true, 300);
-	CCLog("ddd");
 
 	auto menu = alert->_btnMenu();
 	auto okBtn = reinterpret_cast<CCNode *>(menu->getChildren()->objectAtIndex(0));
@@ -148,28 +144,14 @@ void MenuLayerExt::onDownload(CCObject *sender)
 	app->openURL(url);
 }
 
-void MenuLayerExt::onJoinDiscord(CCObject *sender)
-{
 
-auto app = cocos2d::CCApplication::sharedApplication();
-	auto url = ("http://game.gdpseditor.com/server/game/discord.php");
 
-	app->openURL(url);
+void MenuLayerExt::onTools(CCObject* sender) {
+	cocos2d::CCApplication::sharedApplication()->openURL("http://gdpseditor.com/tools");
 }
-
-void MenuLayerExt::onProgressChanged(CCObject *sender)
-{
-	auto value = reinterpret_cast<SliderThumb *>(sender)->getValue();
-	CCLog("%f", value);
-}
-
 void MenuLayerExt::onBlaze(CCObject *sender)
 {
-
-	auto app = cocos2d::CCApplication::sharedApplication();
-	auto url = ("https://www.youtube.com/channel/UCcfPtuop90e_JzxPkiZ6Q5Q");
-
-	app->openURL(url);
+	cocos2d::CCApplication::sharedApplication()->openURL("https://www.youtube.com/channel/UCcfPtuop90e_JzxPkiZ6Q5Q");
 }
 
 static inline void (*onJoinDiscordO)(MenuLayer* self, CCObject* sender);
@@ -179,15 +161,8 @@ void MenuLayerExt::onJoinDiscordH(CCObject* sender){
 
 static inline void (*updateUserProfileButtonO)(MenuLayer*);
 void MenuLayerExt::updateUserProfileButtonH() {
-	
-
-
- //   this->_playerUsernameLabel()->setVisible(true);
 	auto profileBtn = MBO(CCMenuItemSpriteExtra*, this, 0x150);
 	profileBtn->setVisible(true);
-
-
-
 }
 
 
@@ -210,8 +185,9 @@ static inline bool (*init_trp)(MenuLayer *self);
 bool MenuLayerExt::init_hk()
 {
 	CCLog("Menu Init!");
-	auto ret = init_trp(this);
-//	GDPSHelper::createLabels(this);
+	if(!init_trp(this)) return false;
+	
+	//GDPSHelper::createLabels(this);
 	
 	int j = 0;
 	
@@ -219,12 +195,7 @@ bool MenuLayerExt::init_hk()
 	{
 		if(auto btnmenu = dynamic_cast<CCMenu*>(this->getChildren()->objectAtIndex(i)))
 		{
-			if(j != 1)
-			{
-				j++;
-				continue;
-			}
-			else 
+			if(j == 1)
 			{
 				auto spr = CCSprite::createWithSpriteFrameName(GDPS->showNewNewsIndicator ? "GJ_newBtn_001.png" : "GJ_changeSongBtn_001.png");
 				spr->setScale(GDPS->showNewNewsIndicator ? 1 : 1.35);
@@ -250,8 +221,20 @@ bool MenuLayerExt::init_hk()
 				
 				btnmenu->alignItemsHorizontallyWithPadding(5);
 				btnmenu->addChild(freebtn);
+			}
+			else if(j == 2)
+			{
+				auto robBtn = (CCNode*)btnmenu->getChildren()->objectAtIndex(0);
+				auto spr = SearchButton::create("GJ_longBtn04_001.png", "Tools", 0.7, nullptr);
+				spr->setScale(.7);
+				//auto btn = MenuItemSpriteExtra::createWithNode(spr, [](CCNode* sender) { cocos2d::CCApplication::sharedApplication()->openURL("http://gdpseditor.com/tools");});
+				auto btn = CCMenuItemSpriteExtra::create(spr, nullptr, this, menu_selector(MenuLayerExt::onTools));
+				btn->setPosition(robBtn->getPosition());
+				btnmenu->addChild(btn);
+				robBtn->setPositionY(20000);
 				break;
 			}
+			j++;
 		}
 	}
 
@@ -288,55 +271,17 @@ bool MenuLayerExt::init_hk()
 		cocos2d::extension::CCHttpClient::getInstance()->send(request);
 		request->release();
 	}
-	/*
-	auto m = CCMenu::create();
-	auto hackspr = ButtonSprite::create(GDPS->showNewNewsIndicator ? "News!!" : "zzz news");
-	
-	if(GDPS->showNewNewsIndicator) GDPS->showNewNewsIndicator = false;
-	
-	auto hackbtn = CCMenuItemSpriteExtra::create(hackspr, hackspr, this, menu_selector(MenuLayerExt::onNews));
-	m->addChild(hackbtn);
-	hackbtn->setPositionX(-200);
-	addChild(m);
-	
-	
-	CCLog("count: %d", reinterpret_cast<CCNode*>(this->getChildren()->objectAtIndex(4))->getChildrenCount());
-	
-	auto arr = this->getChildren();
-	
-	for(int i = 0; i < arr->count(); i++) {
-		
-		if(CCMenu* menu = dynamic_cast<CCMenu*>((CCNode*)arr->objectAtIndex(i))) {
-			
-			if(menu->getChildrenCount() != 5)
-				continue;
-			
-			CCLog("index: %d, count: %d", i, menu->getChildrenCount());
-			auto newarr = CCArray::createWithArray(menu->getChildren());
-			newarr->removeLastObject(true);
-			
-			auto spr = CCSprite::createWithSpriteFrameName("GJ_changeSongBtn_001");
-			auto newsbtn = CCMenuItemSpriteExtra::create(spr, nullptr, this, menu_selector(MenuLayerExt::onNews));
-			newsbtn->setPositionY(reinterpret_cast<CCNode*>(newarr->objectAtIndex(0))->getPositionY());
-			
-			newarr->insertObject(newsbtn, 2);
-			auto newmenu = CCMenu::createWithArray(newarr);
-			newmenu->setPosition(menu->getPosition());
-			newmenu->alignItemsHorizontallyWithPadding(15);
-			addChild(newmenu);
-			
-			for(int j = 0; j < 3; j++)
-				menu->getChildren()->removeObjectAtIndex(j, false);
-			
-			
-			
-			
-			break;
-		}
-	}
-	
-*/
-	return ret;
+
+/* would work with fixed headers
+    auto* sss = cocos2d::CCSprite::create("dialogIcon_017.png");
+	auto bbb = MenuItemSpriteExtra::createWithNode(sss, [](CCNode* sender) {std::cout << "button clicked" << std::endl; });
+
+	auto gg = CCMenu::create();
+	gg->addChild(bbb);
+	gg->setPosition(120, 130);
+	this->addChild(gg);
+*/	
+	return true;
 };
 
 
@@ -363,10 +308,10 @@ void LoadingLayer::onNewsRequestCompleted(cocos2d::extension::CCHttpClient *send
 	//GameToolbox *gameToolbox = new GameToolbox();
 	auto resp = GameToolbox::getResponse(response);
 	CCLog("newscount: %d, response: %s", GDPS->newsCount, resp.c_str());
-	if(atoi(resp.c_str()) > GDPS->newsCount) {
-		GDPS->newsCount = atoi(resp.c_str());
-		GDPS->showNewNewsIndicator = true;
-	}
+	
+	int nCount = atoi(resp.c_str());
+	GDPS->showNewNewsIndicator = nCount > GDPS->newsCount;
+	GDPS->newsCount = nCount;
 	
 	
 }

@@ -68,7 +68,7 @@ FUNCTIONHOOK(void, addToggle, MoreOptionsLayer *self, const char *title, const c
 		addToggleO(self, "Speedrun Timer", "1000011", "<cr>Red</c> means that the time is <cr>invalid</c>.\n Before starting a speedrun <cr>make sure to die atleast 1 time</c> because the first attempt time takes the enter transition into account and that will always be slower");
 		addToggleO(self, "Show FPS", "0115", 0);
 		addToggleO(self, "Remove Pause Btn", "1000012", 0);
-		addToggleO(self, "Show Trigger\nActivations", "1000013", 0);
+		addToggleO(self, "Disable\n Abbreviated Labels", "1000013", "Download and like labels in level search results");
 		insideSafe = false;
 	}
 	else if(HacksSettings)
@@ -145,7 +145,8 @@ FUNCTIONHOOK(bool, MoreOptionsLayer_init, MoreOptionsLayer* self) {
 	editorbtn->setPosition(+sepX, -sepY + y);
 	
 	menu->addChild(gdpsbtn);
-	menu->addChild(hackbtn);
+	if(!GM->_playLayer())
+		menu->addChild(hackbtn);
 	menu->addChild(optionsbtn);
 	menu->addChild(editorbtn);
 

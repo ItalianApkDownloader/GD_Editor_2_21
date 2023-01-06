@@ -28,14 +28,15 @@ FUNCTIONHOOK(bool, PlayLayer_init, PlayLayer* self, GJGameLevel* level, bool a2,
 	constexpr std::array<uintptr_t, 5> addrs = {0x299484, 0x29948C, 0x299498, 0x2994A8, 0x299552};
 	patch p;
 	
-	for(auto& adr : addrs)
+	for(auto adr : addrs)
 		p.addPatch("libcocos2dcpp.so", adr, patchstr);
 	
 	p.Modify();
 	
-	if(!PlayLayer_initO(self, level, a2, a3)) return false;
-	return true;
+	return PlayLayer_initO(self, level, a2, a3);
 }
+
+
 void SwingIconFix::ApplyHooks() 
 {
 	HOOK("_ZN9PlayLayer4initEP11GJGameLevelbb", PlayLayer_initH, PlayLayer_initO);

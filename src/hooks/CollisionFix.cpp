@@ -114,6 +114,10 @@ FUNCTIONHOOK(void, PlayerObject_collidedWithObjectInternal, PlayerObject* self, 
 
 				goto DOSTUFF;
 			}
+			else {
+				CCLog("YOU BUGGED OR YOU GONNA DIE VERY SOON");
+				noJump = false;
+			}
 		}
 		else if(v34 < rect.getMaxX() && v35 < rect.getMaxX()) {
 			noJump = false;

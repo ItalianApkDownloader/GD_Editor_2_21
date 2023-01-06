@@ -84,16 +84,23 @@ bool EditorPauseLayerExt::initH(void* editor) {
 		auto label = (CCLabelBMFont*)this->getChildren()->objectAtIndex(i);
 		label->setPositionX(label->getPositionX() + 125);
 	}
-	//GDPSHelper::createLabels(this);
+	auto menu = (CCMenu*)this->getChildren()->objectAtIndex(1);
 	
+	CCArray* arr = CCArray::create();
+	arr->addObject(menu->getChildren()->objectAtIndex(0));
+	arr->addObject(menu->getChildren()->objectAtIndex(1));
+	//arr->addObject(menu->getChildren()->objectAtIndex());
+	
+	
+
 	auto sprite = CCSprite::createWithSpriteFrameName("GJ_optionsBtn_001.png");
-	sprite->setScale(.6);
+	sprite->setScale(0.75);
 	auto optionsBtn = CCMenuItemSpriteExtra::create(sprite, nullptr, this, menu_selector(MenuLayer::onOptions));
-	auto bottomMenu2 = CCMenu::createWithItem(optionsBtn);
-	//reinterpret_cast<CCSprite *>(bottomMenu2)->setPosition({0, 0});
-	reinterpret_cast<CCSprite *>(bottomMenu2)->setPosition({CCMIDX + 270, CCTOP - 10});
-	this->addChild(bottomMenu2);
-	
+	menu->addChild(optionsBtn);
+	arr->addObject(optionsBtn);
+	GameToolbox::alignItemsHorisontally(arr, 30, {0, 0}, false);
+
+
 	return true;
 }
 	

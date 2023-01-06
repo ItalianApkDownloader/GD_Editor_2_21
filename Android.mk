@@ -51,11 +51,10 @@ LOCAL_C_INCLUDES += $(LOCAL_PATH)/include/hooks \
 LOCAL_C_INCLUDES += $(LOCAL_PATH)/include/KittyMemory \
 LOCAL_C_INCLUDES += $(LOCAL_PATH)/include/layers \
 
-LOCAL_SRC_FILES :=	src/fmt/format.cc \
-					src/fmt/ostream.cc \
-					src/fmt/posix.cc \
-					src/fmt/printf.cc \
-					src/main.cpp \
+LOCAL_SRC_FILES :=	src/main.cpp \
+					src/hooks/Emojis.cpp \
+					src/hooks/Hacks.cpp \
+					src/hooks/AbbreviatedLabels.cpp \
 					src/hooks/Options.cpp \
 					src/hooks/MenuLayerExt.cpp \
 					src/hooks/SwingIconFix.cpp \
@@ -76,6 +75,10 @@ LOCAL_SRC_FILES :=	src/fmt/format.cc \
 					src/KittyMemory/KittyUtils.cpp \
 					src/KittyMemory/MemoryBackup.cpp \
 					src/KittyMemory/MemoryPatch.cpp \
+					src/fmt/ostream.cc \
+					src/fmt/posix.cc \
+					src/fmt/printf.cc \
+					src/fmt/format.cc \
 
 
 LOCAL_LDLIBS := -llog \
