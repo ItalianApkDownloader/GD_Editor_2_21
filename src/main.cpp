@@ -7,7 +7,7 @@
 #include "gd.h"
 #include "hooking.h"
 #include "obfuscate.h"
-#include <bits/stdc++.h>
+//#include <bits/stdc++.h>
 #include "GDPSManager.h"
 #include "GDPSHelper.h"
 #include "FunctionHelper.h"
@@ -1328,23 +1328,6 @@ FUNCTIONHOOK(bool, SetupShaderEffectPopup_init, SetupTriggerPopup* self, EffectG
 	return ret;
 }
 
-template<class Type = cocos2d::CCNode*>
-static Type getChildOfType(cocos2d::CCNode* node, size_t index) {
-    auto indexCounter = static_cast<size_t>(0);
-    for (size_t i = 0; i < node->getChildrenCount(); ++i) {
-        auto obj = reinterpret_cast<Type>(
-            node->getChildren()->objectAtIndex(i)
-        );
-        if (obj != nullptr) {
-            if (indexCounter == index) {
-                return obj;
-            }
-            ++indexCounter;
-        }
-    }
-    return nullptr;
-}
-
 // stupid ass fix for playtest bg
 FUNCTIONHOOK(void, GJBaseGameLayer_updateCameraBGArt, GJBaseGameLayer* self, CCPoint pos) {
 	if(MBO(bool, self, 0x2780)) {
@@ -1568,6 +1551,29 @@ FUNCTIONHOOK(std::string, GameLevelManager_getBasePostString, void* self) {
 	return ret;
 }
 
+
+
+FUNCTIONHOOK(void*, GameLevelManager_getMainLevel, void* self, int levelID) {
+	//4000 - subzero
+	//3001 - the challenge
+	if(levelID > 4003)
+		levelID -= 4003;
+	
+	return GameLevelManager_getMainLevelO(self, levelID);
+}
+
+FUNCTIONHOOK(void*, LevelSelectLayer_scene, int levelID) {
+	
+	CCLog("before: %d", levelID);
+	if(levelID >= 4000)
+		levelID -= 4000;
+	else
+		levelID += 3;
+	
+	CCLog("after: %d", levelID);
+	return LevelSelectLayer_sceneO(levelID);
+}
+
 #include "definitions.h"
 void loader()
 {
@@ -1596,6 +1602,8 @@ void loader()
 	#endif
 	
 	
+	HOOK("_ZN16LevelSelectLayer5sceneEi", LevelSelectLayer_sceneH, LevelSelectLayer_sceneO);
+	HOOK("_ZN16GameLevelManager12getMainLevelEib", GameLevelManager_getMainLevelH, GameLevelManager_getMainLevelO);
 	HOOK("_ZN16GameLevelManager17getBasePostStringEv", GameLevelManager_getBasePostStringH, GameLevelManager_getBasePostStringO);
 	HOOK("_ZN18LevelSettingsLayer15selectArtClosedEP14SelectArtLayer", LevelSettingsLayer_selectArtClosedH, LevelSettingsLayer_selectArtClosedO);
 	HOOK("_ZN16LevelSearchLayer13toggleTimeNumEib", LevelSearchLayer_toggleTimeNumH, LevelSearchLayer_toggleTimeNumO);
@@ -1682,6 +1690,9 @@ void loader()
 	patchIcons(6, 68); //robot
 	patchIcons(7, 69); //spider
 	
+	
+	tms.addPatch("libcocos2dcpp.so", 0x33681C, "40F6B87B"); //main level while loop
+	//tms.addPatch("libcocos2dcpp.so", 0x336AC4, "40F20200"); //main level while loop2
 	
 	tms.addPatch("libcocos2dcpp.so", 0x267CCE, "4FF0 FF03"); //text input length bypass
 	tms.addPatch("libcocos2dcpp.so", 0x267CB0, "00BF 00BF"); //text input character byp/s

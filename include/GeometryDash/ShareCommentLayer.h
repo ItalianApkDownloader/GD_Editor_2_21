@@ -19,6 +19,6 @@ public:
 	
 	void onEmojiPicker(CCObject*);
 	void onEmoji(CCObject*);
-	PAD(1000);
-	std::array<const char*, 17> m_emojiarr;
+	void updateDescText(const char*);
+	void updatePreviewLabel(std::string);
 };

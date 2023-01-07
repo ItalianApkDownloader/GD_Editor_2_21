@@ -54,6 +54,11 @@ HookWrap::sh(a, \
 HookManager::getPointer(&b), \
 (void **)&c)
 
+#define HOOK2(func_symbol, func_name) \
+HookWrap::nh(func_symbol, \
+(void*)func_name##H, \
+(void**)&func_name##O);
+
 };
 
 

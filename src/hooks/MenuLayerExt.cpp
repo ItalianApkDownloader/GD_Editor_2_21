@@ -246,15 +246,15 @@ bool MenuLayerExt::init_hk()
 		first = false;
 	}
 	
+	extern bool doRequest;
+		
+	
 	#ifdef DEVDEBUG
+	doRequest = false;
 	FMOD->setBackgroundMusicVolume(0);
 	#endif
 	
-	extern bool doRequest;
-		
-	#ifdef EMUI_FIX
-	doRequest = false;
-	#endif
+
 	
 	if(doRequest) {
 	
