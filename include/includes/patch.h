@@ -1,11 +1,11 @@
 #pragma once
 #include "KittyMemory/MemoryPatch.h"
 
-using namespace std;
 
 class patch{
+	
 private:
-    vector<MemoryPatch> patches;
+    std::vector<MemoryPatch> patches;
 public:
     void addPatch(const char *libraryName, uintptr_t address,std::string hex){
         patches.push_back(MemoryPatch::createWithHex(libraryName,address,hex));
@@ -14,6 +14,8 @@ public:
 	void addPatch(uintptr_t address,std::string hex) {
 		addPatch("libcocos2dcpp.so", address, hex);
 	}
+	
+	void reserve(size_t size) { patches.reserve(size); }
 
     void Modify(){
         for(int k = 0; k < patches.size(); k++){

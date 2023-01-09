@@ -36,15 +36,12 @@
 		!!!!!!!!!!!!!!!!!!!!!!!! COMMENT OUT BEFORE RELEASING APK !!!!!!!!!!!!!!!!!!!!!!!!
 */
 
-__attribute__((naked)) void asmtest() {
+void asmtest() {
 	asm("nop;"
 		"mov R1, #4;"
 		"add R1, #4;"
 	);
 }
-
-
-
 
 std::string passwordTemp = "";
 int nFont = 0;
@@ -1194,10 +1191,17 @@ FUNCTIONHOOK(bool, GJGarageLayer_init, GJGarageLayer* self) {
 		self,
 		menu_selector(GarageLayerCallback::onShatter)
 	);
+	shatterToggle->setScale(.7);
 	shatterToggle->toggle(!GM->getGameVariable("shatterFX"));
 	btnToggleMenu->addChild(shatterToggle);
 
-	btnToggleMenu->setPosition(dir->getScreenRight() - 30, 120);
+	btnToggleMenu->setPosition(dir->getScreenRight() - 50, 120);
+
+	auto label = CCLabelBMFont::create("New Death Effect", "bigFont.fnt");
+	label->setScale(.3);
+	label->setAlignment(kCCTextAlignmentCenter);
+	label->setPositionY(-25);
+	btnToggleMenu->addChild(label);
 
 	self->addChild(btnToggleMenu, 10);
 	
@@ -1595,7 +1599,7 @@ void loader()
 	Options::ApplyHooks();
 	AbbreviatedLabels::ApplyHooks();
 	Hacks::ApplyHooks();
-	Emojis::ApplyHooks();
+	//Emojis::ApplyHooks();
 
 	#ifdef SHADERDEBUG
 	DevDebugHooks::ApplyHooks();
@@ -1663,6 +1667,10 @@ void loader()
 	
 	patch tms = patch();
 	
+	//make space for 50 patches because thats approximately our amount
+	//so that the vector doesn't have to resize every time a new element is added
+	tms.reserve(50);
+	
 	#define NOP4(a, b) a.addPatch("libcocos2dcpp.so", b, "00 BF 00 BF")
 	#define NOP2(a, b) a.addPatch("libcocos2dcpp.so", b, "00 BF")
 
@@ -1690,6 +1698,11 @@ void loader()
 	patchIcons(6, 68); //robot
 	patchIcons(7, 69); //spider
 	
+	//already linked to different steam account -> invalid username or password
+	tms.addPatch("libcocos2dcpp.so", 0x812513, "496e76616c696420757365726e616d65206f722070617373776f726420202020202020202020202020");
+	
+	NOP4(tms, 0x335644); //main level demon coin bypass
+	tms.addPatch("libcocos2dcpp.so", 0x337AA2, "00F036B9"); //main level demon coin texture
 	
 	tms.addPatch("libcocos2dcpp.so", 0x33681C, "40F6B87B"); //main level while loop
 	//tms.addPatch("libcocos2dcpp.so", 0x336AC4, "40F20200"); //main level while loop2
@@ -1697,7 +1710,9 @@ void loader()
 	tms.addPatch("libcocos2dcpp.so", 0x267CCE, "4FF0 FF03"); //text input length bypass
 	tms.addPatch("libcocos2dcpp.so", 0x267CB0, "00BF 00BF"); //text input character byp/s
 	
-	tms.addPatch("libcocos2dcpp.so", 0x2EEBCA, "B9EB090F"); //creator layer opened door sprite
+	
+	tms.addPatch("libcocos2dcpp.so", 0x2EEBCE, "02E0"); //creator layer vault lock opeend lock sprite
+	tms.addPatch("libcocos2dcpp.so", 0x2EED38, "02E0"); //creator layer opened door sprite
 	
 	//chest secondary layer bypass - just freezes
 	//tms.addPatch("libcocos2dcpp.so", 0x459222, "A442"); //chest type (tier) bypass

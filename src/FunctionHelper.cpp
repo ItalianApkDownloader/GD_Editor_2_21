@@ -26,7 +26,7 @@ std::string FunctionHelper::intToFormatString(int n) {
      return FunctionHelper::itos(n);
 }
 
-string FunctionHelper::thousandSeparator(int n)
+std::string FunctionHelper::thousandSeparator(int n)
 {
 	using namespace std;
     string ans = "";

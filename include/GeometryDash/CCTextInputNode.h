@@ -11,4 +11,6 @@ public:
 	void setString(std::string);
 	std::string getString();
 	void updateLabel(std::string);
+	static CCTextInputNode* create(float, float, const char*, const char*, int, const char*);
+	void setMaxLabelWidth(float);
 };

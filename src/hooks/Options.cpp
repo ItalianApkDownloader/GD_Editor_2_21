@@ -59,16 +59,16 @@ FUNCTIONHOOK(void, addToggle, MoreOptionsLayer *self, const char *title, const c
 	if(GDPSSettings) 
 	{
 		insideSafe = true;
-		addToggleO(self, "Instantly open editor\nat startup", "100003", 0);
-		addToggleO(self, "Enable pixel blocks\nin the editor", "100005", 0);
-		addToggleO(self, "Hide Platformer\nbuttons", "10007", 0);
-		addToggleO(self, "Swap platformer\njump sides", "100011", 0);
+		addToggleO(self, "Open editor at startup", "100003", 0);
+		addToggleO(self, "Pixel blocks in editor", "100005", 0);
+		addToggleO(self, "Hide Platformer buttons", "10007", 0);
+		addToggleO(self, "Swap Platf. jump sides", "100011", 0);
 		addToggleO(self, "Practice Music", "0125", 0);
-		addToggleO(self, "Disable arrow trigger\nfix", "1000010", 0);
+		addToggleO(self, "Disable arrow trigger fix", "1000010", 0);
 		addToggleO(self, "Speedrun Timer", "1000011", "<cr>Red</c> means that the time is <cr>invalid</c>.\n Before starting a speedrun <cr>make sure to die atleast 1 time</c> because the first attempt time takes the enter transition into account and that will always be slower");
 		addToggleO(self, "Show FPS", "0115", 0);
-		addToggleO(self, "Remove Pause Btn", "1000012", 0);
-		addToggleO(self, "Disable\n Abbreviated Labels", "1000013", "Download and like labels in level search results");
+		addToggleO(self, "Remove pause button", "1000012", 0);
+		addToggleO(self, "Disable Abbreviated Labels", "1000013", "Download and like labels in level search results");
 		insideSafe = false;
 	}
 	else if(HacksSettings)

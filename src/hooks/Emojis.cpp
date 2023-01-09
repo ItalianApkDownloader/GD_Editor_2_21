@@ -10,11 +10,15 @@
 #include "ShareCommentLayer.h"
 #include <cocos2dx/extensions/CCScale9Sprite.h>
 
+constexpr int kNumEmoji {15};
+constexpr int kColumns {5};
+constexpr int kEmojiSpacing {30};
+constexpr int kVerticalSpacing {30};
 
-
-void modifyString(std::string& s, std::string& s1,
+int modifyString(std::string& s, std::string& s1,
 				std::string& s2)
 {
+	int times = 0;
 	std::string ans = "";
 	for (int i = 0; i < s.length(); i++) {
 		int k = 0;
@@ -32,6 +36,7 @@ void modifyString(std::string& s, std::string& s1,
 				}
 			}
 			if (j == i + s1.length()) {
+				times++;
 				ans.append(s2);
 				i = j - 1;
 			}
@@ -44,6 +49,7 @@ void modifyString(std::string& s, std::string& s1,
 		}
 	}
 	s = ans;
+	return times;
 	//fmtlog("ans: {}", ans);
 }
 
@@ -73,13 +79,21 @@ void ShareCommentLayer::onEmoji(CCObject* sender) {
 	auto label = (CCLabelBMFont*)layer->getChildByTag(1945);
 	if(!label) return;
 	
-	this->updatePreviewLabel(str);
+	//this->updatePreviewLabel(str);
 }
+
+class TextArea : public cocos2d::CCSprite {
+
+public:
+	static TextArea* create(std::string,char const*,float,float,cocos2d::CCPoint,float,bool);
+	void setString(std::string);
+};
 
 void ShareCommentLayer::updatePreviewLabel(std::string previewStr) {
 	
 	auto layer = (CCLayer*)this->getChildByTag(1938); if(!layer) return;
 	auto label = (CCLabelBMFont*)layer->getChildByTag(1945); if(!label) return;
+	
 
 	for(int i = 0; i < 15; i++) {
 		std::string s1 = fmt::format(":{}:", getEmoji(i, true));
@@ -89,12 +103,16 @@ void ShareCommentLayer::updatePreviewLabel(std::string previewStr) {
 	}
 	
 	label->CCLabelBMFont::setString(previewStr.c_str());
+
 }
 
 FUNCTIONHOOK(void, ShareCommentLayer_updateDescLabel, ShareCommentLayer* self, const char* str) {
 	ShareCommentLayer_updateDescLabelO(self, str);
 	self->updatePreviewLabel(str);
 }
+
+
+
 
 FUNCTIONHOOK(void, ShareCommentLayer_onShare, ShareCommentLayer* self, CCObject* sender) {
 	
@@ -107,6 +125,10 @@ FUNCTIONHOOK(void, ShareCommentLayer_onShare, ShareCommentLayer* self, CCObject*
 	//fmtlog("{}", str);
 	ShareCommentLayer_onShareO(self, sender);
 }
+
+
+
+
 void ShareCommentLayer::onEmojiPicker(CCObject*) {
 	
 	auto layer = CCLayer::create();
@@ -114,18 +136,6 @@ void ShareCommentLayer::onEmojiPicker(CCObject*) {
 	
 	auto winSize = CCDirector::sharedDirector()->getWinSize();
 	CCPoint mainPos {winSize.width / 2 + 190, winSize.height / 2 - 50};
-	
-	auto str = MBO(std::string, this, 0x208);
-	auto label = CCLabelBMFont::create("AAAAAAAAAAAAAAAAAAAA", "chatFont.fnt");
-	label->setPosition(mainPos.x - 200, mainPos.y);
-	label->setTag(1945);
-	layer->addChild(label);
-	
-	auto previewbg = extension::CCScale9Sprite::create("GJ_square01.png", {0, 0, 80, 80});
-	previewbg->setPosition(mainPos.x - 200, mainPos.y);
-	previewbg->setZOrder(-1);
-	previewbg->setContentSize(CCSize(300, 50));
-	layer->addChild(previewbg);
 	
 	auto bg = extension::CCScale9Sprite::create("GJ_square01.png", {0, 0, 80, 80});
 	bg->setPosition(mainPos);
@@ -137,10 +147,26 @@ void ShareCommentLayer::onEmojiPicker(CCObject*) {
 	menu->setPosition(mainPos);
 	layer->addChild(menu);
 	
-	constexpr int kNumEmoji {15};
-	constexpr int kColumns {5};
-	constexpr int kEmojiSpacing {30};
-	constexpr int kVerticalSpacing {30};
+
+	CCPoint previewPos = {mainPos.x - 240, mainPos.y};
+	auto str = MBO(std::string, this, 0x208);
+	
+	auto label = CCLabelBMFont::create("AAAAAAAAAAAAAAAAAAAA", "chatFont.fnt");
+	label->setPosition(previewPos.x, previewPos.y + 30);
+	label->setTag(1945);
+	label->CCLabelBMFont::limitLabelWidth(10, 0.8f, 0.5f);
+	label->setLineBreakWithoutSpace(false);
+	layer->addChild(label);
+	
+
+
+	
+	auto previewbg = extension::CCScale9Sprite::create("GJ_square01.png", {0, 0, 80, 80});
+	previewbg->setPosition(previewPos);
+	previewbg->setZOrder(-1);
+	previewbg->setContentSize(CCSize(295, 120));
+	layer->addChild(previewbg);
+	
 	
 	CCPoint startPos {-30, 50};
 	for (int i = 0; i < kNumEmoji; ++i) {
@@ -177,8 +203,10 @@ FUNCTIONHOOK(bool, ShareCommentLayer_init, ShareCommentLayer* self, std::string 
 	auto layer = (CCLayer*)self->getChildren()->objectAtIndex(0);
 	auto menu = self->buttonMenu();
 	
-	auto copyBtn = CCMenuItemSpriteExtra::create(CCSprite::createWithSpriteFrameName("bgIcon_01_001.png"), nullptr, self, menu_selector(ShareCommentLayer::onEmojiPicker));
-	copyBtn->setPosition({-50, -20});
+	auto winSize = CCDirector::sharedDirector()->getWinSize();
+	
+	auto copyBtn = CCMenuItemSpriteExtra::create(CCSprite::createWithSpriteFrameName("btn_chatHistory_001.png"), nullptr, self, menu_selector(ShareCommentLayer::onEmojiPicker));
+	copyBtn->setPosition({170, 35});
 	menu->addChild(copyBtn);
 	//GDPSHelper::createLabels(layer);
 	return true;
