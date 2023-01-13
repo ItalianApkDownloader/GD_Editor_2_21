@@ -21,4 +21,5 @@ public:
 	void onStats(CCObject*);
 	void onAchievements(CCObject*);
 	void onMyProfile(CCObject*);
+	void onQuit(CCObject*);
 };

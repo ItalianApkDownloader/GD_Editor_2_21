@@ -49,9 +49,6 @@ returntype name##H(__VA_ARGS__)
 
 #define CallBySymbol(returntype, library, symbol, ...) (*(returntype(*)(__VA_ARGS__))reinterpret_cast<void*>(dlsym(dlopen(library, RTLD_LAZY), symbol)))
 
-#define CBS(a, b, c, ...) CallBySymbol(a, b, c, __VA_ARGS__)
-#define CBSR(a, c, ...) CBS(void*, "libcocos2dcpp.so", c, __VA_ARGS__)
-
 #define __STR_CAT___(str1, str2) str1##str2
 #define __STR_CAT__(str1, str2) __STR_CAT___(str1, str2)
 #define PAD(size) char __STR_CAT__(pad, __LINE__)[size] = {};

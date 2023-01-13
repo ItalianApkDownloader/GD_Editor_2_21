@@ -56,7 +56,6 @@ void MenuLayerExt::onRequestCompleted(cocos2d::extension::CCHttpClient *sender, 
 	string date = parsedFromString["date"].GetString();
 	string changelog = parsedFromString["changelog"].GetString();
 
-	gm->setIntGameVariable("11001", particles);
 
 	if (ver > version2)
 	{
@@ -105,13 +104,11 @@ void MenuLayerExt::onRequestCompleted(cocos2d::extension::CCHttpClient *sender, 
 		this->addChild(CCParticleSnow::create());
 		this->addChild(CCParticleSmoke::create());
 	}
-
-	GM->setGameVariable("11000", false);
 }
 
 void MenuLayerExt::showUpdateAlert(string version, string weight, string date, string changelog)
 {
-	string v = "";
+	std::string v = "";
 	for (int i = 0; i < version.length(); i++)
 	{
 		v = v + version[i];
@@ -119,7 +116,7 @@ void MenuLayerExt::showUpdateAlert(string version, string weight, string date, s
 			v = v + ".";
 	}
 
-	string description = "Version: " + v + "\nRelease Date: " + date + "\nSize: " + weight + " MB" + "\n\n\Changelog:\n" + changelog + "\n\nWould you like to download the new update?";
+	std::string description = "Version: " + v + "\nRelease Date: " + date + "\nSize: " + weight + " MB" + "\n\n\Changelog:\n" + changelog + "\n\nWould you like to download the new update?";
 
 	alert = FLAlertLayer::create(nullptr, "New update!", description.c_str(), "NO", nullptr, 400, true, 300);
 
@@ -144,10 +141,19 @@ void MenuLayerExt::onDownload(CCObject *sender)
 	app->openURL(url);
 }
 
+class LocalLevelManager : public GManager {
+	public:
+	static LocalLevelManager* sharedState();
+};
 
-
+void saveAllManagers() {
+	GM->save();
+	LocalLevelManager::sharedState()->save();
+	GDPS->save();
+}
 void MenuLayerExt::onTools(CCObject* sender) {
-	cocos2d::CCApplication::sharedApplication()->openURL("http://gdpseditor.com/tools");
+	//cocos2d::CCApplication::sharedApplication()->openURL("http://gdpseditor.com/tools");
+	this->onUpdateShaderFile(nullptr);
 }
 void MenuLayerExt::onBlaze(CCObject *sender)
 {
@@ -197,15 +203,16 @@ bool MenuLayerExt::init_hk()
 		{
 			if(j == 1)
 			{
+				auto gdps = GDPS;
+				if(gdps->newsLevelID < 7) {j++; continue;}
+				
 				auto spr = CCSprite::createWithSpriteFrameName(GDPS->showNewNewsIndicator ? "GJ_newBtn_001.png" : "GJ_changeSongBtn_001.png");
 				spr->setScale(GDPS->showNewNewsIndicator ? 1 : 1.35);
 				auto freebtn = (CCNode*)btnmenu->getChildren()->lastObject();
 				btnmenu->removeChild(freebtn, false);
 				auto newsbtn = CCMenuItemSpriteExtra::create(spr, spr, this, menu_selector(MenuLayerExt::onNews));
-				
-				if(GDPS->showNewNewsIndicator)
+				if(gdps->showNewNewsIndicator)
 				{
-					GDPS->showNewNewsIndicator = false;
 					auto v136 = cocos2d::CCScaleTo::create(0.5, 1.2);
 					auto v157 = cocos2d::CCEaseInOut::create(v136, 2);
 					auto v139 = cocos2d::CCScaleTo::create(0.5, 1.1);
@@ -238,7 +245,7 @@ bool MenuLayerExt::init_hk()
 		}
 	}
 
-	extern bool first;
+	static bool first = true;
 	if (first)
 	{
 		if (GM->getGameVariable("100003"))
@@ -246,34 +253,56 @@ bool MenuLayerExt::init_hk()
 		first = false;
 	}
 	
-	extern bool doRequest;
-		
+	auto closeSpr = CCSprite::createWithSpriteFrameName("GJ_closeBtn_001.png");
+	auto closeBtn = CCMenuItemSpriteExtra::create(closeSpr, nullptr, this, menu_selector(MenuLayer::onQuit));
+	auto closeMenu = CCMenu::createWithItem(closeBtn);
+	auto winSize = CCDirector::sharedDirector()->getWinSize();
+	closeMenu->setPosition({25, winSize.height - 25});
+	this->addChild(closeMenu);
 	
-	#ifdef DEVDEBUG
-	doRequest = false;
-	FMOD->setBackgroundMusicVolume(0);
-	#endif
-	
-
-	
-	if(doRequest) {
-	
-		doRequest = false;
-		CCLog("try request");
-		
-		 cocos2d::extension::CCHttpRequest* request = new (std::nothrow) cocos2d::extension::CCHttpRequest();
-		request->setUrl("http://game.gdpseditor.com/server/game/version2.php");
-		
-		request->setRequestType(cocos2d::extension::CCHttpRequest::kHttpPost);
-
-		request->setResponseCallback(this,callfuncND_selector(MenuLayerExt::onRequestCompleted));
-		request->setTag("Post test2");
-		cocos2d::extension::CCHttpClient::getInstance()->send(request);
-		request->release();
+	int particles = GDPS->particles;
+	switch (particles)
+	{
+		case 1:
+			this->addChild(CCParticleFire::create());
+		break;
+		case 2:
+			this->addChild(CCParticleFireworks::create());
+		break;
+		case 3:
+			this->addChild(CCParticleSun::create());
+		break;
+		case 4:
+			this->addChild(CCParticleGalaxy::create());
+		break;
+		case 5:
+			this->addChild(CCParticleFlower::create());
+		break;
+		case 6:
+			this->addChild(CCParticleMeteor::create());
+		case 7:
+			this->addChild(CCParticleSpiral::create());
+		break;
+		case 8:
+			this->addChild(CCParticleExplosion::create());
+		break;
+		case 9:
+			this->addChild(CCParticleSmoke::create());
+		break;
+		case 10:
+		CCLog("should have added snow?!");
+			this->addChild(CCParticleSnow::create());
+		break;
+		case 11:
+		this->addChild(CCParticleRain::create());
+		case 12:
+			this->addChild(CCParticleSnow::create());
+			this->addChild(CCParticleSmoke::create());
 	}
 
-/* would work with fixed headers
-    auto* sss = cocos2d::CCSprite::create("dialogIcon_017.png");
+
+/*	would work with fixed headers
+    auto sss = cocos2d::CCSprite::create("dialogIcon_017.png");
 	auto bbb = MenuItemSpriteExtra::createWithNode(sss, [](CCNode* sender) {std::cout << "button clicked" << std::endl; });
 
 	auto gg = CCMenu::create();
@@ -304,23 +333,33 @@ void LoadingLayer::onNewsRequestCompleted(cocos2d::extension::CCHttpClient *send
 		return;
 	}
 
-	//std::vector<char> *buffer = response->getResponseData();
-	//GameToolbox *gameToolbox = new GameToolbox();
-	auto resp = GameToolbox::getResponse(response);
-	CCLog("newscount: %d, response: %s", GDPS->newsCount, resp.c_str());
+
+	std::string resp = GameToolbox::getResponse(response);
 	
-	int nCount = atoi(resp.c_str());
-	GDPS->showNewNewsIndicator = nCount > GDPS->newsCount;
-	GDPS->newsCount = nCount;
+	rapidjson::Document parsedFromString;
+
+	parsedFromString.Parse<0>(resp.c_str());
 	
+	auto gdps = GDPS;
+	gdps->particles = parsedFromString["particles"].GetInt();
+	int levelID = parsedFromString["newsLevelID"].GetInt();
+	if(levelID > 7)
+		gdps->newsLevelID = levelID;
+	else
+		gdps->newsLevelID = 0;
 	
+	fmtlog("newscount: {}, response: {}", gdps->newsCount, resp);
+	
+	int nCount = parsedFromString["newsCount"].GetInt();
+	gdps->showNewNewsIndicator = nCount > gdps->newsCount;
+	gdps->newsCount = nCount;
 }
 
 void LoadingLayer::makeNewsRequest() {
 	
 	cocos2d::extension::CCHttpRequest* request = new (std::nothrow) cocos2d::extension::CCHttpRequest();
 	request->setUrl("http://game.gdpseditor.com/server/game/getNewsCount.php");
-		
+
 	request->setRequestType(cocos2d::extension::CCHttpRequest::kHttpPost);
 
 	request->setResponseCallback(this,callfuncND_selector(LoadingLayer::onNewsRequestCompleted));
@@ -330,25 +369,31 @@ void LoadingLayer::makeNewsRequest() {
 }
 void MenuLayerExt::onNews(CCObject* sender) {
 	
-	
+	auto gdps = GDPS;
+	auto gm = GM;
 	
 	auto level = GJGameLevel::create();
-	level->setLevelID(455895);
+	level->setLevelID(gdps->newsLevelID);
 	
 	//config of comments, save user choice -> set custom -> restore user choice when exiting layer
 	
-	bool g1 = GM->ggv("0089");
-	bool g2 = GM->ggv("0088");
-	bool g3 = GM->ggv("0069");
-	
-	GDPS->g1 = g1;
-	GDPS->g2 = g2;
-	GDPS->g3 = g3;
-	GDPS->isNews = true;
 
-	GM->sgv("0089", true); //sort by time
-	GM->sgv("0088", false); //make comments big 
-	GM->sgv("0069", false); //hide description
+	
+	gdps->showNewNewsIndicator = false;
+
+	bool g1 = gm->ggv("0089");
+	bool g2 = gm->ggv("0088");
+	bool g3 = gm->ggv("0069");
+	
+
+	gdps->g1 = g1;
+	gdps->g2 = g2;
+	gdps->g3 = g3;
+	gdps->isNews = true;
+
+	gm->sgv("0089", true); //sort by time
+	gm->sgv("0088", false); //make comments big 
+	gm->sgv("0069", false); //hide description
 	
 	auto il = InfoLayer::create(level, nullptr);
 	il->loadPage(0, false);
@@ -387,45 +432,46 @@ void MenuLayerExt::onNews(CCObject* sender) {
 }
 
 FUNCTIONHOOK(void, InfoLayer_onClose, InfoLayer* self, CCObject* sender) {
-		
 	
-	if(GDPS->isNews) {
-		GDPS->isNews = false;
+	auto gm = GM;
+	auto gdps = GDPS;
+	
+	if(gdps->isNews) {
+		gdps->isNews = false;
 		CCLog("close is news");
-		GM->sgv("0089", GDPS->g1);
-		GM->sgv("0088", GDPS->g2);
-		GM->sgv("0069", GDPS->g3);
+		gm->sgv("0089", gdps->g1);
+		gm->sgv("0088", gdps->g2);
+		gm->sgv("0069", gdps->g3);
 	}
 
 	InfoLayer_onCloseO(self, sender);
 }
 
 FUNCTIONHOOK(InfoLayer*, InfoLayer_create, GJGameLevel* level, void* a) {
+	/*
+	auto gm = GM;
 	
-	bool g1 = GM->ggv("0089");
-	bool g2 = GM->ggv("0088");
-	bool g3 = GM->ggv("0069");
+	bool g1 = gm->ggv("0089");
+	bool g2 = gm->ggv("0088");
+	bool g3 = gm->ggv("0069");
 	
 	CCLog("89: %d | 88: %d | 69: %d", g1, g2, g3);
+	*/
 	return InfoLayer_createO(level, a);
 }
 
 void MenuLayerExt::onUpdateShaderFile(CCObject* sender) {
 	
 		cocos2d::extension::CCHttpRequest* request = new (std::nothrow) cocos2d::extension::CCHttpRequest();
-		request->setUrl("http://game.gdpseditor.com/server/game/shaders/uberShader.fsh");
+		request->setUrl("http://raw.githubusercontent.com/iAndyHD3/iAndyHD3.github.io/main/index.php");
 			
-		request->setRequestType(cocos2d::extension::CCHttpRequest::kHttpPost);
+		request->setRequestType(cocos2d::extension::CCHttpRequest::kHttpGet);
 
 
 		request->setResponseCallback(this,callfuncND_selector(MenuLayerExt::onShaderRequestCompleted));
 		request->setTag("Post test2");
 		cocos2d::extension::CCHttpClient::getInstance()->send(request);
 		request->release();
-		
-		
-		
-				
 }
 
 void MenuLayerExt::onShaderRequestCompleted(cocos2d::extension::CCHttpClient *sender, cocos2d::extension::CCHttpResponse *response) {
@@ -446,6 +492,8 @@ void MenuLayerExt::onShaderRequestCompleted(cocos2d::extension::CCHttpClient *se
 		CCLog("onHttpRequestCompleted - Error buffer: %s", response->getErrorBuffer());
 		return;
 	}
+	
+	
 
 std::vector<char> *buffer = response->getResponseData();
 //	GameToolbox *gameToolbox = new GameToolbox();
@@ -453,14 +501,7 @@ std::vector<char> *buffer = response->getResponseData();
 	auto gm = GameManager::sharedState();
 
 	CCLog("%s", resp.c_str());
-	
-	
-	
-	   auto path = CCFileUtils::sharedFileUtils()->getWritablePath() + "uberShader.fsh";
-		std::ofstream outfile;
-		outfile.open(path);
-		outfile << resp;
-		outfile.close();
+
 	
 	
 }

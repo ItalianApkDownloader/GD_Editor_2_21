@@ -61,22 +61,23 @@ FUNCTIONHOOK(void, addToggle, MoreOptionsLayer *self, const char *title, const c
 		insideSafe = true;
 		addToggleO(self, "Open editor at startup", "100003", 0);
 		addToggleO(self, "Pixel blocks in editor", "100005", 0);
-		addToggleO(self, "Hide Platformer buttons", "10007", 0);
+		addToggleO(self, "Sneak Peek Death Effect", "100014", 0);
 		addToggleO(self, "Swap Platf. jump sides", "100011", 0);
 		addToggleO(self, "Practice Music", "0125", 0);
 		addToggleO(self, "Disable arrow trigger fix", "1000010", 0);
 		addToggleO(self, "Speedrun Timer", "1000011", "<cr>Red</c> means that the time is <cr>invalid</c>.\n Before starting a speedrun <cr>make sure to die atleast 1 time</c> because the first attempt time takes the enter transition into account and that will always be slower");
 		addToggleO(self, "Show FPS", "0115", 0);
-		addToggleO(self, "Remove pause button", "1000012", 0);
+		addToggleO(self, "Hide pause button", "1000012", 0);
 		addToggleO(self, "Disable Abbreviated Labels", "1000013", "Download and like labels in level search results");
 		insideSafe = false;
 	}
 	else if(HacksSettings)
 	{
 		insideSafe = true;
-		addToggleO(self, "Safe Noclip", "200001", "Make the player invisible\nbut it doesnt save level progress.");
+		addToggleO(self, "Safe Noclip", "200001", "Make the player invincible\nbut it doesnt save level progress.");
 		addToggleO(self, "Safe Mode", "200002", "Does not save level progress.");
 		addToggleO(self, "Disable Shaders", "200003", "Does not save level progress.");
+		addToggleO(self, "No Transition", "200004", 0);
 		insideSafe = false;
 	}
 

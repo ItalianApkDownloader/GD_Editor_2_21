@@ -18,15 +18,13 @@ public:
 	void reserve(size_t size) { patches.reserve(size); }
 
     void Modify(){
-        for(int k = 0; k < patches.size(); k++){
-            patches[k].Modify();
-        }
+		for(auto& patch : patches)
+			patch.Modify();
     }
 
     void Restore(){
-        for(int k = 0; k < patches.size(); k++){
-            patches[k].Restore();
-        }
+		for(auto& patch : patches)
+			patch.Restore();
     }
 
 };

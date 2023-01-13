@@ -274,8 +274,14 @@ FUNCTIONHOOK(void*, GJCommentCell_loadFromComment, CCLayer* self, void* comment)
 	
 	return ret;
 }
+/*
+FUNCTIONHOOK(float, getDeviceFrameRate, void) {
+	return 999999.0f;
+}
+*/
 void Emojis::ApplyHooks() 
 {
+	//HOOK2("_ZN15PlatformToolbox20getDeviceRefreshRateEv", getDeviceFrameRate);
 	HOOK2("_ZN11CommentCell15loadFromCommentEP9GJComment", GJCommentCell_loadFromComment);
 	HOOK2("_ZN17ShareCommentLayer7onShareEPN7cocos2d8CCObjectE", ShareCommentLayer_onShare);
 	HOOK2("_ZN17ShareCommentLayer14updateDescTextEPKc", ShareCommentLayer_updateDescLabel);

@@ -57,9 +57,13 @@ FUNCTIONHOOK(void, PlayLayer_levelCompleted, PlayLayer* self) {
 	}
 }
 
+FUNCTIONHOOK(void*, CCTransitionFade_create, float time, void* scene, void* color) {
+	return CCTransitionFade_createO(GM->ggv("200004") ? 0.0f : time, scene, color);
+}
 
 void Hacks::ApplyHooks() 
 {
+	HOOK2("_ZN7cocos2d16CCTransitionFade6createEfPNS_7CCSceneERKNS_10_ccColor3BE", CCTransitionFade_create);
 	//HOOK("_ZN15GJBaseGameLayer14toggleDualModeEP10GameObjectbP12PlayerObjectb", GJBaseGameLayer_toggleDualModeH, GJBaseGameLayer_toggleDualModeO);
 	//HOOK("_ZN9PlayLayer4initEP11GJGameLevelbb", PlayLayer_init2H, PlayLayer_init2O);
 	HOOK("_ZN9PlayLayer13levelCompleteEv", PlayLayer_levelCompletedH, PlayLayer_levelCompletedO);

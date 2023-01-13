@@ -35,17 +35,17 @@
 
 		!!!!!!!!!!!!!!!!!!!!!!!! COMMENT OUT BEFORE RELEASING APK !!!!!!!!!!!!!!!!!!!!!!!!
 */
-
+/*
 void asmtest() {
 	asm("nop;"
 		"mov R1, #4;"
 		"add R1, #4;"
 	);
 }
-
+*/
 std::string passwordTemp = "";
 int nFont = 0;
-bool first = true;
+
 void(*GameManager_tryShowAdO)();
 void GameManager_tryShowAdH() {}
 
@@ -71,23 +71,56 @@ void UpdatePasswordTemp() {
 	}
 }
 
+void hidePauseBtn(CCNode* self)
+{
+	int c = self->getChildrenCount();
+	CCMenu* btnMenu;
+	for(int i = 0; i < c; i++)
+	{
+		if(auto menu = dynamic_cast<CCMenu*>(self->getChildren()->objectAtIndex(i)))
+		{
+			if(menu->getChildrenCount() == 1)
+			{
+				btnMenu = menu;
+				break;
+			}
+		}
+	}
+	
+	if(btnMenu)
+	{
+		auto pauseBtn = (CCMenuItemSpriteExtra*)btnMenu->getChildren()->objectAtIndex(0);
+		auto pauseSprite = (CCSprite*)pauseBtn->getChildren()->objectAtIndex(0);
+		if(pauseSprite)
+			pauseSprite->CCNodeRGBA::setOpacity(0);
+	}
+
+}
+
 FUNCTIONHOOK(bool, UILayer_init, UILayer* self) {
 	if(!UILayer_initO(self)) return false;
 	
 	#ifdef SHADERDEBUG
 	reinterpret_cast<UILayerDebug*>(self)->doInit();
 	#endif
-	auto menu = (CCMenu*)self->getChildren()->objectAtIndex(0);
-	auto pauseBtn = (CCMenuItemSpriteExtra*)self->getChildren()->objectAtIndex(0);
-	pauseBtn->setVisible(!GM->getGameVariable("1000012"));
-	//GDPSHelper::createLabels(menu, menu->getChildren(), {0, 0}, true);
 	
-	if(!MEMBERBYOFFSET(bool, self, 0x206)) return true;
+	if(GM->ggv("1000012"))
+		hidePauseBtn(self);
 	
-	DPADHooks::UILayerInit(self);
+	//platformer
+	if(MBO(bool, self, 0x206)) DPADHooks::UILayerInit(self);
 	
+	//
 	return true;
-}   
+}
+
+FUNCTIONHOOK(void, UILayer_toggleMenuVisibility, CCLayer* self, bool invisible) {
+	//fmtlog("toggle menu: {}", invisible);
+	UILayer_toggleMenuVisibilityO(self, invisible);
+	
+	if(invisible && GM->ggv("1000012"))
+		hidePauseBtn(self);
+}
    
 bool(*isIconUnlockedO)(void *, int, int);
 bool isIconUnlockedH(void *self, int a1, int a2)
@@ -107,32 +140,24 @@ CCSprite* spriteCreateH(const char *textureName)
 }
 
 
-
-bool doRequest;
-
 const char *(*getStringO)(LoadingLayer *self);
 const char *getStringH(LoadingLayer *self)
 {
-
-	doRequest = true;
-	GM->setGameVariable("0122", false);
-	GM->setGameVariable("0023", false); //smooth fix
-	GM->setGameVariable("0074", true);  //show restart button
+	auto gm = GM;
+	gm->sgv("0122", false);
+	gm->sgv("0023", false); //smooth fix
+	gm->sgv("0074", true);  //show restart button
+	
 	return "Italian APK Downloader\nCatto_\niAndy_HD3\nTr1NgleBoss\nEitan";
 }
 
 CCSprite * (*spriteCreateFrameNameO)(const char *textureName);
 CCSprite* spriteCreateFrameNameH(const char *textureName)
-{/*
-	if (containss(textureName, "GJ_fullBtn_001.png"))
-		return spriteCreateFrameNameO("GJ_creatorBtn_001.png");
-*/
-	//CCLog("frame: %s", textureName);
+{
 	auto ret = spriteCreateFrameNameO(textureName);
 	if (ret != nullptr)
 		return ret;
 
-	//return spriteCreateFrameNameO("GJ_optionsTxt_001.png");
 	return spriteCreateFrameNameO("GJ_checkOff_001.png");
 }
 
@@ -140,8 +165,6 @@ CCSprite* spriteCreateFrameNameH(const char *textureName)
 #include "cocos2dx/extensions/network/HttpRequest.h"
 #include "cocos2dx/extensions/network/HttpResponse.h"
 #include "obfuscate.h"
-
-
 
 //epic servers obfuscate moment
 
@@ -274,17 +297,10 @@ FUNCTIONHOOK(GameObject*, GameObject_create, int key)
 	auto tb = ObjectToolbox::sharedState()->intKeyToFrame(key);
 	
 	if(key == 2013) return GameObject_createO(1);
-	
-	if(containss(tb, "pixelb"))
-		return GameObject_createO(1);
 
 	if(containss(tb, "pixel")) {
-		
-		if(containss(tb, "b_"))
-			return GameObject_createO(1);
-
 		auto pixelKey = mid_num(tb);
-		return GameObject_createO(pixelKey > 140 ? 136 : key);
+		return GameObject_createO(pixelKey > 564 ? 136 : key);
 	}
 
 	return GameObject_createO(key);
@@ -430,6 +446,7 @@ void showStackTrace() {
 bool(*LoadingLayer_initO)(LoadingLayer *, bool);
 bool LoadingLayer_initH(LoadingLayer *self, bool fromReload)
 {
+/*
 	#ifdef EMUI_FIX
 	
 		patch tmp;
@@ -443,17 +460,26 @@ bool LoadingLayer_initH(LoadingLayer *self, bool fromReload)
 		spriteCache->addSpriteFramesWithFile("GJ_LaunchSheet.plist");
 		
 	#else
-
+*/
 		if (!LoadingLayer_initO(self, fromReload)) return false;
 	
 		auto text = *reinterpret_cast< CCNode **>(reinterpret_cast<uintptr_t> (self) + 0x144);
 		text->setPositionY(text->getPositionY() - 10);
 
 	
-	#endif
+	//#endif
 
 	UpdatePasswordTemp();
 	self->makeNewsRequest();
+	
+	//noclip
+	if(GM->ggv("200001"))
+	{
+		patch tmp;
+		tmp.addPatch(0x00276df8, "7047"); // PlayLayer::destroyPlayer
+		tmp.Modify();
+	}
+	
 	return true;
 
 }
@@ -1127,15 +1153,11 @@ FUNCTIONHOOK(void, GJBaseGameLayer_toggleDual, GJBaseGameLayer* self, void* a1, 
 	//...
 }
 
-class GarageLayerCallback {
-	public: void onShatter(CCObject* pSender) { GM->setGameVariable("shatterFX", reinterpret_cast<CCMenuItemToggler*>(pSender)->_isToggled()); }
-};
-
 FUNCTIONHOOK(bool, GJGarageLayer_init, GJGarageLayer* self) {
 	
 	if(!GJGarageLayer_initO(self))
 	return false;
-
+	
 	auto dir = CCDirector::sharedDirector();
 	
 	auto copyBtn = CCMenuItemSpriteExtra::create(CCSprite::createWithSpriteFrameName("bgIcon_01_001.png"), nullptr, self, menu_selector(GJGarageLayer::onSelectTab));
@@ -1181,29 +1203,8 @@ FUNCTIONHOOK(bool, GJGarageLayer_init, GJGarageLayer* self) {
 	swing->setPositionX(swing->GPX() + 5);
 	trails->setPositionX(trails->GPX() + 10);
 	effects->setPositionX(effects->GPX() + 10);
+	
 
-	// shatter effect toggle
-	auto btnToggleMenu = CCMenu::create();
-
-	auto shatterToggle = CCMenuItemToggler::create(
-		CCSprite::createWithSpriteFrameName("GJ_checkOn_001.png"),
-		CCSprite::createWithSpriteFrameName("GJ_checkOff_001.png"),
-		self,
-		menu_selector(GarageLayerCallback::onShatter)
-	);
-	shatterToggle->setScale(.7);
-	shatterToggle->toggle(!GM->getGameVariable("shatterFX"));
-	btnToggleMenu->addChild(shatterToggle);
-
-	btnToggleMenu->setPosition(dir->getScreenRight() - 50, 120);
-
-	auto label = CCLabelBMFont::create("New Death Effect", "bigFont.fnt");
-	label->setScale(.3);
-	label->setAlignment(kCCTextAlignmentCenter);
-	label->setPositionY(-25);
-	btnToggleMenu->addChild(label);
-
-	self->addChild(btnToggleMenu, 10);
 	
 	return true;
 }
@@ -1357,7 +1358,7 @@ FUNCTIONHOOK(void, PlayerObject_playDeathEffect2, PlayerObject* self) {
 	PlayerObject_playDeathEffect2O(self);
 
 	// shatter effect from sneak peek 1
-	if(!GM->getGameVariable("shatterFX")) return;
+	if(!GM->getGameVariable("100014")) return;
 
 	auto size = self->_playerScale() * MBO(float, self, 0x7C8);
 	auto pos = self->getPosition();
@@ -1568,21 +1569,32 @@ FUNCTIONHOOK(void*, GameLevelManager_getMainLevel, void* self, int levelID) {
 
 FUNCTIONHOOK(void*, LevelSelectLayer_scene, int levelID) {
 	
-	CCLog("before: %d", levelID);
+	//CCLog("before: %d", levelID);
 	if(levelID >= 4000)
 		levelID -= 4000;
 	else
 		levelID += 3;
 	
-	CCLog("after: %d", levelID);
+	//CCLog("after: %d", levelID);
 	return LevelSelectLayer_sceneO(levelID);
 }
 
+FUNCTIONHOOK(bool, EditorUI_shouldDeleteObject, EditorUI* self, void* obj) {
+	
+	int cl = MBO(int, self->_levelEditor(), 0x2C50); //current layer
+	int l1 = MBO(int, obj, 0x450); //editor layer 1
+	int l2 = MBO(int, obj, 0x454); //editor layer 2
+	bool shouldBeVisible = (cl == l1 || (cl == l2 && l2 != 0) || cl == -1);
+	if(!shouldBeVisible) return false;
+	
+	return EditorUI_shouldDeleteObjectO(self, obj);
+}
 #include "definitions.h"
+
+
 void loader()
 {
-	auto cocos2d = dlopen(targetLibName != "" ? targetLibName : NULL, RTLD_LAZY);
-
+	//auto cocos2d = dlopen(targetLibName != "" ? targetLibName : NULL, RTLD_LAZY);
 	
 	MenuLayerExt::ApplyHooks();
 	EditLevelLayerExt::ApplyHooks();
@@ -1605,7 +1617,8 @@ void loader()
 	DevDebugHooks::ApplyHooks();
 	#endif
 	
-	
+	HOOK2("_ZN7UILayer20toggleMenuVisibilityEb", UILayer_toggleMenuVisibility);
+	HOOK2("_ZN8EditorUI18shouldDeleteObjectEP10GameObject", EditorUI_shouldDeleteObject);
 	HOOK("_ZN16LevelSelectLayer5sceneEi", LevelSelectLayer_sceneH, LevelSelectLayer_sceneO);
 	HOOK("_ZN16GameLevelManager12getMainLevelEib", GameLevelManager_getMainLevelH, GameLevelManager_getMainLevelO);
 	HOOK("_ZN16GameLevelManager17getBasePostStringEv", GameLevelManager_getBasePostStringH, GameLevelManager_getBasePostStringO);
@@ -1701,13 +1714,20 @@ void loader()
 	//already linked to different steam account -> invalid username or password
 	tms.addPatch("libcocos2dcpp.so", 0x812513, "496e76616c696420757365726e616d65206f722070617373776f726420202020202020202020202020");
 	
+	NOP2(tms, 0x3DAE30); //the challenge enter, vault of secrets
+	NOP2(tms, 0x3DE256); //door, vault of secrets
+	
+	
 	NOP4(tms, 0x335644); //main level demon coin bypass
 	tms.addPatch("libcocos2dcpp.so", 0x337AA2, "00F036B9"); //main level demon coin texture
 	
-	tms.addPatch("libcocos2dcpp.so", 0x33681C, "40F6B87B"); //main level while loop
+	tms.addPatch("libcocos2dcpp.so", 0x33681C, "40F6B97B"); //main level while loop
 	//tms.addPatch("libcocos2dcpp.so", 0x336AC4, "40F20200"); //main level while loop2
 	
 	tms.addPatch("libcocos2dcpp.so", 0x267CCE, "4FF0 FF03"); //text input length bypass
+	tms.addPatch("libcocos2dcpp.so", 0x267D76, "0024"); //text input length
+	tms.addPatch("libcocos2dcpp.so", 0x267D7A, "0024"); //text input length
+	
 	tms.addPatch("libcocos2dcpp.so", 0x267CB0, "00BF 00BF"); //text input character byp/s
 	
 	
