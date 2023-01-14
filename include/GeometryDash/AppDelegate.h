@@ -19,7 +19,7 @@ public:
 	AppDelegate( );
 	virtual ~AppDelegate( void );
 
-	static AppDelegate* get();
+	static AppDelegate* get( void );
 
 	void platformShutdown( void );
 	void setupGLView( void );
@@ -27,13 +27,13 @@ public:
 	float bgScale( void );
 	void pauseGame( void );
 
-	 bool applicationDidFinishLaunching( void );
-	 void applicationDidEnterBackground( void );
-	 void applicationWillEnterForeground( void );
+	virtual bool applicationDidFinishLaunching( void );
+	virtual void applicationDidEnterBackground( void );
+	virtual void applicationWillEnterForeground( void );
 
-	 void applicationWillBecomeActive( void );
-	 void applicationWillResignActive( void );
+	virtual void applicationWillBecomeActive( void );
+	virtual void applicationWillResignActive( void );
 
-	void trySaveGame( bool );
+	virtual void trySaveGame( void );
 	virtual void willSwitchToScene( cocos2d::CCScene* p_scene );
 };

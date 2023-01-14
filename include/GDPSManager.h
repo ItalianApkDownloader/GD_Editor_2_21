@@ -16,8 +16,9 @@ public:
 	int opacityLeft;
 	int opacityRight;
 	std::string password;
-	int particles;
 	int newsLevelID;
+	int particles;
+	
 	
 	//news layer
 	bool isNews = false;
@@ -37,7 +38,7 @@ protected:
     void firstLoad();
     void setup();
     void load();
-	void writeToFile(const std::string& path, const char* content);
+	void writeToFile(std::string path, const char* content);
 	const char* getJsonString();
 
 

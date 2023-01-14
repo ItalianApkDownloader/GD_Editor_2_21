@@ -30,18 +30,19 @@ void DPADHooks::UILayerInit(UILayer* self) {
 
     thisShitDoesSomething = false;
     whatDoesThisDoTho = false;
-	
-	auto dpad = MEMBERBYOFFSET(CCSprite*, self, 0x1D8);
+
+    auto dpad = MEMBERBYOFFSET(CCSprite*, self, 0x1D8);
 	dpad->setVisible(true);
-	
+
     if(self->isTwoPlayer()) {
         thisShitDoesSomething = false;
         whatDoesThisDoTho = false;
-		
+
         auto dpadRight = CCSprite::createWithSpriteFrameName("Dpad_Btn.png");
 		dpadRight->setPositionY(dpad->GPY());
 		dpadRight->setPositionX(CCRIGHT - (dpad->GPX() - CCLEFT));
 		dpadRight->setTag(0xBAE);
+		dpadRight->setVisible(true);
 		self->addChild(dpadRight);
 
         rightBtnRect2 = {dpadRight->getPositionX() - 5, MBO(float, self, 0x1E4), 10, MBO(float, self, 0x1EC)};

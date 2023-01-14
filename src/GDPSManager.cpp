@@ -20,10 +20,10 @@ using namespace std;
 using namespace cocos2d;
 
 
+GDPSManager *s_sharedGDPSManager = nullptr;
 
 GDPSManager *GDPSManager::sharedState()
 {
-	static GDPSManager* s_sharedGDPSManager = nullptr;
     if (!s_sharedGDPSManager)
     {
         s_sharedGDPSManager = new GDPSManager();
@@ -69,7 +69,7 @@ bool GDPSManager::init()
      return true;
 }
 
-void GDPSManager::writeToFile(const string& path, const char* content) 
+void GDPSManager::writeToFile(const string path, const char* content) 
 {
 	 ofstream outputFile;
      outputFile.open(path.c_str());

@@ -141,16 +141,7 @@ void MenuLayerExt::onDownload(CCObject *sender)
 	app->openURL(url);
 }
 
-class LocalLevelManager : public GManager {
-	public:
-	static LocalLevelManager* sharedState();
-};
 
-void saveAllManagers() {
-	GM->save();
-	LocalLevelManager::sharedState()->save();
-	GDPS->save();
-}
 void MenuLayerExt::onTools(CCObject* sender) {
 	//cocos2d::CCApplication::sharedApplication()->openURL("http://gdpseditor.com/tools");
 	this->onUpdateShaderFile(nullptr);
@@ -492,11 +483,7 @@ void MenuLayerExt::onShaderRequestCompleted(cocos2d::extension::CCHttpClient *se
 		CCLog("onHttpRequestCompleted - Error buffer: %s", response->getErrorBuffer());
 		return;
 	}
-	
-	
-
-std::vector<char> *buffer = response->getResponseData();
-//	GameToolbox *gameToolbox = new GameToolbox();
+	//	GameToolbox *gameToolbox = new GameToolbox();
 	auto resp = GameToolbox::getResponse(response);
 	auto gm = GameManager::sharedState();
 

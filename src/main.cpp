@@ -35,14 +35,14 @@
 
 		!!!!!!!!!!!!!!!!!!!!!!!! COMMENT OUT BEFORE RELEASING APK !!!!!!!!!!!!!!!!!!!!!!!!
 */
-/*
+
 void asmtest() {
 	asm("nop;"
 		"mov R1, #4;"
 		"add R1, #4;"
 	);
 }
-*/
+
 std::string passwordTemp = "";
 int nFont = 0;
 
@@ -71,6 +71,8 @@ void UpdatePasswordTemp() {
 	}
 }
 
+
+
 void hidePauseBtn(CCNode* self)
 {
 	int c = self->getChildrenCount();
@@ -86,7 +88,7 @@ void hidePauseBtn(CCNode* self)
 			}
 		}
 	}
-	
+
 	if(btnMenu)
 	{
 		auto pauseBtn = (CCMenuItemSpriteExtra*)btnMenu->getChildren()->objectAtIndex(0);
@@ -97,6 +99,7 @@ void hidePauseBtn(CCNode* self)
 
 }
 
+
 FUNCTIONHOOK(bool, UILayer_init, UILayer* self) {
 	if(!UILayer_initO(self)) return false;
 	
@@ -104,23 +107,24 @@ FUNCTIONHOOK(bool, UILayer_init, UILayer* self) {
 	reinterpret_cast<UILayerDebug*>(self)->doInit();
 	#endif
 	
-	if(GM->ggv("1000012"))
-		hidePauseBtn(self);
+	if(GM->ggv("1000012")) hidePauseBtn(self);
+	//GDPSHelper::createLabels(menu, menu->getChildren(), {0, 0}, true);
 	
 	//platformer
-	if(MBO(bool, self, 0x206)) DPADHooks::UILayerInit(self);
+	if(MEMBERBYOFFSET(bool, self, 0x206))
+		DPADHooks::UILayerInit(self);
 	
-	//
 	return true;
 }
 
 FUNCTIONHOOK(void, UILayer_toggleMenuVisibility, CCLayer* self, bool invisible) {
 	//fmtlog("toggle menu: {}", invisible);
 	UILayer_toggleMenuVisibilityO(self, invisible);
-	
+
 	if(invisible && GM->ggv("1000012"))
 		hidePauseBtn(self);
 }
+
    
 bool(*isIconUnlockedO)(void *, int, int);
 bool isIconUnlockedH(void *self, int a1, int a2)
@@ -140,24 +144,32 @@ CCSprite* spriteCreateH(const char *textureName)
 }
 
 
+
+bool doRequest;
+
 const char *(*getStringO)(LoadingLayer *self);
 const char *getStringH(LoadingLayer *self)
 {
-	auto gm = GM;
-	gm->sgv("0122", false);
-	gm->sgv("0023", false); //smooth fix
-	gm->sgv("0074", true);  //show restart button
-	
+
+	doRequest = true;
+	GM->setGameVariable("0122", false);
+	GM->setGameVariable("0023", false); //smooth fix
+	GM->setGameVariable("0074", true);  //show restart button
 	return "Italian APK Downloader\nCatto_\niAndy_HD3\nTr1NgleBoss\nEitan";
 }
 
 CCSprite * (*spriteCreateFrameNameO)(const char *textureName);
 CCSprite* spriteCreateFrameNameH(const char *textureName)
-{
+{/*
+	if (containss(textureName, "GJ_fullBtn_001.png"))
+		return spriteCreateFrameNameO("GJ_creatorBtn_001.png");
+*/
+	//CCLog("frame: %s", textureName);
 	auto ret = spriteCreateFrameNameO(textureName);
 	if (ret != nullptr)
 		return ret;
 
+	//return spriteCreateFrameNameO("GJ_optionsTxt_001.png");
 	return spriteCreateFrameNameO("GJ_checkOff_001.png");
 }
 
@@ -165,6 +177,8 @@ CCSprite* spriteCreateFrameNameH(const char *textureName)
 #include "cocos2dx/extensions/network/HttpRequest.h"
 #include "cocos2dx/extensions/network/HttpResponse.h"
 #include "obfuscate.h"
+
+
 
 //epic servers obfuscate moment
 
@@ -294,13 +308,16 @@ inline long mid_num(const std::string &s)
 
 FUNCTIONHOOK(GameObject*, GameObject_create, int key)
 {
+	if(key == 2013) return GameObject_createO(1);
+
 	auto tb = ObjectToolbox::sharedState()->intKeyToFrame(key);
 	
-	if(key == 2013) return GameObject_createO(1);
 
 	if(containss(tb, "pixel")) {
 		auto pixelKey = mid_num(tb);
-		return GameObject_createO(pixelKey > 564 ? 136 : key);
+		//temp disable pixel blocks
+		return GameObject_createO(136);
+		//return GameObject_createO(pixelKey > 564 ? 136 : key);
 	}
 
 	return GameObject_createO(key);
@@ -446,7 +463,6 @@ void showStackTrace() {
 bool(*LoadingLayer_initO)(LoadingLayer *, bool);
 bool LoadingLayer_initH(LoadingLayer *self, bool fromReload)
 {
-/*
 	#ifdef EMUI_FIX
 	
 		patch tmp;
@@ -460,19 +476,18 @@ bool LoadingLayer_initH(LoadingLayer *self, bool fromReload)
 		spriteCache->addSpriteFramesWithFile("GJ_LaunchSheet.plist");
 		
 	#else
-*/
+
 		if (!LoadingLayer_initO(self, fromReload)) return false;
 	
 		auto text = *reinterpret_cast< CCNode **>(reinterpret_cast<uintptr_t> (self) + 0x144);
 		text->setPositionY(text->getPositionY() - 10);
 
 	
-	//#endif
+	#endif
 
 	UpdatePasswordTemp();
 	self->makeNewsRequest();
 	
-	//noclip
 	if(GM->ggv("200001"))
 	{
 		patch tmp;
@@ -1153,6 +1168,7 @@ FUNCTIONHOOK(void, GJBaseGameLayer_toggleDual, GJBaseGameLayer* self, void* a1, 
 	//...
 }
 
+
 FUNCTIONHOOK(bool, GJGarageLayer_init, GJGarageLayer* self) {
 	
 	if(!GJGarageLayer_initO(self))
@@ -1398,6 +1414,7 @@ FUNCTIONHOOK(void, PlayerObject_playDeathEffect2, PlayerObject* self) {
 }
 
 
+
 FUNCTIONHOOK(const char*, GJSearchObject_getKey, void* self) {
 	
 	const char* toAdd = CCString::createWithFormat(
@@ -1569,13 +1586,13 @@ FUNCTIONHOOK(void*, GameLevelManager_getMainLevel, void* self, int levelID) {
 
 FUNCTIONHOOK(void*, LevelSelectLayer_scene, int levelID) {
 	
-	//CCLog("before: %d", levelID);
+	CCLog("before: %d", levelID);
 	if(levelID >= 4000)
 		levelID -= 4000;
 	else
 		levelID += 3;
 	
-	//CCLog("after: %d", levelID);
+	CCLog("after: %d", levelID);
 	return LevelSelectLayer_sceneO(levelID);
 }
 
@@ -1589,12 +1606,12 @@ FUNCTIONHOOK(bool, EditorUI_shouldDeleteObject, EditorUI* self, void* obj) {
 	
 	return EditorUI_shouldDeleteObjectO(self, obj);
 }
+
 #include "definitions.h"
-
-
 void loader()
 {
-	//auto cocos2d = dlopen(targetLibName != "" ? targetLibName : NULL, RTLD_LAZY);
+	auto cocos2d = dlopen(targetLibName != "" ? targetLibName : NULL, RTLD_LAZY);
+
 	
 	MenuLayerExt::ApplyHooks();
 	EditLevelLayerExt::ApplyHooks();
@@ -1617,6 +1634,7 @@ void loader()
 	DevDebugHooks::ApplyHooks();
 	#endif
 	
+
 	HOOK2("_ZN7UILayer20toggleMenuVisibilityEb", UILayer_toggleMenuVisibility);
 	HOOK2("_ZN8EditorUI18shouldDeleteObjectEP10GameObject", EditorUI_shouldDeleteObject);
 	HOOK("_ZN16LevelSelectLayer5sceneEi", LevelSelectLayer_sceneH, LevelSelectLayer_sceneO);
@@ -1699,7 +1717,9 @@ void loader()
 	NOP4(tms, 0x27FE9E);
 	NOP4(tms, 0x27FE9E);
 	
-
+	NOP2(tms, 0x3DAE30); //the challenge enter, vault of secrets
+	NOP2(tms, 0x3DE256); //door, vault of secrets
+	
 	NOP4(tms, 0x2EDA9E); //versus
 	NOP4(tms, 0x26FF0E); //free levels runaction
 	
@@ -1714,17 +1734,11 @@ void loader()
 	//already linked to different steam account -> invalid username or password
 	tms.addPatch("libcocos2dcpp.so", 0x812513, "496e76616c696420757365726e616d65206f722070617373776f726420202020202020202020202020");
 	
-	NOP2(tms, 0x3DAE30); //the challenge enter, vault of secrets
-	NOP2(tms, 0x3DE256); //door, vault of secrets
-	
-	
 	NOP4(tms, 0x335644); //main level demon coin bypass
 	tms.addPatch("libcocos2dcpp.so", 0x337AA2, "00F036B9"); //main level demon coin texture
 	
 	tms.addPatch("libcocos2dcpp.so", 0x33681C, "40F6B97B"); //main level while loop
-	//tms.addPatch("libcocos2dcpp.so", 0x336AC4, "40F20200"); //main level while loop2
 	
-	tms.addPatch("libcocos2dcpp.so", 0x267CCE, "4FF0 FF03"); //text input length bypass
 	tms.addPatch("libcocos2dcpp.so", 0x267D76, "0024"); //text input length
 	tms.addPatch("libcocos2dcpp.so", 0x267D7A, "0024"); //text input length
 	
