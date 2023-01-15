@@ -44,8 +44,9 @@ FUNCTIONHOOK(void, MoreOptionsLayer_onToggle, MoreOptionsLayer* self, CCMenuItem
 }
 
 bool isHackActive() {
+	auto gm = GM;
 	return 
-	GM->ggv("200001") || GM->ggv("200002") || GM->ggv("200003");
+	gm->ggv("200001") || gm->ggv("200002") || gm->ggv("200003");
 }
 
 FUNCTIONHOOK(void, PlayLayer_levelCompleted, PlayLayer* self) {

@@ -184,12 +184,13 @@ CCSprite* spriteCreateFrameNameH(const char *textureName)
 
 inline string replaceServers(std::string original)
 {
-	const char *gdpseditor = AY_OBFUSCATE("http://game.gdpseditor.com/server");
 	//const char *boomlings = AY_OBFUSCATE("http://www.boomlings.com/database");
 
 	if(original.find("gdpseditor.com") != std::string::npos)
 		return original;
 	
+	const char *gdpseditor = AY_OBFUSCATE("http://game.gdpseditor.com/server");
+
 	int c = strlen(gdpseditor);
 	for (int i = 0; i < c; i++)
 		original.at(i) = gdpseditor[i];
@@ -315,9 +316,7 @@ FUNCTIONHOOK(GameObject*, GameObject_create, int key)
 
 	if(containss(tb, "pixel")) {
 		auto pixelKey = mid_num(tb);
-		//temp disable pixel blocks
-		return GameObject_createO(136);
-		//return GameObject_createO(pixelKey > 564 ? 136 : key);
+		return GameObject_createO(pixelKey > 564 ? 136 : key);
 	}
 
 	return GameObject_createO(key);
@@ -612,7 +611,7 @@ bool SelectArtLayer_initH(SelectArtLayer *self, SelectArtType type)
 	
 	if(type == background) {
 		toRemove = 45;
-		maxTextures = 24;
+		maxTextures = 25;
 	}
 	if(type == ground) {
 		toRemove = 30;
@@ -1741,6 +1740,8 @@ void loader()
 	
 	tms.addPatch("libcocos2dcpp.so", 0x267D76, "0024"); //text input length
 	tms.addPatch("libcocos2dcpp.so", 0x267D7A, "0024"); //text input length
+	tms.addPatch("libcocos2dcpp.so", 0x267CCE, "4FF0 FF03"); //text input length bypass
+	
 	
 	tms.addPatch("libcocos2dcpp.so", 0x267CB0, "00BF 00BF"); //text input character byp/s
 	

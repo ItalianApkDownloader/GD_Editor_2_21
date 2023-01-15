@@ -339,7 +339,7 @@ void LoadingLayer::onNewsRequestCompleted(cocos2d::extension::CCHttpClient *send
 	else
 		gdps->newsLevelID = 0;
 	
-	fmtlog("newscount: {}, response: {}", gdps->newsCount, resp);
+	fmtlog("newsLevelID: {}, newscount: {}, response: {}", gdps->newsLevelID, gdps->newsCount, resp);
 	
 	int nCount = parsedFromString["newsCount"].GetInt();
 	gdps->showNewNewsIndicator = nCount > gdps->newsCount;
@@ -424,12 +424,12 @@ void MenuLayerExt::onNews(CCObject* sender) {
 
 FUNCTIONHOOK(void, InfoLayer_onClose, InfoLayer* self, CCObject* sender) {
 	
-	auto gm = GM;
 	auto gdps = GDPS;
 	
 	if(gdps->isNews) {
 		gdps->isNews = false;
 		CCLog("close is news");
+		auto gm = GM;
 		gm->sgv("0089", gdps->g1);
 		gm->sgv("0088", gdps->g2);
 		gm->sgv("0069", gdps->g3);
