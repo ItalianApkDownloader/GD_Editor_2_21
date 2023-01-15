@@ -45,8 +45,7 @@ FUNCTIONHOOK(void, MoreOptionsLayer_onToggle, MoreOptionsLayer* self, CCMenuItem
 
 bool isHackActive() {
 	auto gm = GM;
-	return 
-	gm->ggv("200001") || gm->ggv("200002") || gm->ggv("200003");
+	return gm->ggv("200001") || gm->ggv("200002") || gm->ggv("200003");
 }
 
 FUNCTIONHOOK(void, PlayLayer_levelCompleted, PlayLayer* self) {
@@ -62,8 +61,17 @@ FUNCTIONHOOK(void*, CCTransitionFade_create, float time, void* scene, void* colo
 	return CCTransitionFade_createO(GM->ggv("200004") ? 0.0f : time, scene, color);
 }
 
+FUNCTIONHOOK(void, LeveInfoLayer_onPlay, void* self, void* sender) {
+
+	if(GDPS->acceptedHackAlert || GM->ggv("200005") || !isHackActive())
+		return LeveInfoLayer_onPlayO(self, sender);
+	
+	GDPS->acceptedHackAlert = true;
+	FLAlertLayer::create( nullptr, "Hacks enabled", "You will be <cr>kicked out</c> from the level at 100%!", "OK", nullptr, 380., false, 150. )->show( );
+}
 void Hacks::ApplyHooks() 
 {
+	HOOK2("_ZN14LevelInfoLayer6onPlayEPN7cocos2d8CCObjectE", LeveInfoLayer_onPlay);
 	HOOK2("_ZN7cocos2d16CCTransitionFade6createEfPNS_7CCSceneERKNS_10_ccColor3BE", CCTransitionFade_create);
 	HOOK("_ZN9PlayLayer13levelCompleteEv", PlayLayer_levelCompletedH, PlayLayer_levelCompletedO);
 	HOOK("_ZN16MoreOptionsLayer8onToggleEPN7cocos2d8CCObjectE", MoreOptionsLayer_onToggleH, MoreOptionsLayer_onToggleO);

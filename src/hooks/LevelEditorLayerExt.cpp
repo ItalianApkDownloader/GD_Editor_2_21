@@ -4,9 +4,6 @@
 #include "hooking.h"
 #include "FunctionHelper.h"
 
-#define FUNCTIONHOOK(returntype, name, ...) \
-returntype (*name##O)(__VA_ARGS__);			\
-returntype name##H(__VA_ARGS__)
 
 void CreateAndRetainArrayA(uintptr_t obj, int offset) {
 	auto array = CCArray::create();

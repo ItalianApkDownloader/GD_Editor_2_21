@@ -71,7 +71,6 @@ void EditorPauseLayerExt::customSetupH() {
 	
 	this->addChild(menu);
 	
-	//GDPSHelper::createLabels(this);
 	
 }
 
@@ -87,10 +86,9 @@ bool EditorPauseLayerExt::initH(void* editor) {
 	auto menu = (CCMenu*)this->getChildren()->objectAtIndex(1);
 	
 	CCArray* arr = CCArray::create();
-	arr->addObject(menu->getChildren()->objectAtIndex(0));
+	auto musicbtn = (CCNode*)menu->getChildren()->objectAtIndex(0);
+	arr->addObject(musicbtn);
 	arr->addObject(menu->getChildren()->objectAtIndex(1));
-	//arr->addObject(menu->getChildren()->objectAtIndex());
-	
 	
 
 	auto sprite = CCSprite::createWithSpriteFrameName("GJ_optionsBtn_001.png");
@@ -99,7 +97,9 @@ bool EditorPauseLayerExt::initH(void* editor) {
 	menu->addChild(optionsBtn);
 	arr->addObject(optionsBtn);
 	GameToolbox::alignItemsHorisontally(arr, 30, {0, 0}, false);
-
+	
+	((CCNode*)menu->getChildren()->objectAtIndex(2))->setPosition(musicbtn->getPosition());
+	
 
 	return true;
 }

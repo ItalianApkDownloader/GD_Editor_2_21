@@ -5,9 +5,6 @@
 
 using namespace cocos2d;
 
-#define FUNCTIONHOOK(returntype, name, ...) \
-returntype (*name##O)(__VA_ARGS__);			\
-returntype name##H(__VA_ARGS__)
 
 // - object collision
 /*

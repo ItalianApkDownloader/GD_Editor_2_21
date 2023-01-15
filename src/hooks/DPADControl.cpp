@@ -6,19 +6,16 @@
 
 using namespace cocos2d;
 
-#define FUNCTIONHOOK(returntype, name, ...) \
-returntype (*name##O)(__VA_ARGS__);			\
-returntype name##H(__VA_ARGS__)
 
 // vars
-int touch1ID;
-int touch2ID;
-CCRect leftBtnRect;
-CCRect leftBtnRect2;
-CCRect rightBtnRect;
-CCRect rightBtnRect2;
-bool thisShitDoesSomething = false;
-bool whatDoesThisDoTho = false;
+static int touch1ID;
+static int touch2ID;
+static CCRect leftBtnRect;
+static CCRect leftBtnRect2;
+static CCRect rightBtnRect;
+static CCRect rightBtnRect2;
+static bool thisShitDoesSomething = false;
+static bool whatDoesThisDoTho = false;
 
 void DPADHooks::UILayerInit(UILayer* self) {
     auto dir = CCDirector::sharedDirector();

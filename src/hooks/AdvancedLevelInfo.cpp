@@ -19,11 +19,6 @@ using namespace cocos2d;
 #include <cmath>
 
 
-
-#define FUNCTIONHOOK(returntype, name, ...) \
-returntype (*name##O)(__VA_ARGS__);			\
-returntype name##H(__VA_ARGS__)
-
 #define format(str, ...) CCString::createWithFormat(str, __VA_ARGS__)->getCString()
 
 

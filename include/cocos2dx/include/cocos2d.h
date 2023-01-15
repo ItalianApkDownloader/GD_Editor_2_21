@@ -33,8 +33,8 @@ static __TYPE__* create() \
 #define FMOD FMODAudioEngine::sharedEngine()
 
 #define FUNCTIONHOOK(returntype, name, ...) \
-returntype (*name##O)(__VA_ARGS__);			\
-returntype name##H(__VA_ARGS__)
+static returntype (*name##O)(__VA_ARGS__);			\
+static returntype name##H(__VA_ARGS__)
 
 
 
@@ -43,7 +43,7 @@ returntype name##H(__VA_ARGS__)
 
 #define version2 14
 #define version2str "1.4"
-//#define DEVDEBUG
+#define DEVDEBUG
 //#define SHADERDEBUG
 //#define EMUI_FIX
 

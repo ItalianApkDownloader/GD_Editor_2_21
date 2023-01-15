@@ -143,8 +143,8 @@ void MenuLayerExt::onDownload(CCObject *sender)
 
 
 void MenuLayerExt::onTools(CCObject* sender) {
-	//cocos2d::CCApplication::sharedApplication()->openURL("http://gdpseditor.com/tools");
-	this->onUpdateShaderFile(nullptr);
+	cocos2d::CCApplication::sharedApplication()->openURL("http://gdpseditor.com/tools");
+	//this->onUpdateShaderFile(nullptr);
 }
 void MenuLayerExt::onBlaze(CCObject *sender)
 {

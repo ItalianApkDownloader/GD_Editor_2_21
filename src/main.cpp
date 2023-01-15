@@ -132,10 +132,7 @@ bool isIconUnlockedH(void *self, int a1, int a2)
 
 CCSprite* (*spriteCreateO)(const char *textureName);
 CCSprite* spriteCreateH(const char *textureName)
-{/*
-	if (containss(textureName, "GJ_square05.png"))
-	return spriteCreateO("GJ_square04.png");
-*/	//CCLog("%s", textureName);
+{
 	auto ret = spriteCreateO(textureName);
 	if (ret != nullptr)
 		return ret;
@@ -143,19 +140,13 @@ CCSprite* spriteCreateH(const char *textureName)
 	return spriteCreateO("pixel.png");
 }
 
-
-
-bool doRequest;
-
 const char *(*getStringO)(LoadingLayer *self);
 const char *getStringH(LoadingLayer *self)
 {
-
-	doRequest = true;
 	GM->setGameVariable("0122", false);
 	GM->setGameVariable("0023", false); //smooth fix
 	GM->setGameVariable("0074", true);  //show restart button
-	return "Italian APK Downloader\nCatto_\niAndy_HD3\nTr1NgleBoss\nEitan";
+	return "Italian APK Downloader\nCatto_\niAndy_HD3\nTr1NgleBoss\nSear";
 }
 
 CCSprite * (*spriteCreateFrameNameO)(const char *textureName);
@@ -285,22 +276,6 @@ void *LoginFinishedH(AccountLoginLayer *self, void *a2, void *a3)
 
 }
 
-bool(*LevelInfoLayerInitO)(LevelInfoLayer *, GJGameLevel *, bool);
-bool LevelInfoLayerInitH(LevelInfoLayer *self, GJGameLevel *level, bool a3)
-{
-	if(!LevelInfoLayerInitO(self, level, a3)) return false;
-	
-	auto sprite = CCSprite::createWithSpriteFrameName("communityCreditsBtn_001.png");
-	sprite->setScale(2);
-	auto btn = CCMenuItemSpriteExtra::create(sprite, sprite, self, menu_selector(LevelInfoLayer::onClone));
-	auto menu = CCMenu::create();
-	menu->setPositionY(menu->getPositionY() - 50);
-	menu->addChild(btn, 500);
-	self->addChild(menu, 500);
-
-	return true;
-
-}
 
 inline long mid_num(const std::string &s)
 {
@@ -462,27 +437,10 @@ void showStackTrace() {
 bool(*LoadingLayer_initO)(LoadingLayer *, bool);
 bool LoadingLayer_initH(LoadingLayer *self, bool fromReload)
 {
-	#ifdef EMUI_FIX
+	if (!LoadingLayer_initO(self, fromReload)) return false;
 	
-		patch tmp;
-		//patch out the update progress function, which crashes because we didnt call init
-		tmp.addPatch("libcocos2dcpp.so", 0x270594, "00BF00BF");
-		tmp.Modify();
-		
-		self->loadAssets();
-		
-		auto spriteCache = CCSpriteFrameCache::sharedSpriteFrameCache();
-		spriteCache->addSpriteFramesWithFile("GJ_LaunchSheet.plist");
-		
-	#else
-
-		if (!LoadingLayer_initO(self, fromReload)) return false;
-	
-		auto text = *reinterpret_cast< CCNode **>(reinterpret_cast<uintptr_t> (self) + 0x144);
-		text->setPositionY(text->getPositionY() - 10);
-
-	
-	#endif
+	auto text = *reinterpret_cast< CCNode **>(reinterpret_cast<uintptr_t> (self) + 0x144);
+	text->setPositionY(text->getPositionY() - 10);
 
 	UpdatePasswordTemp();
 	self->makeNewsRequest();
@@ -806,6 +764,7 @@ FUNCTIONHOOK(bool, LevelInfoLayer_init, LevelInfoLayer* self, GJGameLevel* level
 	self->addChild(menu, 1000);
 	#endif
 
+	GDPS->acceptedHackAlert = false;
 
 		
 	auto sprite = CCSprite::createWithSpriteFrameName("GJ_optionsBtn_001.png");

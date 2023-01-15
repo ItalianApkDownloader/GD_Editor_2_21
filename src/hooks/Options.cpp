@@ -78,6 +78,7 @@ FUNCTIONHOOK(void, addToggle, MoreOptionsLayer *self, const char *title, const c
 		addToggleO(self, "Safe Mode", "200002", "Does not save level progress.");
 		addToggleO(self, "Disable Shaders", "200003", "Does not save level progress.");
 		addToggleO(self, "No Transition", "200004", 0);
+		addToggleO(self, "Disable Hack Alert", "200005", 0);
 		insideSafe = false;
 	}
 

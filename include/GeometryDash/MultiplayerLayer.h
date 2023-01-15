@@ -2,11 +2,6 @@
 #include "cocos2d.h"
 #include "hooking.h"
 
-#define FUNCTIONHOOK(returntype, name, ...) \
-returntype (*name##O)(__VA_ARGS__);			\
-returntype name##H(__VA_ARGS__)
-
-
 class MultiplayerLayer : public CCLayer
 {
 public:

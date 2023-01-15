@@ -18,6 +18,7 @@ public:
 	std::string password;
 	int newsLevelID;
 	int particles;
+	bool acceptedHackAlert;
 	
 	
 	//news layer

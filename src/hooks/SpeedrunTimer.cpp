@@ -14,9 +14,6 @@ using namespace cocos2d;
 
 #define TIMER_ENABLED GM->getGameVariable("1000011")
 
-#define FUNCTIONHOOK(returntype, name, ...) \
-returntype (*name##O)(__VA_ARGS__);			\
-returntype name##H(__VA_ARGS__)
 
 CCLabelBMFont* timerLabel;
 float timer = 0;
