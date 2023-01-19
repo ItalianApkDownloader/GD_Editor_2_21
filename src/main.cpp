@@ -443,7 +443,9 @@ bool LoadingLayer_initH(LoadingLayer *self, bool fromReload)
 	text->setPositionY(text->getPositionY() - 10);
 
 	UpdatePasswordTemp();
-	self->makeNewsRequest();
+	
+	if(!GDPS->showNewNewsIndicator || GDPS->newsLevelID == 0)
+		self->makeNewsRequest();
 	
 	if(GM->ggv("200001"))
 	{

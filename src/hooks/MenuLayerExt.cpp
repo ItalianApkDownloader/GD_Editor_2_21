@@ -342,7 +342,8 @@ void LoadingLayer::onNewsRequestCompleted(cocos2d::extension::CCHttpClient *send
 	fmtlog("newsLevelID: {}, newscount: {}, response: {}", gdps->newsLevelID, gdps->newsCount, resp);
 	
 	int nCount = parsedFromString["newsCount"].GetInt();
-	gdps->showNewNewsIndicator = nCount > gdps->newsCount;
+	if(!gdps->showNewNewsIndicator)
+		gdps->showNewNewsIndicator = nCount > gdps->newsCount;
 	gdps->newsCount = nCount;
 }
 
