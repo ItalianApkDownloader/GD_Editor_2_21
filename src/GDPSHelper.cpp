@@ -131,3 +131,13 @@ void GDPSHelper::createLabels(CCNode* layer, CCArray* objects, CCPoint pos, bool
 	}
 	
 }
+
+
+std::string GDPSHelper::getRawResponse(extension::CCHttpResponse* response) {
+	std::vector<char>* buffer = response->getResponseData();
+	return std::string(buffer->begin(), buffer->end());	
+}
+
+void GDPSHelper::setHttpResponse(extension::CCHttpResponse* response, std::string str) {
+	std::copy(str.begin(), str.end(), std::back_inserter(response->_responseData));
+}

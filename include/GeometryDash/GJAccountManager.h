@@ -48,5 +48,6 @@ public:
     virtual ~GJAccountManager();
 
     static GJAccountManager* sharedState( );
+	bool loginAccount(std::string userName, std::string password);
     
 };

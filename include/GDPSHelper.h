@@ -11,40 +11,21 @@
 #include <cxxabi.h>
 #include "CCMenuItemToggler.h"
 
+namespace GDPSHelper {
 
-
-//making everything static so i dont need an instance of the class lol
-
-class GDPSHelper {
+	void createArrayAndAssign(LevelEditorLayer* p,int offset);
+	std::string NameForNode(cocos2d::CCObject* node);
+	void logNames(CCArray* objects);
+	vector<string> getDebugLogVector();
+	std::string format(std::string, ...);
 	
-	
-public:
-	
-	
-	
-public:
-
-	
-	static void createArrayAndAssign(LevelEditorLayer* p,int offset);
-	static std::string NameForNode(cocos2d::CCObject* node);
-	static void logNames(CCArray* objects);
-	static vector<string> getDebugLogVector();
-	static std::string format(std::string, ...);
-	
-	static void createToggleButton(
-	const char *text, 
-	CCPoint position, 
-	float boxScale, 
-	float labelScale, 
-	CCObject *baseclass, 
-	cocos2d::SEL_MenuHandler callback, 
-	CCMenu *menu, 
-	bool toggled, 
-	bool enabled
+	void createToggleButton(
+		const char *text, CCPoint position, float boxScale, float labelScale, CCObject *baseclass, 
+		cocos2d::SEL_MenuHandler callback, CCMenu *menu, bool toggled, bool enabled
 	);
 	
-	static void createLabels(CCNode*, CCArray*, CCPoint pos, bool logNames);
-	static void createLabels(CCNode*);
-
-
+	void createLabels(CCNode*, CCArray*, CCPoint pos, bool logNames);
+	void createLabels(CCNode*);
+	std::string getRawResponse(extension::CCHttpResponse* response);
+	void setHttpResponse(extension::CCHttpResponse* response, std::string strRes);
 };

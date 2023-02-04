@@ -9,29 +9,24 @@
 
 
 
-class FunctionHelper {
+namespace FunctionHelper {
 	
+	static const std::string base64_chars =
+	"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+	"abcdefghijklmnopqrstuvwxyz"
+	"0123456789+/";
 	
-public:
+	 std::string itos(int Number);
 	
-	static const std::string base64_chars;	
-	
-	
-public:
-
-	
-
-	static std::string itos(int Number);
-	
-	static inline bool is_base64(unsigned char c) {
+	 inline bool is_base64(unsigned char c) {
 		return (isalnum(c) || (c == '+') || (c == '/'));
 	}
-	static bool isNumber(const std::string &);
-	static std::string thousandSeparator(int n);
-	static std::string base64_decode(std::string const& encoded_string);
-	static std::string base64_encode(unsigned char const* bytes_to_encode, unsigned int in_len);
-	static std::string gjp(std::string plainText_password);
-	static std::string itohex(int i);
-	static std::string intToFormatString(int n);
+	bool isNumber(const std::string &);
+	std::string thousandSeparator(int n);
+	std::string base64_decode(std::string const& encoded_string);
+	std::string base64_encode(unsigned char const* bytes_to_encode, unsigned int in_len);
+	std::string gjp(std::string plainText_password);
+	std::string itohex(int i);
+	std::string intToFormatString(int n);
 
-};
+};

@@ -7,29 +7,32 @@
 
 
 class GDPSManager{
-	
+
 	RSJresource jsonObject;
-	
+
 	
 public:
 	
+	//TODO make this private and add getters and setters
 	int opacityLeft;
 	int opacityRight;
-	std::string password;
 	int newsLevelID;
+	bool showNewNewsIndicator;
+	
+
 	int particles;
 	bool acceptedHackAlert;
 	
 	
 	//news layer
-	bool isNews = false;
+	bool isNews;
 	bool g1;
 	bool g2;
 	bool g3;
+	std::string tempPassword;
 	
 	//news layer new announcements indicator
-	int newsCount = 0;
-	bool showNewNewsIndicator = false;
+	int newsCount;
 
 protected:
 	void logString();
@@ -50,6 +53,11 @@ public:
     static GDPSManager* sharedState();
 
     void save();
+	
+	void setNewsCount(int n);
+	int getNewsCount();
+	bool shouldShowNews();
+	
 	static void ApplyHooks();
 
 protected:

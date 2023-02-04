@@ -1,5 +1,3 @@
-#include <dlfcn.h>
-#include "blaze.h"
 #include "cocos2d.h"
 #include "EditLevelLayerExt.h"
 #include "patch.h"

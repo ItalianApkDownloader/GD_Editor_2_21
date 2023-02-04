@@ -42,8 +42,9 @@ static returntype name##H(__VA_ARGS__)
 #define GPX() getPositionX()
 
 #define version2 14
+#define FUNH
 #define version2str "1.4"
-//#define DEVDEBUG
+#define DEVDEBUG
 //#define SHADERDEBUG
 //#define EMUI_FIX
 
@@ -58,13 +59,8 @@ static returntype name##H(__VA_ARGS__)
 
 #define TAG "cocos2x"
 
-#ifdef DEVDEBUG
-	#define CCLog(...) ((void)__android_log_print(3, TAG, __VA_ARGS__))
-	#define fmtlog(...) CCLog("%s", fmt::format(__VA_ARGS__).c_str())
-#else
-	#define CCLog(...) 
-	#define fmtlog(...) 
-#endif
+#define CCLog(...) ((void)__android_log_print(3, TAG, __VA_ARGS__))
+#define fmtlog(...) CCLog("%s", fmt::format(__VA_ARGS__).c_str())
 
 #define ccp(__X__,__Y__) cocos2d::CCPointMake((float)(__X__), (float)(__Y__))
 

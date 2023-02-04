@@ -34,6 +34,7 @@ LOCAL_EXPORT_C_INCLUDES := 	$(LOCAL_PATH)/include/cocos2dx/include \
 							$(COCOS_PATH)/extensions/DS_Dictionary \
 							$(COCOS_PATH)/platform \
 							$(COCOS_PATH)/extensions \
+							$(COCOS_PATH)/extensions\network \
 
 include $(PREBUILT_SHARED_LIBRARY)
 
@@ -52,6 +53,7 @@ LOCAL_C_INCLUDES += $(LOCAL_PATH)/include/KittyMemory \
 LOCAL_C_INCLUDES += $(LOCAL_PATH)/include/layers \
 
 LOCAL_SRC_FILES :=	src/main.cpp \
+					src/hooks/Servers.cpp \
 					src/hooks/Emojis.cpp \
 					src/hooks/Hacks.cpp \
 					src/hooks/AbbreviatedLabels.cpp \

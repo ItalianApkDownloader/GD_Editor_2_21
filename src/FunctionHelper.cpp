@@ -88,10 +88,7 @@ std::string FunctionHelper::itos(int Number)
 	return ss.str();
 }
 
-const std::string FunctionHelper::base64_chars =
-"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-"abcdefghijklmnopqrstuvwxyz"
-"0123456789+/";
+
 
 
 std::string FunctionHelper::base64_decode(std::string const& encoded_string) {

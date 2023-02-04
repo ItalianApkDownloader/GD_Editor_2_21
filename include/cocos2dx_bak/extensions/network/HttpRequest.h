@@ -218,7 +218,7 @@ public:
    	}
 
 
-protected:
+public:
     // properties
     HttpRequestType             _requestType;    /// kHttpRequestGet, kHttpRequestPost or other enums
     std::string                 _url;            /// target url that this request is sent to

@@ -3,23 +3,22 @@
 #include <sstream>
 #include "hooking.h"
 #include "cocos2d.h"
+#include "obfuscate.h"
 
 
 
 //#include <gd.h>
 #include <CCFileUtils.h>
 #include "GDPSManager.h"
-
 #include "json.hpp"
-#include <cstdio>
 
 using namespace std;
 using namespace cocos2d;
 
 
-GDPSManager *s_sharedGDPSManager = nullptr;
+GDPSManager* s_sharedGDPSManager = nullptr;
 
-GDPSManager *GDPSManager::sharedState()
+GDPSManager* GDPSManager::sharedState()
 {
     if (!s_sharedGDPSManager)
     {
@@ -36,38 +35,36 @@ void GDPSManager::encodeDataTo()
 	RSJresource jsonData("{}");
 	jsonData["opacityLeft"] = this->opacityLeft;
 	jsonData["opacityRight"] = this->opacityRight;
-	jsonData["password"] = this->password;
 	jsonData["newsCount"] = this->newsCount;
+	jsonData["newsLevelID"] = this->newsLevelID;
 	jsonData["showNewNewsIndicator"] = this->showNewNewsIndicator;
-	this->jsonObject = jsonData;
+	jsonObject = jsonData;
 }
 
 
 
 void GDPSManager::dataLoaded()
 {
-	this->opacityRight = this->jsonObject["opacityRight"].as<int>(255);
-	this->opacityLeft = this->jsonObject["opacityLeft"].as<int>(255);
-	this->password = this->jsonObject["password"].as<std::string>("0");
-	this->newsCount = this->jsonObject["newsCount"].as<int>(0);
-	this->newsLevelID = this->jsonObject["newsLevelID"].as<int>(0);
-	this->showNewNewsIndicator = this->jsonObject["showNewNewsIndicator"].as<bool>(false);
+	opacityRight = this->jsonObject["opacityRight"].as<int>(255);
+	opacityLeft = this->jsonObject["opacityLeft"].as<int>(255);
+	newsCount = this->jsonObject["newsCount"].as<int>(0);
+	newsLevelID = this->jsonObject["newsLevelID"].as<int>(0);
+	showNewNewsIndicator = this->jsonObject["showNewNewsIndicator"].as<bool>(false);
 }
 
 void GDPSManager::firstLoad()
 {
-	this->opacityLeft = 255;
-	this->opacityRight = 255;
-	this->password = "0";
-	this->newsCount = 0;
-	this->showNewNewsIndicator = false;
-	this->newsLevelID = 0;
+	opacityLeft = 255;
+	opacityRight = 255;
+	newsCount = 0;
+	showNewNewsIndicator = false;
+	newsLevelID = 0;
 }
 
 bool GDPSManager::init()
 {
-     this->m_sFileName = "GDPSManager.json";
-     this->setup();
+     m_sFileName = AY_OBFUSCATE("GDPSManager.json");
+     setup();
      return true;
 }
 
@@ -82,8 +79,8 @@ void GDPSManager::writeToFile(const string path, const char* content)
 
 void GDPSManager::save()
 {
-	 this->encodeDataTo();
-	 this->writeToFile(CCFileUtils::sharedFileUtils()->getWritablePath() + this->m_sFileName, jsonObject.as_str().c_str());
+	encodeDataTo();
+	writeToFile(CCFileUtils::sharedFileUtils()->getWritablePath() + this->m_sFileName, jsonObject.as_str().c_str());
 	// CCLog(jsonObject.as_str().c_str());
 }
 
@@ -93,13 +90,13 @@ void GDPSManager::setup()
     std::ifstream infile(path.c_str());
     if (infile.good())
     {
-        this->load();
+        load();
 	//	CCLog("file good");
     }
     else
     {
-		this->jsonObject = RSJresource("{}");
-        this->firstLoad();
+		jsonObject = RSJresource("{}");
+        firstLoad();
 	//	CCLog("file doesnt exist");
     }
 }
@@ -109,17 +106,21 @@ void GDPSManager::load()
 	 auto path = CCFileUtils::sharedFileUtils()->getWritablePath() + m_sFileName;
 	 std::ifstream ifs(path);
 	 
-	 this->jsonObject = RSJresource(ifs);
+	 jsonObject = RSJresource(ifs);
 	 //CCLog(jsonObject.as_str().c_str());
-	 this->dataLoaded();
+	 dataLoaded();
 }
+
 
 FUNCTIONHOOK(void*, trySaveGame, void* self, bool something) {
 	GDPS->save();
 	return trySaveGameO(self, something);
 }
 
+void GDPSManager::setNewsCount(int n) { newsCount = n; }
+int GDPSManager::getNewsCount() { return newsCount; }
+bool GDPSManager::shouldShowNews() { return showNewNewsIndicator; }
+
 void GDPSManager::ApplyHooks() {
 	HOOK("_ZN11AppDelegate11trySaveGameEb", trySaveGameH, trySaveGameO);
-	
 }

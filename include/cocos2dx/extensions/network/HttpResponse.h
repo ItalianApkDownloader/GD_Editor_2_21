@@ -167,7 +167,7 @@ public:
         _errorBuffer.assign(value);
     };
     
-protected:
+public:
     bool initWithRequest(CCHttpRequest* request);
     PAD(16);
     // properties

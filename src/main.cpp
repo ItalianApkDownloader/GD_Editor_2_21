@@ -43,33 +43,12 @@ void asmtest() {
 	);
 }
 
-std::string passwordTemp = "";
 int nFont = 0;
 
 void(*GameManager_tryShowAdO)();
 void GameManager_tryShowAdH() {}
 
 float randFloat(float X) { return static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/X)); }
-
-void UpdatePasswordTemp() {
-	const auto m_sFileName = "password.dat";
-
-	const auto path = CCFileUtils::sharedFileUtils()->getWritablePath() + m_sFileName;
-
-	std::ifstream infile(path.c_str());
-	if (infile.good())
-	{
-		string myText;
-		while (getline(infile, myText))
-			passwordTemp = myText;
-		//	CCLog("password done");
-	}
-	else
-	{
-		passwordTemp = "0";
-		//	CCLog("no file found");
-	}
-}
 
 
 
@@ -164,76 +143,8 @@ CCSprite* spriteCreateFrameNameH(const char *textureName)
 	return spriteCreateFrameNameO("GJ_checkOff_001.png");
 }
 
-#include "cocos2dx/extensions/network/HttpClient.h"
-#include "cocos2dx/extensions/network/HttpRequest.h"
-#include "cocos2dx/extensions/network/HttpResponse.h"
-#include "obfuscate.h"
-
-
-
-//epic servers obfuscate moment
-
-inline string replaceServers(std::string original)
-{
-	//const char *boomlings = AY_OBFUSCATE("http://www.boomlings.com/database");
-
-	if(original.find("gdpseditor.com") != std::string::npos)
-		return original;
-	
-	const char *gdpseditor = AY_OBFUSCATE("http://game.gdpseditor.com/server");
-
-	int c = strlen(gdpseditor);
-	for (int i = 0; i < c; i++)
-		original.at(i) = gdpseditor[i];
-
-	return original;
-}
-
-void *(*LevelProcessO)(GameManager *gm, string a1, string a2, string a3, int a4);
-void *LevelProcessH(GameManager *gm, string a1, string postData, string a3, int a4)
-{
-	//fmtlog("postData: {}", postData);
-	if(postData.find("epic=") != std::string::npos) 
-	{
-		postData += fmt::format("&godlike={}", (int)GLM->getBoolForKey("legendary_filter_custom"));
-		
-		//the platformer filter is actually a length filter
-		//however thats buggy if i add it like that so i will just use the old code
-		//to add it in advanced filters
-		if(GLM->getBoolForKey("platform_filter_custom"))
-		{
-			int lenpos = postData.find("len=");
-			if(postData[lenpos + 4] != '-')
-				postData.insert(postData.find("&page"), ",5");
-			else
-				postData[lenpos + 4] = '5';
-		}
-	}
-	return LevelProcessO(gm, replaceServers(a1), postData, a3, a4);
-}
-
-void *(*MusicProcessO)(void *idk, string a1, string a2, string a3, int a4);
-void *MusicProcessH(void *idk, string a1, string a2, string a3, int a4)
-{
-	return MusicProcessO(idk, replaceServers(a1), a2, a3, a4);
-}
-
-void *(*AccountProcessO)(void *idk, string a1, string a2, string a3, int a4);
-void *AccountProcessH(void *idk, string a1, string postData, string a3, int a4)
-{
-	if (!passwordTemp.empty())
-	{
-		auto AM = GJAccountManager::sharedState();
-		postData = fmt::format("{}&password={}&gjp={}", postData, passwordTemp, FunctionHelper::gjp(passwordTemp));
-	}
-	return AccountProcessO(idk, replaceServers(a1), postData, a3, a4);
-}
-
 bool(*canPlayOnlineLevelsO)(CreatorLayer *self);
-bool canPlayOnlineLevelsH(CreatorLayer *self)
-{
-	return true;
-}
+bool canPlayOnlineLevelsH(CreatorLayer *self){ return true; }
 
 CCArray * (*getTriggerGroupO)(LevelEditorLayer *self, int a1);
 CCArray* getTriggerGroupH(LevelEditorLayer *self, int a1)
@@ -249,34 +160,6 @@ void *addToGroupH(GJBaseGameLayer *self, GameObject *a2, int a3, bool a4)
 
 	return addToGroupO(self, a2, a3, a4);
 }
-#include "AccountLoginLayer.h"
-
-void *(*AccountSubmitO)(AccountLoginLayer *self, CCObject *a2, void *a3, void *a4);
-void *AccountSubmitH(AccountLoginLayer *self, CCObject *a2, void *a3, void *a4)
-{
-	passwordTemp = self->_inputPassword()->getString();
-	//CCLog(passwordTemp.c_str());
-	
-	return AccountSubmitO(self, a2, a3, a4);
-}
-
-void *(*LoginFinishedO)(AccountLoginLayer *self, void *a2, void *a3);
-void *LoginFinishedH(AccountLoginLayer *self, void *a2, void *a3)
-{
-	const auto m_sFileName = "password.dat";
-
-	const auto path = CCFileUtils::sharedFileUtils()->getWritablePath() + m_sFileName;
-	ofstream MyFile(path.c_str());
-
-	MyFile << passwordTemp;
-
-	MyFile.close();
-
-	return LoginFinishedO(self, a2, a3);
-
-}
-
-
 inline long mid_num(const std::string &s)
 {
 	return std::strtol(&s[s.find('_') + 1], nullptr, 10);
@@ -402,37 +285,6 @@ void *PlayLayer_addObjectH(PlayLayer *self, GameObject *obj)
 
 }
 
-
-void showStackTrace() {
-	        auto path = CCFileUtils::sharedFileUtils()->getWritablePath() + "crash.txt";
-
-    std::ifstream ifs( path );
-    std::string content = "File not found.";
-
-    std::stringstream ss;
-
-    if ( ifs.good() )
-    {
-        std::string sLine;
-
-        int i = 0;
-        while ( i < 19 )
-        {
-            getline(ifs, sLine);
-            ss << sLine << std::endl;
-            i++;
-        }
-    }
-    else 
-        ss << "File not found.";
-
-    ifs.close( );
-
-    // saber::logging::log( "%s ALL DATA", content.c_str() );
-    FLAlertLayer::create( nullptr, "Stack Trace", ss.str(), "Exit", nullptr, 450., true, 300. )->show( );
-
-}
-
 // moving funny loading text
 bool(*LoadingLayer_initO)(LoadingLayer *, bool);
 bool LoadingLayer_initH(LoadingLayer *self, bool fromReload)
@@ -441,12 +293,11 @@ bool LoadingLayer_initH(LoadingLayer *self, bool fromReload)
 	
 	auto text = *reinterpret_cast< CCNode **>(reinterpret_cast<uintptr_t> (self) + 0x144);
 	text->setPositionY(text->getPositionY() - 10);
-
-	UpdatePasswordTemp();
 	
-	if(!GDPS->showNewNewsIndicator || GDPS->newsLevelID == 0)
+	if(!GDPS->shouldShowNews() || GDPS->getNewsCount() == 0)
 		self->makeNewsRequest();
 	
+	//noclip
 	if(GM->ggv("200001"))
 	{
 		patch tmp;
@@ -532,24 +383,6 @@ bool EditorUI_InitH(EditorUI *self, LevelEditorLayer *editor)
 
 	return true;
 }
-/*
-int(*onToggleTrampoline)(void *pthis, const char *val);
-void hook_onToggle(void *pthis, const char *val)
-{
-	int v = atoi(val);
-
-	onToggleTrampoline(pthis, val);
-
-	if (v > 100000)
-	{
-		if (v == 100005 && GM->getGameVariable("100005"))
-		{
-			FLAlertLayer::create(nullptr, "DISCLAIMER", "<cg>Pixel blocks</c> are <cr>not official</c> and for that reason levels containing these blocks <cr>will not look good in the official 2.2.</c>\n    <co>(textures will change)</c><cr>Don't use pixel blocks if you want your level to be playable in 2.2.</c>", "OK", nullptr, 500, false, 300)->show();
-		}
-	}
-}
-*/
-
 
 bool(*SelectArtLayer_initO)(SelectArtLayer *, SelectArtType);
 bool SelectArtLayer_initH(SelectArtLayer *self, SelectArtType type)
@@ -627,13 +460,7 @@ bool SelectArtLayer_initH(SelectArtLayer *self, SelectArtType type)
 	
 	return true;
 }
-#include "AccountRegisterLayer.h"
 
-bool(*AccountRegisterLayer_InitO)(AccountRegisterLayer*);
-bool AccountRegisterLayer_InitH(AccountRegisterLayer*)
-{
-	cocos2d::CCApplication::sharedApplication()->openURL("http://game.gdpseditor.com/server/tools/account/registerAccount.php");
-}
 
 #include "SetupPickupTriggerPopup.h"
 
@@ -985,41 +812,30 @@ FUNCTIONHOOK(void, onSelectMode, LevelSettingsLayer* self, CCObject* sender) {
 	onSelectModeO(self, sender);
 	
 		
-		if(sender && sender->getTag() == 7) {
-			MBO(int, MBO(LevelSettingsObject*, self, 0x230), 0x108) = 7;
-		}
-	
+	if(sender && sender->getTag() == 7) {
+		MBO(int, MBO(LevelSettingsObject*, self, 0x230), 0x108) = 7;
+	}
 }
 
 #include "SelectFontLayer.h"
 FUNCTIONHOOK(void, updateFontLabel, SelectFontLayer* self, CCObject* a2) {
-	
 	
 	auto editor = MBO(LevelEditorLayer*, self, 0x1F0);
 	void* unk = MBO(void*, editor, 0x33C);
 	int font = MBO(int, unk, 0x124);
 	
 	int tag = a2->getTag();
-		
-		/*
-		CCLog("font: %d", font);
-		CCLog("tag : %d", tag);
-		*/
-		
-		if(tag == 0)
+	
+	if(tag == 0)
 		return updateFontLabelO(self, a2);
 	
-		if(font != 11)
+	if(font != 11)
 		return updateFontLabelO(self, a2);
 
 }
 
-
 FUNCTIONHOOK(bool, validGroup, GameObject* obj, int group) 
 { return true; }
-
-#include "handler.h"
-
 
 void patchIcons(int gameMode, int amountt) {
 	
@@ -1511,30 +1327,6 @@ FUNCTIONHOOK(void, SupportLayer_onEmail, void* self, void* a2) {
 }
 
 
-
-FUNCTIONHOOK(std::string, GameLevelManager_getBasePostString, void* self) {
-	
-	auto ret = GameLevelManager_getBasePostStringO(self);
-	//CCLog("posstring: %s", ret.c_str());
-	
-	if (!passwordTemp.empty())
-	{
-		auto AM = GJAccountManager::sharedState();
-
-		if (ret.find("userName") != std::string::npos)
-			ret = fmt::format("{}&password={}&gjp={}&", ret, passwordTemp, FunctionHelper::gjp(passwordTemp));
-		else
-			ret = fmt::format("{}&password={}&gjp={}&userName={}", ret, passwordTemp, FunctionHelper::gjp(passwordTemp), AM->_username());
-	}
-	
-	//CCLog("after possttrn: %s", ret.c_str());
-
-
-	return ret;
-}
-
-
-
 FUNCTIONHOOK(void*, GameLevelManager_getMainLevel, void* self, int levelID) {
 	//4000 - subzero
 	//3001 - the challenge
@@ -1568,6 +1360,13 @@ FUNCTIONHOOK(bool, EditorUI_shouldDeleteObject, EditorUI* self, void* obj) {
 }
 
 #include "definitions.h"
+
+FUNCTIONHOOK(void, onRegister, void)
+{
+	cocos2d::CCApplication::sharedApplication()->openURL("http://game.gdpseditor.com/server/tools/account/registerAccount.php");
+}
+
+
 void loader()
 {
 	auto cocos2d = dlopen(targetLibName != "" ? targetLibName : NULL, RTLD_LAZY);
@@ -1589,17 +1388,17 @@ void loader()
 	AbbreviatedLabels::ApplyHooks();
 	Hacks::ApplyHooks();
 	//Emojis::ApplyHooks();
+	Servers::ApplyHooks();
 
 	#ifdef SHADERDEBUG
 	DevDebugHooks::ApplyHooks();
 	#endif
 	
-
+	HOOK2("_ZN12AccountLayer10onRegisterEPN7cocos2d8CCObjectE", onRegister);
 	HOOK2("_ZN7UILayer20toggleMenuVisibilityEb", UILayer_toggleMenuVisibility);
 	HOOK2("_ZN8EditorUI18shouldDeleteObjectEP10GameObject", EditorUI_shouldDeleteObject);
 	HOOK("_ZN16LevelSelectLayer5sceneEi", LevelSelectLayer_sceneH, LevelSelectLayer_sceneO);
 	HOOK("_ZN16GameLevelManager12getMainLevelEib", GameLevelManager_getMainLevelH, GameLevelManager_getMainLevelO);
-	HOOK("_ZN16GameLevelManager17getBasePostStringEv", GameLevelManager_getBasePostStringH, GameLevelManager_getBasePostStringO);
 	HOOK("_ZN18LevelSettingsLayer15selectArtClosedEP14SelectArtLayer", LevelSettingsLayer_selectArtClosedH, LevelSettingsLayer_selectArtClosedO);
 	HOOK("_ZN16LevelSearchLayer13toggleTimeNumEib", LevelSearchLayer_toggleTimeNumH, LevelSearchLayer_toggleTimeNumO);
 	HOOK("_ZN12SupportLayer7onEmailEPN7cocos2d8CCObjectE", SupportLayer_onEmailH, SupportLayer_onEmailO);
@@ -1636,7 +1435,6 @@ void loader()
 	HOOK("_ZN9PlayLayer18togglePracticeModeEb", togglePracticeModeH, togglePracticeModeO);
 	HOOK("_ZN9PlayLayer9addObjectEP10GameObject", PlayLayer_addObjectH, PlayLayer_addObjectO);
 	HOOK("_ZN23SetupPickupTriggerPopup4initEP16EffectGameObjectPN7cocos2d7CCArrayE", SetupPickupTriggerH, SetupPickupTriggerO);
-	HOOK("_ZN20AccountRegisterLayer4initEv", AccountRegisterLayer_InitH, AccountRegisterLayer_InitO);
 	HOOK("_ZN11GameManager12getMGTextureEi", GameManager_getMGTextureH, GameManager_getMGTextureO);
 	HOOK("_ZN13ObjectToolbox13intKeyToFrameEi", keyToFrameH, keyToFrameO);
 	HOOK("_ZN8EditorUI4initEP16LevelEditorLayer", EditorUI_InitH, EditorUI_InitO);
@@ -1648,12 +1446,7 @@ void loader()
 	HOOK("_ZN7cocos2d8CCSprite25createWithSpriteFrameNameEPKc", spriteCreateFrameNameH, spriteCreateFrameNameO);
 	HOOK("_ZN16GameStatsManager14isItemUnlockedE10UnlockTypei", isIconUnlockedH, isIconUnlockedO);
 	//HOOK("_ZN12OptionsLayer11customSetupEv", OptionsLayerInitH, OptionsLayerInitO);
-	HOOK("_ZN16GameLevelManager18ProcessHttpRequestESsSsSs10GJHttpType", LevelProcessH, LevelProcessO);
-	HOOK("_ZN20MusicDownloadManager18ProcessHttpRequestESsSsSs10GJHttpType", MusicProcessH, MusicProcessO);
-	HOOK("_ZN16GJAccountManager18ProcessHttpRequestESsSsSs10GJHttpType", AccountProcessH, AccountProcessO);
 	HOOK("_ZN12CreatorLayer19canPlayOnlineLevelsEv", canPlayOnlineLevelsH, canPlayOnlineLevelsO);	
-	HOOK("_ZN17AccountLoginLayer8onSubmitEPN7cocos2d8CCObjectE", AccountSubmitH, AccountSubmitO);
-	HOOK("_ZN17AccountLoginLayer20loginAccountFinishedEii", LoginFinishedH, LoginFinishedO);
 	HOOK("_ZN12LoadingLayer16getLoadingStringEv", getStringH, getStringO);
 	
 	patch tms = patch();
@@ -1691,12 +1484,12 @@ void loader()
 	patchIcons(6, 68); //robot
 	patchIcons(7, 69); //spider
 	
+	
 	//already linked to different steam account -> invalid username or password
 	tms.addPatch("libcocos2dcpp.so", 0x812513, "496e76616c696420757365726e616d65206f722070617373776f726420202020202020202020202020");
 	
 	NOP4(tms, 0x335644); //main level demon coin bypass
 	tms.addPatch("libcocos2dcpp.so", 0x337AA2, "00F036B9"); //main level demon coin texture
-	
 	tms.addPatch("libcocos2dcpp.so", 0x33681C, "40F6B97B"); //main level while loop
 	
 	tms.addPatch("libcocos2dcpp.so", 0x267D76, "0024"); //text input length

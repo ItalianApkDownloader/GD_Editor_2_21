@@ -504,7 +504,6 @@ void MenuLayerExt::onTest(CCObject *sender)
 
 void MenuLayerExt::ApplyHooks() {
 	
-	
 	HOOK_STATIC("_ZN9MenuLayer9onDiscordEPN7cocos2d8CCObjectE", 
 	MenuLayerExt::onJoinDiscordH, MenuLayerExt::onJoinDiscordO);
 	

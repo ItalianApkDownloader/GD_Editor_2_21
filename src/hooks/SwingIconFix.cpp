@@ -42,13 +42,12 @@ void SwingIconFix::ApplyHooks()
 	HOOK("_ZN9PlayLayer4initEP11GJGameLevelbb", PlayLayer_initH, PlayLayer_initO);
 }
 
-/*
+
 uintptr_t loadIcon = 0x299484;
 uintptr_t color1 = 0x29948C;
 uintptr_t color2 = 0x299498;
 uintptr_t glow = 0x2994A8;
 uintptr_t extra = 0x299552;
-*/
 
 /*
 int *__fastcall PlayerObject::updatePlayerSwingFrame(int this, int a2)
