@@ -87,9 +87,10 @@ FUNCTIONHOOK(void*, getResponse, void* self, cocos2d::extension::CCHttpResponse*
 
 void Servers::ApplyHooks() 
 {
-	
+	#ifdef DEVDEBUG
 	HOOK2("_ZN11GameToolbox11getResponseEPN7cocos2d9extension14CCHttpResponseE", getResponse);
 	HOOK2("_ZN7cocos2d9extension12CCHttpClient4sendEPNS0_13CCHttpRequestE", send);
+	#endif
 	
 	HOOK2("_ZN16GJAccountManager12loginAccountESsSs", GJAccountManager_loginAccount);
 	HOOK2("_ZN17AccountLoginLayer8onSubmitEPN7cocos2d8CCObjectE", AccountLoginLayer_onSubmit);
