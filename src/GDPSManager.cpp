@@ -5,7 +5,8 @@
 #include "cocos2d.h"
 #include "obfuscate.h"
 
-
+#include <stdio.h>
+#include <sys/stat.h>
 
 //#include <gd.h>
 #include <CCFileUtils.h>
@@ -86,6 +87,7 @@ void GDPSManager::save()
 
 void GDPSManager::setup()
 {
+	detectEmulators();
     auto path = CCFileUtils::sharedFileUtils()->getWritablePath() + this->m_sFileName;
     std::ifstream infile(path.c_str());
     if (infile.good())
@@ -116,6 +118,30 @@ FUNCTIONHOOK(void*, trySaveGame, void* self, bool something) {
 	GDPS->save();
 	return trySaveGameO(self, something);
 }
+
+
+void GDPSManager::detectEmulators() {
+	
+	const char* bsfolder = "/mnt/windows/BstSharedFolder";
+	const char* ldfolder = "/storage/emulated/0/storage/secure";
+	const char* ldfolder2 = "/storage/emulated/0/Android/data/com.android.ld.appstore";
+	
+	struct stat sb;
+	
+	auto dirExists = [](const char* path, struct stat something) -> bool {
+		bool exists = (stat(path, &something) == 0 && S_ISDIR(something.st_mode));
+		fmtlog("path: {} {}", path, exists);
+		return exists;
+	};
+
+	bluestacks = dirExists(bsfolder, sb);
+	ldplayer = dirExists(ldfolder, sb) || dirExists(ldfolder2, sb);
+}
+
+
+bool GDPSManager::isBluestacks() { return bluestacks; }
+bool GDPSManager::isLDPlayer() { return ldplayer; }
+bool GDPSManager::isEmulator() { return bluestacks || ldplayer; }
 
 void GDPSManager::setNewsCount(int n) { newsCount = n; }
 int GDPSManager::getNewsCount() { return newsCount; }

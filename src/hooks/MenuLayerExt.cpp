@@ -178,9 +178,11 @@ void MenuLayerExt::onStackTrace(CCObject* s) {
 }
 
 
+
 static inline bool (*init_trp)(MenuLayer *self);
 bool MenuLayerExt::init_hk()
 {
+	auto gdps = GDPS;
 	CCLog("Menu Init!");
 	if(!init_trp(this)) return false;
 	
@@ -194,7 +196,6 @@ bool MenuLayerExt::init_hk()
 		{
 			if(j == 1)
 			{
-				auto gdps = GDPS;
 				if(gdps->newsLevelID < 7) {j++; continue;}
 				
 				auto spr = CCSprite::createWithSpriteFrameName(GDPS->showNewNewsIndicator ? "GJ_newBtn_001.png" : "GJ_changeSongBtn_001.png");
@@ -243,8 +244,11 @@ bool MenuLayerExt::init_hk()
 			this->runAction(CCCallFuncO::create(this, callfuncO_selector(CreatorLayer::onMyLevels), this));
 		first = false;
 	}
-	
+		   // Path to the directory
+
+
 	auto closeSpr = CCSprite::createWithSpriteFrameName("GJ_closeBtn_001.png");
+	if(gdps->isBluestacks()) closeSpr->setScale(.8);
 	auto closeBtn = CCMenuItemSpriteExtra::create(closeSpr, nullptr, this, menu_selector(MenuLayer::onQuit));
 	auto closeMenu = CCMenu::createWithItem(closeBtn);
 	auto winSize = CCDirector::sharedDirector()->getWinSize();
@@ -290,20 +294,24 @@ bool MenuLayerExt::init_hk()
 			this->addChild(CCParticleSnow::create());
 			this->addChild(CCParticleSmoke::create());
 	}
-
-
-/*	would work with fixed headers
-    auto sss = cocos2d::CCSprite::create("dialogIcon_017.png");
-	auto bbb = MenuItemSpriteExtra::createWithNode(sss, [](CCNode* sender) {std::cout << "button clicked" << std::endl; });
-
-	auto gg = CCMenu::create();
-	gg->addChild(bbb);
-	gg->setPosition(120, 130);
-	this->addChild(gg);
-*/	
+	
+	if(gdps->isBluestacks() && !GM->ggv("bsalert"))
+	{
+		GM->sgv("bsalert", true);
+		this->runAction(
+			CCSequence::create(
+				CCDelayTime::create(0),
+				CCCallFunc::create(this, callfunc_selector(MenuLayerExt::BluestacksPopup)),
+				nullptr
+			)
+		);
+	}
 	return true;
 };
 
+void MenuLayerExt::BluestacksPopup() {
+	FLAlertLayer::create( nullptr, "Bluestacks Info", "This GDPS update is not fully compatible with Bluestacks Nougat-64, you may experience constant crashes and bugs. It is recommended to switch to Nougat-32 or Pie-64 using the instance manager.", "OK", nullptr, 500, false, 150 )->show( );	
+}
 
 void LoadingLayer::onNewsRequestCompleted(cocos2d::extension::CCHttpClient *sender, cocos2d::extension::CCHttpResponse *response)
 {

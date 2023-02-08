@@ -59,7 +59,6 @@ FUNCTIONHOOK(void, addToggle, MoreOptionsLayer *self, const char *title, const c
 	if(GDPSSettings) 
 	{
 		insideSafe = true;
-		addToggleO(self, "Local server", "1000015", 0);
 		addToggleO(self, "Open editor at startup", "100003", 0);
 		addToggleO(self, "Pixel blocks in editor", "100005", 0);
 		addToggleO(self, "Sneak Peek Death Effect", "100014", 0);

@@ -106,8 +106,6 @@ void GDPSHelper::createLabels(CCNode* layer) {
 	GDPSHelper::createLabels(layer, layer->getChildren(), {0, 0}, true);
 }
 void GDPSHelper::createLabels(CCNode* layer, CCArray* objects, CCPoint pos, bool logNames) {
-	
-	
 	int count = objects->count();
 	auto menu = CCMenu::create();
 	
@@ -127,9 +125,7 @@ void GDPSHelper::createLabels(CCNode* layer, CCArray* objects, CCPoint pos, bool
 			const char* name = GDPSHelper::NameForNode(node).c_str();
 			CCLog("i: %d: | name: %s", i, name);
 		}
-		
 	}
-	
 }
 
 

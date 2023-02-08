@@ -38,7 +38,7 @@ void onRequestCompleted(cocos2d::extension::CCHttpClient *sender, cocos2d::exten
  
 
 
-		
+	void BluestacksPopup();
 	void onNews(CCObject*);
 	void onStackTrace(CCObject*);
     void onTest(CCObject* sender);

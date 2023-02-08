@@ -304,6 +304,7 @@ bool LoadingLayer_initH(LoadingLayer *self, bool fromReload)
 		tmp.addPatch(0x00276df8, "7047"); // PlayLayer::destroyPlayer
 		tmp.Modify();
 	}
+	//init gdps manager
 	
 	return true;
 
@@ -1498,6 +1499,8 @@ void loader()
 	
 	
 	tms.addPatch("libcocos2dcpp.so", 0x267CB0, "00BF 00BF"); //text input character byp/s
+	
+	tms.addPatch("libcocos2dcpp.so", 0x3502A0, "07E0"); //avoid updating score in comments (wtf)
 	
 	
 	tms.addPatch("libcocos2dcpp.so", 0x2EEBCE, "02E0"); //creator layer vault lock opeend lock sprite

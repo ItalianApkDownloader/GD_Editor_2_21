@@ -14,12 +14,7 @@
 inline string replaceServers(std::string original)
 {
 	//const char *boomlings = AY_OBFUSCATE("http://www.boomlings.com/database");
-	if(GM->ggv("1000015")) {
-		std::string pcServer = "local/ip/sorry/lol";
-		original.replace(0, 34, pcServer);
-	}
 
-/*
 	if(original.find("gdpseditor.com") != std::string::npos)
 		return original;
 	
@@ -28,8 +23,7 @@ inline string replaceServers(std::string original)
 	int c = strlen(gdpseditor);
 	for (int i = 0; i < c; i++)
 		original.at(i) = gdpseditor[i];
-*/
-	fmtlog("url: {}", original);
+
 	return original;
 }
 

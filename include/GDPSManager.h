@@ -19,6 +19,7 @@ public:
 	int newsLevelID;
 	bool showNewNewsIndicator;
 	
+	
 
 	int particles;
 	bool acceptedHackAlert;
@@ -33,6 +34,9 @@ public:
 	
 	//news layer new announcements indicator
 	int newsCount;
+	
+	bool bluestacks;
+	bool ldplayer;
 
 protected:
 	void logString();
@@ -42,9 +46,9 @@ protected:
     void firstLoad();
     void setup();
     void load();
+	void detectEmulators();
 	void writeToFile(std::string path, const char* content);
 	const char* getJsonString();
-
 
 
 
@@ -57,6 +61,11 @@ public:
 	void setNewsCount(int n);
 	int getNewsCount();
 	bool shouldShowNews();
+	
+	bool isEmulator();
+	bool isBluestacks();
+	bool isLDPlayer();
+	
 	
 	static void ApplyHooks();
 

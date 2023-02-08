@@ -19,6 +19,7 @@ namespace GDPSHelper {
 	vector<string> getDebugLogVector();
 	std::string format(std::string, ...);
 	
+
 	void createToggleButton(
 		const char *text, CCPoint position, float boxScale, float labelScale, CCObject *baseclass, 
 		cocos2d::SEL_MenuHandler callback, CCMenu *menu, bool toggled, bool enabled
