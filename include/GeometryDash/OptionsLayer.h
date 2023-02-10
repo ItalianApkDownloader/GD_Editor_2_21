@@ -29,15 +29,6 @@ public:
 	virtual void layerHidden();
 	virtual void FLAlert_Clicked(FLAlertLayer *layer, bool accept);
 
-
-	
-	void onGDPSSettings(CCObject *sender) {
-		extern bool isGDPSSettings;
-		isGDPSSettings = true;
-		extern bool isGDPSSettings2;
-		isGDPSSettings2 = true;
-		this->runAction(CCCallFuncO::create(this, callfuncO_selector(OptionsLayer::onOptions), this));
-	}
 	void onVideo(CCObject* sender);
 	void onOptions(CCObject* sender);
 

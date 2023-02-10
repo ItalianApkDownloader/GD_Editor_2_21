@@ -32,7 +32,10 @@ void *LevelProcessH(GameManager *gm, string url, string postData, string a3, int
 {
 	if(postData.find("epic=") != std::string::npos) 
 	{
-		postData += fmt::format("&godlike={}", (int)GLM->getBoolForKey("legendary_filter_custom"));
+		if(GLM->getBoolForKey("legendary_filter_custom")) {
+			int lenpos = postData.find("epic=");
+			postData[lenpos + 5] = '2';
+		}
 		
 		//the platformer filter is actually a length filter
 		//however thats buggy if i add it like that so i will just use the old code

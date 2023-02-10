@@ -29,4 +29,6 @@ namespace GDPSHelper {
 	void createLabels(CCNode*);
 	std::string getRawResponse(extension::CCHttpResponse* response);
 	void setHttpResponse(extension::CCHttpResponse* response, std::string strRes);
+	
+
 };

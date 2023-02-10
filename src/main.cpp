@@ -1,4 +1,5 @@
 #include <jni.h>
+#include "patch.h"
 #include <dlfcn.h>
 #include <cstdio>
 #include <pthread.h>
@@ -122,9 +123,13 @@ CCSprite* spriteCreateH(const char *textureName)
 const char *(*getStringO)(LoadingLayer *self);
 const char *getStringH(LoadingLayer *self)
 {
-	GM->setGameVariable("0122", false);
-	GM->setGameVariable("0023", false); //smooth fix
-	GM->setGameVariable("0074", true);  //show restart button
+	auto gm = GameManager::sharedState();
+	gm->sgv("0122", false);
+	gm->sgv("0023", false); //smooth fix
+	gm->sgv("0074", true);  //show restart button
+	gm->sgv("0056", true);  //disable play object alert
+	gm->sgv("0083", true);  //disable song alert
+	gm->sgv("0082", true);  //disable high object alert
 	return "Italian APK Downloader\nCatto_\niAndy_HD3\nTr1NgleBoss\nSear";
 }
 
@@ -838,12 +843,11 @@ FUNCTIONHOOK(void, updateFontLabel, SelectFontLayer* self, CCObject* a2) {
 FUNCTIONHOOK(bool, validGroup, GameObject* obj, int group) 
 { return true; }
 
-void patchIcons(int gameMode, int amountt) {
+void patchIcons(patch& tms, int gameMode, int amountt) {
 	
 	if(amountt > 255) //2 bytes limit
 		amountt = 255;
 		
-	patch tms = patch();
 	
 	string amount = FunctionHelper::itohex(amountt);
 	
@@ -901,15 +905,21 @@ void patchIcons(int gameMode, int amountt) {
 		break;
 		
 	}
+	tms.addPatch(countForType, amount + "20"); //GameManager::countForType
+	tms.addPatch(updatePlayerFrame, amount + "29"); //PlayerObjet::updatePlayer(gamemode)Frame
+	tms.addPatch(baseKey, amount + "34"); // GameManager::calculateBaseKeyForIcons
 	
-	tms.addPatch("libcocos2dcpp.so", countForType, amount + "20"); //GameManager::countForType
-	tms.addPatch("libcocos2dcpp.so", updatePlayerFrame, amount + "29"); //PlayerObjet::updatePlayer(gamemode)Frame
-	tms.addPatch("libcocos2dcpp.so", baseKey, amount + "34"); // GameManager::calculateBaseKeyForIcons
+	if(gameMode == 1) {
+		//SO MANY CHECKS HOLY SHITTTTTTT
+		tms.addPatch(0x332D94, amount + "2F");
+		tms.addPatch(0x332D98, amount + "27");
+		tms.addPatch(0x29D1F0, amount + "29");
+		tms.addPatch(0x29D1F4, amount + "21");
+	}
 	
 	if(gameMode == 6 || gameMode == 7)
-	tms.addPatch("libcocos2dcpp.so", updatePlayerFrameExtra, amount + "29"); // GJRobotSprite::updateFrame
+		tms.addPatch(updatePlayerFrameExtra, amount + "29"); // GJRobotSprite::updateFrame
 	
-	tms.Modify();	
 }
 
 
@@ -950,7 +960,7 @@ FUNCTIONHOOK(bool, GJGarageLayer_init, GJGarageLayer* self) {
 	
 	if(!GJGarageLayer_initO(self))
 	return false;
-	
+
 	auto dir = CCDirector::sharedDirector();
 	
 	auto copyBtn = CCMenuItemSpriteExtra::create(CCSprite::createWithSpriteFrameName("bgIcon_01_001.png"), nullptr, self, menu_selector(GJGarageLayer::onSelectTab));
@@ -1367,7 +1377,6 @@ FUNCTIONHOOK(void, onRegister, void)
 	cocos2d::CCApplication::sharedApplication()->openURL("http://game.gdpseditor.com/server/tools/account/registerAccount.php");
 }
 
-
 void loader()
 {
 	auto cocos2d = dlopen(targetLibName != "" ? targetLibName : NULL, RTLD_LAZY);
@@ -1394,7 +1403,7 @@ void loader()
 	#ifdef SHADERDEBUG
 	DevDebugHooks::ApplyHooks();
 	#endif
-	
+
 	HOOK2("_ZN12AccountLayer10onRegisterEPN7cocos2d8CCObjectE", onRegister);
 	HOOK2("_ZN7UILayer20toggleMenuVisibilityEb", UILayer_toggleMenuVisibility);
 	HOOK2("_ZN8EditorUI18shouldDeleteObjectEP10GameObject", EditorUI_shouldDeleteObject);
@@ -1438,7 +1447,7 @@ void loader()
 	HOOK("_ZN23SetupPickupTriggerPopup4initEP16EffectGameObjectPN7cocos2d7CCArrayE", SetupPickupTriggerH, SetupPickupTriggerO);
 	HOOK("_ZN11GameManager12getMGTextureEi", GameManager_getMGTextureH, GameManager_getMGTextureO);
 	HOOK("_ZN13ObjectToolbox13intKeyToFrameEi", keyToFrameH, keyToFrameO);
-	HOOK("_ZN8EditorUI4initEP16LevelEditorLayer", EditorUI_InitH, EditorUI_InitO);
+	//HOOK("_ZN8EditorUI4initEP16LevelEditorLayer", EditorUI_InitH, EditorUI_InitO);
 	HOOK("_ZN8EditorUI13selectObjectsEPN7cocos2d7CCArrayEb", EditorUI_SelectObjectsH, EditorUI_SelectObjectsO);
 	HOOK("_ZN8EditorUI12selectObjectEP10GameObjectb", EditorUI_SelectObjectH, EditorUI_SelectObjectO);
 	HOOK("_ZN10GameObject13createWithKeyEi", GameObject_createH, GameObject_createO);
@@ -1452,9 +1461,9 @@ void loader()
 	
 	patch tms = patch();
 	
-	//make space for 50 patches because thats approximately our amount
+	//make space for 81 patches because thats approximately our amount
 	//so that the vector doesn't have to resize every time a new element is added
-	tms.reserve(50);
+	tms.reserve(81);
 	
 	#define NOP4(a, b) a.addPatch("libcocos2dcpp.so", b, "00 BF 00 BF")
 	#define NOP2(a, b) a.addPatch("libcocos2dcpp.so", b, "00 BF")
@@ -1477,13 +1486,13 @@ void loader()
 	NOP4(tms, 0x2EDA9E); //versus
 	NOP4(tms, 0x26FF0E); //free levels runaction
 	
-	patchIcons(1, 154); //cube
-	patchIcons(2, 169); //ship
-	patchIcons(3, 114); //ball
-	patchIcons(4, 148); //ufo
-	patchIcons(5, 96); //wave
-	patchIcons(6, 68); //robot
-	patchIcons(7, 69); //spider
+	patchIcons(tms, 1, 211); //cube
+	patchIcons(tms, 2, 169); //ship
+	patchIcons(tms, 3, 114); //ball
+	patchIcons(tms, 4, 148); //ufo
+	patchIcons(tms, 5, 96); //wave
+	patchIcons(tms, 6, 68); //robot
+	patchIcons(tms, 7, 69); //spider
 	
 	
 	//already linked to different steam account -> invalid username or password

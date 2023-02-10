@@ -1,6 +1,6 @@
 #pragma once
 #include "KittyMemory/MemoryPatch.h"
-
+//#include "cocos2d.h"
 
 class patch{
 	
@@ -21,6 +21,7 @@ public:
         for(int k = 0; k < patches.size(); k++){
             patches[k].Modify();
         }
+		//fmtlog("applied {} patches", patches.size());
     }
 
     void Restore(){

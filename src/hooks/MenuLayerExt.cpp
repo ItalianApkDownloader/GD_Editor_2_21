@@ -143,7 +143,7 @@ void MenuLayerExt::onDownload(CCObject *sender)
 
 
 void MenuLayerExt::onTools(CCObject* sender) {
-	cocos2d::CCApplication::sharedApplication()->openURL("http://gdpseditor.com/tools");
+	cocos2d::CCApplication::sharedApplication()->openURL("https://gdpseditor.com/tools");
 	//this->onUpdateShaderFile(nullptr);
 }
 void MenuLayerExt::onBlaze(CCObject *sender)
@@ -236,7 +236,7 @@ bool MenuLayerExt::init_hk()
 			j++;
 		}
 	}
-
+	
 	static bool first = true;
 	if (first)
 	{
@@ -248,7 +248,7 @@ bool MenuLayerExt::init_hk()
 
 
 	auto closeSpr = CCSprite::createWithSpriteFrameName("GJ_closeBtn_001.png");
-	if(gdps->isBluestacks()) closeSpr->setScale(.8);
+	if(gdps->isEmulator()) closeSpr->setScale(.8);
 	auto closeBtn = CCMenuItemSpriteExtra::create(closeSpr, nullptr, this, menu_selector(MenuLayer::onQuit));
 	auto closeMenu = CCMenu::createWithItem(closeBtn);
 	auto winSize = CCDirector::sharedDirector()->getWinSize();
@@ -350,8 +350,7 @@ void LoadingLayer::onNewsRequestCompleted(cocos2d::extension::CCHttpClient *send
 	fmtlog("newsLevelID: {}, newscount: {}, response: {}", gdps->newsLevelID, gdps->newsCount, resp);
 	
 	int nCount = parsedFromString["newsCount"].GetInt();
-	if(!gdps->showNewNewsIndicator)
-		gdps->showNewNewsIndicator = nCount > gdps->newsCount;
+	gdps->showNewNewsIndicator = nCount > gdps->newsCount;
 	gdps->newsCount = nCount;
 }
 

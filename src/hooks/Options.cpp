@@ -9,25 +9,39 @@
 #include "gd.h"
 #include "../../include/cocos2dx/extensions/CCScale9Sprite.h"
 
+constexpr std::uint8_t GDPSSettings{ 0b0000'0001 };
+constexpr std::uint8_t HacksSettings{ 0b0000'0010 };
+constexpr std::uint8_t normalSettings{ 0b0000'0100 };
+constexpr std::uint8_t insideSafe{ 0b0000'1000 };
 
-bool GDPSSettings = false, HacksSettings = false, normalSettings = false, insideSafe = false;
+static std::uint8_t flags {0b0000'0000};
+static inline bool isGDPSSettings() { return flags & GDPSSettings; }
+static inline bool isHacksSettings() { return flags & HacksSettings; }
+static inline bool isnormalSettings() { return flags & normalSettings; }
+static inline bool isinsideSafe() { return flags & insideSafe; }
 
 void Options::onGDPSSettings(CCObject*) {
-	normalSettings = false;
-	GDPSSettings = true;
-	HacksSettings = false;
+//	normalSettings = false;
+//	GDPSSettings = true;
+//	HacksSettings = false;
+	flags |= GDPSSettings;
+	flags &= ~(normalSettings | HacksSettings);
 	MoreOptionsLayer::create()->show();
 }
 void Options::onHacks(CCObject*) {
-	normalSettings = false;
-	GDPSSettings = false;
-	HacksSettings = true;
+	//normalSettings = false;
+	//GDPSSettings = false;
+	//HacksSettings = true;
+	flags |= HacksSettings;
+	flags &= ~(normalSettings | GDPSSettings);
 	MoreOptionsLayer::create()->show();
 }
 void Options::onNormalSettings(CCObject*) {
-	normalSettings = true;
-	GDPSSettings = false;
-	HacksSettings = false;
+	//normalSettings = true;
+	//GDPSSettings = false;
+	//HacksSettings = false;
+	flags |= normalSettings;
+	flags &= ~(GDPSSettings | HacksSettings);
 	MoreOptionsLayer::create()->show();
 }
 
@@ -37,10 +51,10 @@ class EditorOptionsLayer : public FLAlertLayer {
 };
 	
 void Options::onEditorSettings(CCObject*) {
-	normalSettings = false;
-	GDPSSettings = false;
-	HacksSettings = false;
-
+//	normalSettings = false;
+//	GDPSSettings = false;
+//	HacksSettings = false;
+	flags &= ~(normalSettings | GDPSSettings | HacksSettings);
 	EditorOptionsLayer::create()->show();
 }
 	
@@ -48,19 +62,19 @@ void Options::onEditorSettings(CCObject*) {
 FUNCTIONHOOK(void, addToggle, MoreOptionsLayer *self, const char *title, const char *code, const char *desc)
 {
 	//if is not custom settings return like normal
-	if(normalSettings || !GDPSSettings && !HacksSettings) return addToggleO(self, title, code, desc);
+	if(isnormalSettings() || !isGDPSSettings() && !isHacksSettings()) return addToggleO(self, title, code, desc);
 
 	//if call is ours
-	if (insideSafe) return addToggleO(self, title, code, desc);
+	if (isinsideSafe()) return addToggleO(self, title, code, desc);
 	
 	//dont add our own settings until its not last call
 	if(strcmp(title, "Show Orb Guide") != 0) return;
 	
-	if(GDPSSettings) 
+	if(isGDPSSettings()) 
 	{
-		insideSafe = true;
+		flags |= insideSafe;
 		addToggleO(self, "Open editor at startup", "100003", 0);
-		addToggleO(self, "Pixel blocks in editor", "100005", 0);
+		//addToggleO(self, "Pixel blocks in editor", "100005", 0);
 		addToggleO(self, "Sneak Peek Death Effect", "100014", 0);
 		addToggleO(self, "Swap Platf. jump sides", "100011", 0);
 		addToggleO(self, "Practice Music", "0125", 0);
@@ -69,17 +83,17 @@ FUNCTIONHOOK(void, addToggle, MoreOptionsLayer *self, const char *title, const c
 		addToggleO(self, "Show FPS", "0115", 0);
 		addToggleO(self, "Hide pause button", "1000012", 0);
 		addToggleO(self, "Disable Abbreviated Labels", "1000013", "Download and like labels in level search results");
-		insideSafe = false;
+		addToggleO(self, "No Transition", "200004", 0);
+		flags &= ~insideSafe;
 	}
-	else if(HacksSettings)
+	else if(isHacksSettings())
 	{
-		insideSafe = true;
+		flags |= insideSafe;
 		addToggleO(self, "Safe Noclip", "200001", "Make the player invincible\nbut it doesnt save level progress.");
 		addToggleO(self, "Safe Mode", "200002", "Does not save level progress.");
 		addToggleO(self, "Disable Shaders", "200003", "Does not save level progress.");
-		addToggleO(self, "No Transition", "200004", 0);
 		addToggleO(self, "Disable Hack Alert", "200005", 0);
-		insideSafe = false;
+		flags &= ~insideSafe;
 	}
 
 }
@@ -107,13 +121,9 @@ void Options::platformOpacityRight(CCObject* sender) {
 }
 
 FUNCTIONHOOK(bool, MoreOptionsLayer_init, MoreOptionsLayer* self) {
-	
-	insideSafe = false;
-
+	flags &= ~insideSafe;
 	if(!MoreOptionsLayer_initO(self)) return false;
-	
-	
-	if((normalSettings || GDPSSettings || HacksSettings))
+	if(isnormalSettings() || isGDPSSettings() || isHacksSettings())
 		return true;
 	
 	self->setTag(3);
@@ -210,10 +220,7 @@ FUNCTIONHOOK(void, OptionsLayerInit_onOptions, void* self, void* sender) {
 }
 
 FUNCTIONHOOK(void, MoreOptionsLayer_onClose, void* self, void* sender) {
-	normalSettings = false;
-	GDPSSettings = false;
-	HacksSettings = false;
-	insideSafe = false;
+	flags &= ~(normalSettings | GDPSSettings | HacksSettings | insideSafe);
 	MoreOptionsLayer_onCloseO(self, sender);
 }
 void Options::ApplyHooks() 
