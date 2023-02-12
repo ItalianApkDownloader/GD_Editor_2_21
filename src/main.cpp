@@ -30,6 +30,7 @@
 #include "hooks/MoreSearchLayerExt.h"
 #include "hooks/SwingIconFix.h"
 #include "hooks/Options.h"
+#include "hooks/Keybinds.h"
 
 /*
 		FLAG USED FOR DEVELOPER MODE DEBUGGING LIKE SHADERS
@@ -1380,7 +1381,6 @@ FUNCTIONHOOK(void, onRegister, void)
 void loader()
 {
 	auto cocos2d = dlopen(targetLibName != "" ? targetLibName : NULL, RTLD_LAZY);
-
 	
 	MenuLayerExt::ApplyHooks();
 	EditLevelLayerExt::ApplyHooks();
@@ -1399,6 +1399,7 @@ void loader()
 	Hacks::ApplyHooks();
 	//Emojis::ApplyHooks();
 	Servers::ApplyHooks();
+	Keybinds::ApplyHooks();
 
 	#ifdef SHADERDEBUG
 	DevDebugHooks::ApplyHooks();

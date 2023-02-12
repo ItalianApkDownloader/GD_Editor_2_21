@@ -73,6 +73,7 @@ LOCAL_SRC_FILES :=	src/main.cpp \
 					src/hooks/DPADControl.cpp \
 					src/hooks/CollisionFix.cpp \
 					src/hooks/ShaderFix.cpp \
+					src/hooks/Keybinds.cpp \
 					src/KittyMemory/KittyMemory.cpp \
 					src/KittyMemory/KittyUtils.cpp \
 					src/KittyMemory/MemoryBackup.cpp \
