@@ -41,7 +41,7 @@ enumKeyCodes Keybinds::convertToCCkey(jint javaKeyCode) {
     }
 
     // ESC
-    if(javaKeyCode == 111) newkey = 27;
+    if(javaKeyCode == 111 || javaKeyCode == 4) newkey = 27;
 
     // DEL (for some reason the editor uses backspace for deleting???????)
     if(javaKeyCode == 67 || javaKeyCode == 112) newkey = 46;
@@ -77,13 +77,18 @@ void Keybinds::handleSpecialKeys(enumKeyCodes key, bool keyDown) {
 /*
     KEYDOWN
 */
-FUNCTIONHOOK(void, Java_org_cocos2dx_lib_Cocos2dxRenderer_nativeKeyDown, int env, int jobj, int keyCode) {
+FUNCTIONHOOK(jboolean, Java_org_cocos2dx_lib_Cocos2dxRenderer_nativeKeyDown, int env, int jobj, int keyCode) {
 	Java_org_cocos2dx_lib_Cocos2dxRenderer_nativeKeyDownO(env, jobj, keyCode);
 
     auto key = Keybinds::convertToCCkey(keyCode);
+
+    if(key == kEscape) return JNI_TRUE;
+
     CCDirector::sharedDirector()->getKeyboardDispatcher()->dispatchKeyboardMSG(key, true);
 
     Keybinds::handleSpecialKeys(key, true);
+
+    return JNI_TRUE;
 }
 
 /*
@@ -92,6 +97,9 @@ FUNCTIONHOOK(void, Java_org_cocos2dx_lib_Cocos2dxRenderer_nativeKeyDown, int env
 extern "C" { // C symbol
     JNIEXPORT jboolean JNICALL Java_org_cocos2dx_lib_Cocos2dxRenderer_nativeKeyUp(JNIEnv * env, jobject thiz, jint keyCode) {
         auto key = Keybinds::convertToCCkey(keyCode);
+
+        if(key == kEscape) return JNI_TRUE;
+
         CCDirector::sharedDirector()->getKeyboardDispatcher()->dispatchKeyboardMSG(key, false);
 
         Keybinds::handleSpecialKeys(key, false);
