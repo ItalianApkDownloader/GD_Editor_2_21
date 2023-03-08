@@ -44,18 +44,7 @@ void onRequestCompleted(cocos2d::extension::CCHttpClient *sender, cocos2d::exten
     void onTest(CCObject* sender);
     void onDownload(CCObject* sender);
     void onJoinDiscord(CCObject* sender);
-	void onUpdate(float dt) {
-		//add all this extern shit to a class or something
-		extern float timer;
-		timer = timer + dt;
-		
-		std::ostringstream os;
-		os << timer;
-	string a = os.str();
-
-	extern CCLabelBMFont* timerLabel;
-		timerLabel->setString(a.c_str());
-	};
+	void onUpdate(float dt);
 
 
     void onProgressChanged(CCObject *sender);
@@ -84,7 +73,6 @@ void onRequestCompleted(cocos2d::extension::CCHttpClient *sender, cocos2d::exten
 	
 	
 	static void ApplyHooks();
-	
 };
 
 

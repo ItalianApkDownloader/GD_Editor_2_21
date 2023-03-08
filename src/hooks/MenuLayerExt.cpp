@@ -16,7 +16,7 @@
 #include "../GDPSHelper.h"
 #include "SearchButton.h"
 
-
+#include "networking/NetworkingManager.h"
 
 void MenuLayerExt::onRequestCompleted(cocos2d::extension::CCHttpClient *sender, cocos2d::extension::CCHttpResponse *response)
 {
@@ -177,7 +177,10 @@ void MenuLayerExt::onStackTrace(CCObject* s) {
 	}
 }
 
-
+std::string getPassword()
+{
+	return "";
+}
 
 static inline bool (*init_trp)(MenuLayer *self);
 bool MenuLayerExt::init_hk()
@@ -306,8 +309,21 @@ bool MenuLayerExt::init_hk()
 			)
 		);
 	}
+
+	this->schedule(schedule_selector(MenuLayerExt::onUpdate), 0.01);
+
+	GJAccountManager* am = GJAccountManager::sharedState();
+	NetworkingManager::peer = static_cast<unsigned long>(MBO(int, am, 0x10C));
+    NetworkingManager::ip = "ip here";
+	NetworkingManager::Connect(3760762687, getPassword);
+
 	return true;
 };
+
+void MenuLayerExt::onUpdate(float dt)
+{
+	NetworkingManager::Update();
+}
 
 void MenuLayerExt::BluestacksPopup() {
 	FLAlertLayer::create( nullptr, "Bluestacks Info", "This GDPS update is not fully compatible with Bluestacks Nougat-64, you may experience constant crashes and bugs. It is recommended to switch to Nougat-32 or Pie-64 using the instance manager.", "OK", nullptr, 500, false, 150 )->show( );	
@@ -509,6 +525,7 @@ void MenuLayerExt::onTest(CCObject *sender)
 }
 
 
+
 void MenuLayerExt::ApplyHooks() {
 	
 	HOOK_STATIC("_ZN9MenuLayer9onDiscordEPN7cocos2d8CCObjectE", 
@@ -522,7 +539,7 @@ void MenuLayerExt::ApplyHooks() {
 	
 	HOOK_STATIC("_ZN9MenuLayer4initEv",
 	MenuLayerExt::init_hk, MenuLayerExt::init_trp);
-	
+
 	HOOK("_ZN9InfoLayer7onCloseEPN7cocos2d8CCObjectE", InfoLayer_onCloseH, InfoLayer_onCloseO);
 	HOOK("_ZN9InfoLayer6createEP11GJGameLevelP11GJUserScore", InfoLayer_createH, InfoLayer_createO);
 	

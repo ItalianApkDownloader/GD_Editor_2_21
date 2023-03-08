@@ -43,7 +43,7 @@ static returntype name##H(__VA_ARGS__)
 
 #define version2 14
 #define version2str "1.4"
-//#define DEVDEBUG
+#define DEVDEBUG
 //#define SHADERDEBUG
 //#define EMUI_FIX
 
@@ -64,7 +64,6 @@ static returntype name##H(__VA_ARGS__)
 #else
 	#define CCLog
 	#define fmtlog
-	
 #endif
 #define ccp(__X__,__Y__) cocos2d::CCPointMake((float)(__X__), (float)(__Y__))
 

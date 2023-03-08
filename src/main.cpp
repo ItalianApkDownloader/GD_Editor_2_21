@@ -1,3 +1,4 @@
+#define ENET_IMPLEMENTATION
 #include <jni.h>
 #include "patch.h"
 #include <dlfcn.h>
@@ -31,7 +32,8 @@
 #include "hooks/SwingIconFix.h"
 #include "hooks/Options.h"
 #include "hooks/Keybinds.h"
-
+#include "Utils.h"
+#include "NetworkingManager.h"
 /*
 		FLAG USED FOR DEVELOPER MODE DEBUGGING LIKE SHADERS
 
@@ -1105,8 +1107,8 @@ FUNCTIONHOOK(void, PauseLayer_customSetup, PauseLayer* self) {
 	
 }
 
-FUNCTIONHOOK(void, onMoreGames, MenuLayer* self, CCObject* sender) {
-	
+FUNCTIONHOOK(void, onMoreGames, MenuLayer* self, CCObject* sender) 
+{
 	auto dir = cocos2d::CCDirector::sharedDirector( );
 	auto scene = cocos2d::CCTransitionFade::create(0.5, MapSelectLayer::scene());
 	dir->replaceScene( scene );
