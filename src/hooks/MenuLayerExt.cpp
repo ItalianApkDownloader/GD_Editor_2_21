@@ -16,8 +16,6 @@
 #include "../GDPSHelper.h"
 #include "SearchButton.h"
 
-#include "networking/NetworkingManager.h"
-
 void MenuLayerExt::onRequestCompleted(cocos2d::extension::CCHttpClient *sender, cocos2d::extension::CCHttpResponse *response)
 {
 	CCLog("Completed!");
@@ -177,11 +175,6 @@ void MenuLayerExt::onStackTrace(CCObject* s) {
 	}
 }
 
-std::string getPassword()
-{
-	return "";
-}
-
 static inline bool (*init_trp)(MenuLayer *self);
 bool MenuLayerExt::init_hk()
 {
@@ -312,17 +305,11 @@ bool MenuLayerExt::init_hk()
 
 	this->schedule(schedule_selector(MenuLayerExt::onUpdate), 0.01);
 
-	GJAccountManager* am = GJAccountManager::sharedState();
-	NetworkingManager::peer = static_cast<unsigned long>(MBO(int, am, 0x10C));
-    NetworkingManager::ip = "ip here";
-	NetworkingManager::Connect(3760762687, getPassword);
-
 	return true;
 };
 
 void MenuLayerExt::onUpdate(float dt)
 {
-	NetworkingManager::Update();
 }
 
 void MenuLayerExt::BluestacksPopup() {

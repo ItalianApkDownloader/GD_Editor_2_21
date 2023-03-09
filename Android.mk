@@ -60,6 +60,7 @@ LOCAL_SRC_FILES :=	src/main.cpp \
 					src/hooks/AbbreviatedLabels.cpp \
 					src/hooks/Options.cpp \
 					src/hooks/MenuLayerExt.cpp \
+					src/hooks/MultiplayerLayerExt.cpp \
 					src/hooks/SwingIconFix.cpp \
 					src/hooks/MoreSearchLayerExt.cpp \
 					src/hooks/AdvancedLevelInfo.cpp \

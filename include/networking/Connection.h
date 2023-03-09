@@ -33,8 +33,8 @@ private:
 
 	passwordCallbackPtr tempPasswordCallback;
 public:
-	unsigned long peer;
-	unsigned long lobbyID;
+	unsigned long peer = 0;
+	unsigned long lobbyID = 0;
 
 	bool Connected() { return lobbyID != 0; }
 
