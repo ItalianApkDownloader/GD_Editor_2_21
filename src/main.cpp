@@ -1385,8 +1385,7 @@ void loader()
 {
 	auto cocos2d = dlopen(targetLibName != "" ? targetLibName : NULL, RTLD_LAZY);
 	
-	GJAccountManager* am = GJAccountManager::sharedState();
-	NetworkingManager::peer = static_cast<unsigned long>(MBO(int, am, 0x10C));
+
 
 	MenuLayerExt::ApplyHooks();
 	MultiplayerLayerExt::ApplyHooks();

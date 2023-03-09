@@ -45,10 +45,13 @@ void NetworkingManager::Host(std::string lobbyName, std::string lobbyPassword, u
 
 void NetworkingManager::Update()
 {
-	if (connectionManager != NULL)
-		connectionManager->Receive();
-	if (socketManager != NULL)
-		socketManager->Receive();
+	//fmtlog("NetworkingManager update");
+	if (connectionManager != NULL) connectionManager->Receive();
+	//else fmtlog("connectionManager == nullptr");
+	
+	if (socketManager != NULL) socketManager->Receive();
+	//else fmtlog("socketManager == nullptr");
+	
 #ifdef _WIN32
 	if (GetKeyState(peer + 48) & 0x8000) { std::string a = fmt::format("hello gordon!"); connectionManager->SendPacket(a.c_str()); }
 	if (GetKeyState(peer + 48) & 0x8000 && GetKeyState(VK_CONTROL) & 0x8000) { Disconnect(); }
