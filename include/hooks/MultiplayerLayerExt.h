@@ -10,10 +10,18 @@
 class MultiplayerLayerExt : public MultiplayerLayer 
 {
 public:
+	CCTextInputNode* _create_input_name;
+	CCTextInputNode* _create_input_pass;
+
+	CCTextInputNode* _join_input_id;
+	CCTextInputNode* _join_input_pass;
+	
+public:
 	void onUpdate(float dt);
-
-    static inline bool (*init_trp)(MultiplayerLayer * self);
-    bool init_hk();
-
+	static inline bool (*init_trp)(MultiplayerLayer * self);
+	bool init_hk();
 	static void ApplyHooks();
+	
+	void onCreate(CCObject*);
+	void onJoin(CCObject*);
 };
