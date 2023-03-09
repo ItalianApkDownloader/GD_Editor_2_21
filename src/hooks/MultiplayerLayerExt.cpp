@@ -8,8 +8,6 @@ std::string getPassword()
 static inline bool (*init_trp)(MultiplayerLayer *self);
 bool MultiplayerLayerExt::init_hk()
 {
-    if(!init_trp(this)) return false;
-
     this->schedule(schedule_selector(MultiplayerLayerExt::onUpdate), 0.01);
 
 	NetworkingManager::Connect(3760762687, getPassword);
