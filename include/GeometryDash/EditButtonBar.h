@@ -16,4 +16,5 @@ public:
     virtual ~EditButtonBar();
 
     static EditButtonBar *create( cocos2d::CCArray* objectArray, cocos2d::CCPoint pos, int tabIndex, bool a1, int buttonWidth, int buttonHeight );
+    void loadFromItems(cocos2d::CCArray*, int gm1, int gm2, bool unk);
 };
