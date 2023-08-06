@@ -1,0 +1,1 @@
+ndk-build NDK_PROJECT_PATH=C:\example\GD_Editor_2_21 NDK_APPLICATION_MK=C:\example\GD_Editor_2_21\jni\Application.mk MAIN_LOCAL_PATH=C:\example\GD_Editor_2_21\jni
