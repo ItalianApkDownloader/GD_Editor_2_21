@@ -2,7 +2,7 @@
 #include "cocos2d.h"
 
 unsigned long NetworkingManager::peer;
-const char* NetworkingManager::ip = "ip here";
+const char* NetworkingManager::ip = "localhost";
 Connection* NetworkingManager::connectionManager{};
 Socket* NetworkingManager::socketManager{};
 

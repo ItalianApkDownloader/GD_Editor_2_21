@@ -19,7 +19,6 @@
 #include <sys/stat.h>
 
 #include "hooks/MenuLayerExt.h"
-#include "hooks/MultiplayerLayerExt.h"
 #include "hooks/EditLevelLayerExt.h"
 #include "hooks/LevelEditorLayerExt.h"
 #include "hooks/EditorPauseLayerExt.h"
@@ -1385,11 +1384,7 @@ void loader()
 {
 	auto cocos2d = dlopen(targetLibName != "" ? targetLibName : NULL, RTLD_LAZY);
 	
-	GJAccountManager* am = GJAccountManager::sharedState();
-	NetworkingManager::peer = static_cast<unsigned long>(MBO(int, am, 0x10C));
-
 	MenuLayerExt::ApplyHooks();
-	MultiplayerLayerExt::ApplyHooks();
 	EditLevelLayerExt::ApplyHooks();
 	LevelEditorLayerExt::ApplyHooks();
 	EditorPauseLayerExt::ApplyHooks();
@@ -1491,7 +1486,7 @@ void loader()
 	NOP2(tms, 0x3DAE30); //the challenge enter, vault of secrets
 	NOP2(tms, 0x3DE256); //door, vault of secrets
 	
-	//NOP4(tms, 0x2EDA9E); //versus
+	NOP4(tms, 0x2EDA9E); //versus
 	NOP4(tms, 0x26FF0E); //free levels runaction
 	
 	patchIcons(tms, 1, 211); //cube
