@@ -1381,21 +1381,6 @@ FUNCTIONHOOK(void, onRegister, void)
 	cocos2d::CCApplication::sharedApplication()->openURL("http://game.gdpseditor.com/server/tools/account/registerAccount.php");
 }
 
-#include "GeometryDash/EditButtonBar.h"
-
-// Adding custom objects in editor tab
-void (*EditorUI_setupCreateMenu)(EditorUI*);
-void EditorUI_setupCreateMenuH(EditorUI* self) {
- EditorUI_setupCreateMenu(self);
- 
- auto orbsTab = (EditButtonBar*)(self->_tabsArray()->objectAtIndex(6));
- auto arr = MBO(CCArray*, orbsTab, 0x114); // EditButtonBar::init [ CCArray* = 0x114 ]
- arr->addObject(self->getCreateBtn(142, 4));
- orbsTab->loadFromItems(arr, GM->getIntGameVariable("0049"), GM->getIntGameVariable("0050"), false);
- 
- return;
-}
-
 void loader()
 {
 	auto cocos2d = dlopen(targetLibName != "" ? targetLibName : NULL, RTLD_LAZY);
@@ -1426,7 +1411,6 @@ void loader()
 	DevDebugHooks::ApplyHooks();
 	#endif
 
-	HOOK("_ZN8EditorUI15setupCreateMenuEv", EditorUI_setupCreateMenuH, EditorUI_setupCreateMenu);	
 	HOOK2("_ZN12AccountLayer10onRegisterEPN7cocos2d8CCObjectE", onRegister);
 	HOOK2("_ZN7UILayer20toggleMenuVisibilityEb", UILayer_toggleMenuVisibility);
 	HOOK2("_ZN8EditorUI18shouldDeleteObjectEP10GameObject", EditorUI_shouldDeleteObject);
