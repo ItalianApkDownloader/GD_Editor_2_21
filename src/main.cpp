@@ -1378,9 +1378,32 @@ FUNCTIONHOOK(void, onRegister, void)
 	cocos2d::CCApplication::sharedApplication()->openURL("http://game.gdpseditor.com/server/tools/account/registerAccount.php");
 }
 
-void loader()
+
+FUNCTIONHOOK(void, loaderWrap, void)
+{
+	loaderWrapO();
+}
+
+
+void loader_loader()
+{
+	dlopen("libcocos2dcpp.so", 1);
+	dlopen("/data/data/com.gdpsedi.geometrydashsubzero/lldb/libdobby.so", 0);
+	dlopen("/data/data/com.gdpsedi.geometrydashsubzero/lldb/libhooking.so", 0);
+	void* game = dlopen("/data/data/com.gdpsedi.geometrydashsubzero/lldb/libgame.so", 0);
+	void* entrypoint = dlsym(game, "____LOADER____");
+	HookManager::do_hook(entrypoint, (void*)loaderWrapH, (void**)&loaderWrapO, 0);
+	loaderWrapO();
+}
+
+
+extern "C"
+{
+	
+void ____LOADER____()
 {
 	auto cocos2d = dlopen(targetLibName != "" ? targetLibName : NULL, RTLD_LAZY);
+
 	
 	MenuLayerExt::ApplyHooks();
 	EditLevelLayerExt::ApplyHooks();
@@ -1597,12 +1620,14 @@ void loader()
 	//memory leak goes brrrr
 }
 
+} //extern c
+
 JNIEXPORT jint JNI_OnLoad(JavaVM *vm, void *reserved)
 {
 	// init_handle();
 	pthread_t t;
 	pthread_create(&t, NULL,
-		reinterpret_cast< void *(*)(void*) > (loader), NULL);
+		reinterpret_cast< void *(*)(void*) > (____LOADER____), NULL);
 
 	return JNI_VERSION_1_6;
 }
