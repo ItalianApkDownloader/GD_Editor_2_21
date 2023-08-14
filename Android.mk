@@ -51,7 +51,6 @@ LOCAL_C_INCLUDES += $(LOCAL_PATH)/include/includes \
 LOCAL_C_INCLUDES += $(LOCAL_PATH)/include/hooks \
 LOCAL_C_INCLUDES += $(LOCAL_PATH)/include/KittyMemory \
 LOCAL_C_INCLUDES += $(LOCAL_PATH)/include/layers \
-LOCAL_C_INCLUDES += $(LOCAL_PATH)/include/networking \
 
 LOCAL_SRC_FILES :=	src/main.cpp \
 					src/hooks/Servers.cpp \
@@ -83,10 +82,6 @@ LOCAL_SRC_FILES :=	src/main.cpp \
 					src/fmt/posix.cc \
 					src/fmt/printf.cc \
 					src/fmt/format.cc \
-					src/networking/NetworkingManager.cpp \
-					src/networking/Utils.cpp \
-					src/networking/Socket.cpp \
-					src/networking/Connection.cpp \
 
 
 LOCAL_LDLIBS := -llog \
