@@ -257,10 +257,6 @@ public:
 	CLASS_MEMBER(int, l2, 0x454);
 	CLASS_MEMBER(int, objectID, 0x3A0);
 	
-	// GameManager::getParentMode
- // I just used radare2 to find this
- // Its hard if ur on mobile
-	CLASS_MEMBER(bool, isTrigger, 0x2ac)
 	
 public:
     GameObject( );
