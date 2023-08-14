@@ -38,12 +38,12 @@
 		!!!!!!!!!!!!!!!!!!!!!!!! COMMENT OUT BEFORE RELEASING APK !!!!!!!!!!!!!!!!!!!!!!!!
 */
 
-void asmtest() {
-	asm("nop;"
-		"mov R1, #4;"
-		"add R1, #4;"
-	);
-}
+//void asmtest() {
+//	asm("nop;"
+//		"mov R1, #4;"
+//		"add R1, #4;"
+//	);
+//}
 
 int nFont = 0;
 
@@ -57,7 +57,7 @@ float randFloat(float X) { return static_cast <float> (rand()) / (static_cast <f
 void hidePauseBtn(CCNode* self)
 {
 	int c = self->getChildrenCount();
-	CCMenu* btnMenu;
+	CCMenu* btnMenu = nullptr;
 	for(int i = 0; i < c; i++)
 	{
 		if(auto menu = dynamic_cast<CCMenu*>(self->getChildren()->objectAtIndex(i)))
@@ -75,9 +75,10 @@ void hidePauseBtn(CCNode* self)
 		auto pauseBtn = (CCMenuItemSpriteExtra*)btnMenu->getChildren()->objectAtIndex(0);
 		auto pauseSprite = (CCSprite*)pauseBtn->getChildren()->objectAtIndex(0);
 		if(pauseSprite)
+		{
 			pauseSprite->CCNodeRGBA::setOpacity(0);
+		}
 	}
-
 }
 
 
@@ -103,20 +104,23 @@ FUNCTIONHOOK(void, UILayer_toggleMenuVisibility, CCLayer* self, bool invisible) 
 	UILayer_toggleMenuVisibilityO(self, invisible);
 
 	if(invisible && GM->ggv("1000012"))
+	{
 		hidePauseBtn(self);
+	}
 }
 
    
 bool(*isIconUnlockedO)(void *, int, int);
-bool isIconUnlockedH(void *self, int a1, int a2)
-{ return true; }
+bool isIconUnlockedH(void *self, int a1, int a2) { return true; }
 
 CCSprite* (*spriteCreateO)(const char *textureName);
 CCSprite* spriteCreateH(const char *textureName)
 {
 	auto ret = spriteCreateO(textureName);
 	if (ret != nullptr)
+	{
 		return ret;
+	}
 
 	return spriteCreateO("pixel.png");
 }
@@ -136,16 +140,13 @@ const char *getStringH(LoadingLayer *self)
 
 CCSprite * (*spriteCreateFrameNameO)(const char *textureName);
 CCSprite* spriteCreateFrameNameH(const char *textureName)
-{/*
-	if (containss(textureName, "GJ_fullBtn_001.png"))
-		return spriteCreateFrameNameO("GJ_creatorBtn_001.png");
-*/
-	//CCLog("frame: %s", textureName);
+{
 	auto ret = spriteCreateFrameNameO(textureName);
 	if (ret != nullptr)
+	{
 		return ret;
+	}
 
-	//return spriteCreateFrameNameO("GJ_optionsTxt_001.png");
 	return spriteCreateFrameNameO("GJ_checkOff_001.png");
 }
 
@@ -259,12 +260,10 @@ const char *keyToFrameH(ObjectToolbox *self, int key)
 void *(*GameObject_customSetupO)(GameObject *obj);
 void *GameObject_customSetupH(GameObject *obj){
 	auto ret = GameObject_customSetupO(obj);
-
-
-	if(obj->_objectID() == 2100){
+	if(obj->_objectID() == 2100)
+	{
 		obj->_objectID() = 1598;
 	}
-
 	return ret;
 }
 void *(*PlayLayer_addObjectO)(PlayLayer *self, GameObject *obj);
@@ -272,14 +271,12 @@ void *PlayLayer_addObjectH(PlayLayer *self, GameObject *obj)
 {
 	int id = obj->_objectID();
 	//	CCLog("Object ID: %d", id);
-
 	if (id == 1331)
 	{
 		patch s = patch();
 		s.addPatch("libcocos2dcpp.so", 0x7E19BA, "70 6F 72 74 61 6C 5F 31 37 5F 62 61 63 6B 5F 30 30 31 2E 70 6E 67");
 		s.Modify();
 	}
-
 	else if (id == 1933)
 	{
 		patch p = patch();
@@ -288,7 +285,6 @@ void *PlayLayer_addObjectH(PlayLayer *self, GameObject *obj)
 	}
 
 	return PlayLayer_addObjectO(self, obj);
-
 }
 
 // moving funny loading text
@@ -301,7 +297,9 @@ bool LoadingLayer_initH(LoadingLayer *self, bool fromReload)
 	text->setPositionY(text->getPositionY() - 10);
 	
 	if(!GDPS->shouldShowNews() || GDPS->getNewsCount() == 0)
+	{
 		self->makeNewsRequest();
+	}
 	
 	//noclip
 	if(GM->ggv("200001"))
@@ -373,8 +371,7 @@ void EditorUI_SelectObjectH(EditorUI *self, GameObject *object, bool a3)
 bool(*EditorUI_InitO)(EditorUI *self, LevelEditorLayer *editor);
 bool EditorUI_InitH(EditorUI *self, LevelEditorLayer *editor)
 {
-	if (!EditorUI_InitO(self, editor))
-		return false;
+	if (!EditorUI_InitO(self, editor)) return false;
 
 	DPADHooks::EditorUIInit(self);
 
@@ -394,11 +391,9 @@ bool EditorUI_InitH(EditorUI *self, LevelEditorLayer *editor)
 bool(*SelectArtLayer_initO)(SelectArtLayer *, SelectArtType);
 bool SelectArtLayer_initH(SelectArtLayer *self, SelectArtType type)
 {
-	if (!SelectArtLayer_initO(self, type))
-		return false;
+	if (!SelectArtLayer_initO(self, type)) return false;
 	
-	if(type == smartTemplate)
-		return true;
+	if(type == smartTemplate) return true;
 	
 
 	auto menu = self->_bgSelectMenu();
@@ -406,8 +401,8 @@ bool SelectArtLayer_initH(SelectArtLayer *self, SelectArtType type)
 	
 	//setting
 	
-	int toRemove;
-	int maxTextures;
+	int toRemove = 0;
+	int maxTextures = 0;
 	
 	if(type == background) {
 		toRemove = 45;
@@ -505,7 +500,8 @@ bool SetupPickupTriggerH(SetupPickupTriggerPopup *self, EffectGameObject *object
 
 }
 
-FUNCTIONHOOK(const char*, GameManager_getMGTexture, GameManager* self, int a2) {
+FUNCTIONHOOK(const char*, GameManager_getMGTexture, GameManager* self, int a2)
+{
 
 	//avoid temp variables
 	GM->loadMiddleground(2);
@@ -521,7 +517,8 @@ void togglePracticeModeH(PlayLayer *self, bool *on)
 }
 
 // open editor from pause
-FUNCTIONHOOK(void, PauseLayer_onEdit, PauseLayer* self, CCObject*) {
+FUNCTIONHOOK(void, PauseLayer_onEdit, PauseLayer* self, CCObject*)
+{
 	GM->_playLayer()->stopAllActions();
 	GM->_playLayer()->unscheduleAllSelectors();
 	GSM->stopBackgroundMusic();
@@ -537,7 +534,8 @@ FUNCTIONHOOK(void, PauseLayer_onEdit, PauseLayer* self, CCObject*) {
 	);
 }
 
-void PauseLayer::goEditFix() {
+void PauseLayer::goEditFix()
+{
 	auto level = GM->_playLayer()->_level();
 
 	auto layer = LevelEditorLayer::create(level, false);
@@ -550,7 +548,8 @@ void PauseLayer::goEditFix() {
 }
 
 // open editor from endlayer
-FUNCTIONHOOK(void, EndLevelLayer_onEdit, EndLevelLayer* self, CCObject*) {
+FUNCTIONHOOK(void, EndLevelLayer_onEdit, EndLevelLayer* self, CCObject*)
+{
 	GM->_playLayer()->stopAllActions();
 	GM->_playLayer()->unscheduleAllSelectors();
 	GSM->stopBackgroundMusic();
@@ -566,32 +565,37 @@ FUNCTIONHOOK(void, EndLevelLayer_onEdit, EndLevelLayer* self, CCObject*) {
 	);
 }
 
-void EndLevelLayer::goEditFix() {
+void EndLevelLayer::goEditFix()
+{
 	this->exitLayer(nullptr);
 	reinterpret_cast<PauseLayer*>(this)->goEditFix();
 }
 
 
 
-FUNCTIONHOOK(void, GJBaseGameLayer_addToSection, GJBaseGameLayer* self, GameObject* object) {
+FUNCTIONHOOK(void, GJBaseGameLayer_addToSection, GJBaseGameLayer* self, GameObject* object)
+{
 	if(object) GJBaseGameLayer_addToSectionO(self, object);
 }
 
-FUNCTIONHOOK(void, GJBaseGameLayer_removeObjectFromSection, GJBaseGameLayer* self, GameObject* object) {
-	if(object) {
+FUNCTIONHOOK(void, GJBaseGameLayer_removeObjectFromSection, GJBaseGameLayer* self, GameObject* object)
+{
+	if(object)
+	{
 		GJBaseGameLayer_removeObjectFromSectionO(self, object);
-
 		if(GM->_inEditor()) object->removeFromParent();
 	}
 }
 
 // fix duals in playtest
-FUNCTIONHOOK(void, PlayerObject_spawnDualCircle, PlayerObject* self) {
+FUNCTIONHOOK(void, PlayerObject_spawnDualCircle, PlayerObject* self)
+{
 	if(!GM->_inEditor()) PlayerObject_spawnDualCircleO(self);
 }
 
 // testing big levels
-FUNCTIONHOOK(bool, LevelInfoLayer_init, LevelInfoLayer* self, GJGameLevel* level, bool idk) {
+FUNCTIONHOOK(bool, LevelInfoLayer_init, LevelInfoLayer* self, GJGameLevel* level, bool idk)
+{
 	if(!LevelInfoLayer_initO(self, level, idk)) return false;
 
 	#ifdef DEVDEBUG
@@ -613,48 +617,56 @@ FUNCTIONHOOK(bool, LevelInfoLayer_init, LevelInfoLayer* self, GJGameLevel* level
 	return true;
 }
 
-FUNCTIONHOOK(bool, shouldShowInterstitial, GameManager* self, int a, int b, int c) {
+FUNCTIONHOOK(bool, shouldShowInterstitial, GameManager* self, int a, int b, int c)
+{
 	return false;
 }
 
-FUNCTIONHOOK(GameObject*, LevelEditorLayer_addObjectFromVector, LevelEditorLayer* self, void* vec) {
+FUNCTIONHOOK(GameObject*, LevelEditorLayer_addObjectFromVector, LevelEditorLayer* self, void* vec)
+{
 	auto obj = LevelEditorLayer_addObjectFromVectorO(self, vec);
-
-	if(obj != nullptr) {
+	if(obj != nullptr)
+	{
 		int objID = MBO(int, obj, 0x3A0);
-		if(objID < 3016 && objID >= 3006) {
+		if(objID < 3016 && objID >= 3006)
+		{
 			self->generateEnterEasingBuffers((EnterEffectObject*)obj);
 		}
-
 		return obj;
 	}
-
 	return GameObject::createWithKey(1);
 }
 
-FUNCTIONHOOK(void, DrawGridLayer_update, DrawGridLayer* self, float delta) {
+FUNCTIONHOOK(void, DrawGridLayer_update, DrawGridLayer* self, float delta)
+{
 	auto editor = MEMBERBYOFFSET(LevelEditorLayer*, self, 0x15C);
 	
 	//CCLog("%f", editor->_timeScale());
 
-	if(MBO(bool, editor->_editorUI(), 0x18C)) {
+	if(MBO(bool, editor->_editorUI(), 0x18C))
+	{
 		auto fmod = FMODAudioEngine::sharedEngine();
 
 		if(self->_musicTime() == -1) self->_musicTime() = MBO(float, editor->_editorUI(), 0x28F4);
 
 		float bgMusicTime;
-		if(fmod->isBackgroundMusicPlaying()) {
+		if(fmod->isBackgroundMusicPlaying())
+		{
 			bgMusicTime = fmod->getBackgroundMusicTime();
 		}
-		else {
+		else
+		{
 			bgMusicTime = self->_musicTime() + delta;
 		}
 
-		if(self->_musicTime() == -1 || fabsf(bgMusicTime - self->_musicTime()) >= 9999) {
+		if(self->_musicTime() == -1 || fabsf(bgMusicTime - self->_musicTime()) >= 9999)
+		{
 			self->_anotherTime() = bgMusicTime;
 		}
-		else self->_anotherTime() = self->_anotherTime() + delta;
-
+		else
+		{
+			self->_anotherTime() = self->_anotherTime() + delta;
+		}
 		self->_musicTime() = bgMusicTime;
 	}
 }
@@ -662,19 +674,20 @@ FUNCTIONHOOK(void, DrawGridLayer_update, DrawGridLayer* self, float delta) {
 
 FUNCTIONHOOK(void, triggerShader, void* a1, void* a2) {
 	
-	if(GM->_inEditor()) {
+	if(GM->_inEditor())
+	{
 		if(!GM->getGameVariable("69234"))
 			return triggerShaderO(a1, a2);
 	}
-	else {
+	else
+	{
 		if(!GM->ggv("200003"))
 			return triggerShaderO(a1, a2);
 	}
 }
 FUNCTIONHOOK(bool, LevelSettingsLayer_init, LevelSettingsLayer* self, LevelSettingsObject* settings, LevelEditorLayer* levelEditor) {
 	
-	if(!LevelSettingsLayer_initO(self, settings, levelEditor))
-		return false;
+	if(!LevelSettingsLayer_initO(self, settings, levelEditor)) return false;
 	
 	bool isStartPos = settings->_isStartPos();
 	
@@ -684,7 +697,8 @@ FUNCTIONHOOK(bool, LevelSettingsLayer_init, LevelSettingsLayer* self, LevelSetti
 	auto menu = (CCMenu*)layer->getChildren()->objectAtIndex(1);
 	
 	
-	if(!isStartPos) {
+	if(!isStartPos)
+	{
 		
 		auto mg_label = (CCLabelBMFont*)layer->getChildren()->objectAtIndex(13);
 		auto mini_label = (CCLabelBMFont*)layer->getChildren()->objectAtIndex(14);
@@ -764,7 +778,8 @@ FUNCTIONHOOK(bool, LevelSettingsLayer_init, LevelSettingsLayer* self, LevelSetti
 
 	auto miniToggle = (CCMenuItemToggler*)menu->getChildren()->objectAtIndex(!isStartPos ? 24 : 8);
 
-	GDPSHelper::createToggleButton(
+	GDPSHelper::createToggleButton
+	(
 		"",
 		miniToggle->getPosition(),
 		.80, 8,
@@ -780,7 +795,8 @@ FUNCTIONHOOK(bool, LevelSettingsLayer_init, LevelSettingsLayer* self, LevelSetti
 }
 
 
-FUNCTIONHOOK(void, LevelSettingsLayer_selectArtClosed, LevelSettingsLayer* self, void* artLayer) {
+FUNCTIONHOOK(void, LevelSettingsLayer_selectArtClosed, LevelSettingsLayer* self, void* artLayer)
+{
 	
 	LevelSettingsLayer_selectArtClosedO(self, artLayer);
 	
@@ -814,19 +830,18 @@ FUNCTIONHOOK(void, LevelSettingsLayer_selectArtClosed, LevelSettingsLayer* self,
 
 }
 
-FUNCTIONHOOK(void, onSelectMode, LevelSettingsLayer* self, CCObject* sender) {
-	
+FUNCTIONHOOK(void, onSelectMode, LevelSettingsLayer* self, CCObject* sender)
+{
 	onSelectModeO(self, sender);
-	
-		
-	if(sender && sender->getTag() == 7) {
+	if(sender && sender->getTag() == 7)
+	{
 		MBO(int, MBO(LevelSettingsObject*, self, 0x230), 0x108) = 7;
 	}
 }
 
 #include "SelectFontLayer.h"
-FUNCTIONHOOK(void, updateFontLabel, SelectFontLayer* self, CCObject* a2) {
-	
+FUNCTIONHOOK(void, updateFontLabel, SelectFontLayer* self, CCObject* a2)
+{
 	auto editor = MBO(LevelEditorLayer*, self, 0x1F0);
 	void* unk = MBO(void*, editor, 0x33C);
 	int font = MBO(int, unk, 0x124);
@@ -844,13 +859,11 @@ FUNCTIONHOOK(void, updateFontLabel, SelectFontLayer* self, CCObject* a2) {
 FUNCTIONHOOK(bool, validGroup, GameObject* obj, int group) 
 { return true; }
 
-void patchIcons(patch& tms, int gameMode, int amountt) {
-	
-	if(amountt > 255) //2 bytes limit
-		amountt = 255;
-		
-	
-	string amount = FunctionHelper::itohex(amountt);
+void patchIcons(patch& tms, int gameMode, int amountt)
+{
+	if(amountt > 255) amountt = 255;
+
+	std::string amount = FunctionHelper::itohex(amountt);
 	
 	uintptr_t countForType;
 	uintptr_t updatePlayerFrame;
@@ -910,7 +923,8 @@ void patchIcons(patch& tms, int gameMode, int amountt) {
 	tms.addPatch(updatePlayerFrame, amount + "29"); //PlayerObjet::updatePlayer(gamemode)Frame
 	tms.addPatch(baseKey, amount + "34"); // GameManager::calculateBaseKeyForIcons
 	
-	if(gameMode == 1) {
+	if(gameMode == 1)
+	{
 		//SO MANY CHECKS HOLY SHITTTTTTT
 		tms.addPatch(0x332D94, amount + "2F");
 		tms.addPatch(0x332D98, amount + "27");
@@ -919,15 +933,15 @@ void patchIcons(patch& tms, int gameMode, int amountt) {
 	}
 	
 	if(gameMode == 6 || gameMode == 7)
+	{
 		tms.addPatch(updatePlayerFrameExtra, amount + "29"); // GJRobotSprite::updateFrame
-	
+	}
 }
 
 
 FUNCTIONHOOK(void*, GJItemIcon_Init, int type, int key)
 {
-	if(type == 11 && key > 16)
-		return nullptr;
+	if(type == 11 && key > 16) return nullptr;
 	
 	return GJItemIcon_InitO(type, key);
 }
@@ -935,7 +949,8 @@ FUNCTIONHOOK(void*, GJItemIcon_Init, int type, int key)
 //TODO: test the p1 platformer, collision blocks(?), swing selection, port over mod badges
 
 
-FUNCTIONHOOK(void, GJBaseGameLayer_toggleDual, GJBaseGameLayer* self, void* a1, void* a2, void* a3, void* a4) {
+FUNCTIONHOOK(void, GJBaseGameLayer_toggleDual, GJBaseGameLayer* self, void* a1, void* a2, void* a3, void* a4)
+{
 
 	GJBaseGameLayer_toggleDualO(self, a1, a2, a3, a4);
 	
@@ -957,7 +972,8 @@ FUNCTIONHOOK(void, GJBaseGameLayer_toggleDual, GJBaseGameLayer* self, void* a1, 
 }
 
 
-FUNCTIONHOOK(bool, GJGarageLayer_init, GJGarageLayer* self) {
+FUNCTIONHOOK(bool, GJGarageLayer_init, GJGarageLayer* self)
+{
 	
 	if(!GJGarageLayer_initO(self))
 	return false;
@@ -1015,7 +1031,8 @@ FUNCTIONHOOK(bool, GJGarageLayer_init, GJGarageLayer* self) {
 
 #include "SongInfoLayer.h"
 int eSongID = 0;
-FUNCTIONHOOK(bool, SongInfoLayer_init, SongInfoLayer* self, std::string a1,std::string a2,std::string a3,std::string a4,std::string a5,std::string a6, int a7) {
+FUNCTIONHOOK(bool, SongInfoLayer_init, SongInfoLayer* self, std::string a1,std::string a2,std::string a3,std::string a4,std::string a5,std::string a6, int a7)
+{
 	
 	if(!SongInfoLayer_initO(self, a1, a2, a3, a4, a5, a6, a7))
 	return false;
@@ -1051,7 +1068,8 @@ FUNCTIONHOOK(bool, SongInfoLayer_init, SongInfoLayer* self, std::string a1,std::
 }
 
 #include "SetGroupIDLayer.h"
-FUNCTIONHOOK(bool, SetupObjectOptionsPopup_init, CCNode* self, GameObject* obj, CCArray* objs, SetGroupIDLayer* groupIDLayer) {
+FUNCTIONHOOK(bool, SetupObjectOptionsPopup_init, CCNode* self, GameObject* obj, CCArray* objs, SetGroupIDLayer* groupIDLayer)
+{
 	
 	if(!SetupObjectOptionsPopup_initO(self, obj, objs, groupIDLayer))
 	return false;
@@ -1076,7 +1094,8 @@ FUNCTIONHOOK(bool, SetupObjectOptionsPopup_init, CCNode* self, GameObject* obj, 
 	return true;
 }
 
-FUNCTIONHOOK(void, SupportLayer_onRestore, CCLayer* self, CCObject* sender) {
+FUNCTIONHOOK(void, SupportLayer_onRestore, CCLayer* self, CCObject* sender)
+{
 	/*
 	auto path = CCFileUtils::sharedFileUtils()->getWritablePath() + "crash.txt";
 	std::ifstream ifs( path );
@@ -1092,8 +1111,8 @@ FUNCTIONHOOK(void, SupportLayer_onRestore, CCLayer* self, CCObject* sender) {
 	*/
 }
 
-FUNCTIONHOOK(void, PauseLayer_customSetup, PauseLayer* self) {
-	
+FUNCTIONHOOK(void, PauseLayer_customSetup, PauseLayer* self)
+{
 	PauseLayer_customSetupO(self);
 	
 	auto sprite = CCSprite::createWithSpriteFrameName("GJ_optionsBtn_001.png");
@@ -1102,22 +1121,21 @@ FUNCTIONHOOK(void, PauseLayer_customSetup, PauseLayer* self) {
 	auto bottomMenu2 = CCMenu::createWithItem(optionsBtn);
 	reinterpret_cast<CCSprite *>(bottomMenu2)->setPosition({CCRIGHT - 80, CCTOP - 30});
 	self->addChild(bottomMenu2);
-	
 }
 
-FUNCTIONHOOK(void, onMoreGames, MenuLayer* self, CCObject* sender) {
-	
+FUNCTIONHOOK(void, onMoreGames, MenuLayer* self, CCObject* sender)
+{
 	auto dir = cocos2d::CCDirector::sharedDirector( );
 	auto scene = cocos2d::CCTransitionFade::create(0.5, MapSelectLayer::scene());
 	dir->replaceScene( scene );
 }
 
-FUNCTIONHOOK(bool, SetupShaderEffectPopup_init, SetupTriggerPopup* self, EffectGameObject* object, CCArray* objects, int objectID) {
+FUNCTIONHOOK(bool, SetupShaderEffectPopup_init, SetupTriggerPopup* self, EffectGameObject* object, CCArray* objects, int objectID)
+{
 	auto ret = SetupShaderEffectPopup_initO(self, object, objects, objectID);
-
-	/*
-		fix shader triggers not toggling checkboxes
-	*/
+	
+	//fix shader triggers not toggling checkboxes
+	
 	self->determineStartValues();
 
 	self->updateTouchTriggered();
@@ -1138,27 +1156,35 @@ FUNCTIONHOOK(bool, SetupShaderEffectPopup_init, SetupTriggerPopup* self, EffectG
 }
 
 // stupid ass fix for playtest bg
-FUNCTIONHOOK(void, GJBaseGameLayer_updateCameraBGArt, GJBaseGameLayer* self, CCPoint pos) {
-	if(MBO(bool, self, 0x2780)) {
+FUNCTIONHOOK(void, GJBaseGameLayer_updateCameraBGArt, GJBaseGameLayer* self, CCPoint pos)
+{
+	if(MBO(bool, self, 0x2780))
+	{
 		auto posThing = self->_background()->getPosition();
 		GJBaseGameLayer_updateCameraBGArtO(self, pos);
 		self->_background()->setPosition(posThing);
 	}
-	else GJBaseGameLayer_updateCameraBGArtO(self, pos);
+	else 
+	{
+		GJBaseGameLayer_updateCameraBGArtO(self, pos);
+	}
 }
 
 // area trigger in playtest
-FUNCTIONHOOK(GameObject*, LevelEditorLayer_createObject, LevelEditorLayer* self, int objectID, CCPoint pos, bool idk) {
+FUNCTIONHOOK(GameObject*, LevelEditorLayer_createObject, LevelEditorLayer* self, int objectID, CCPoint pos, bool idk)
+{
 	auto obj = LevelEditorLayer_createObjectO(self, objectID, pos, idk);
 
-	if(objectID < 3016 && objectID >= 3006) {
+	if(objectID < 3016 && objectID >= 3006)
+	{
 		self->generateEnterEasingBuffers((EnterEffectObject*)obj);
 	}
 
 	return obj;
 }
 
-FUNCTIONHOOK(void, PlayerObject_playDeathEffect2, PlayerObject* self) {
+FUNCTIONHOOK(void, PlayerObject_playDeathEffect2, PlayerObject* self)
+{
 	PlayerObject_playDeathEffect2O(self);
 
 	// shatter effect from sneak peek 1
@@ -1184,7 +1210,8 @@ FUNCTIONHOOK(void, PlayerObject_playDeathEffect2, PlayerObject* self) {
 
 	srand(time(nullptr)); // random seed
 	float randGenFloat = randFloat(4) + 2;
-	exp->createSprites(
+	exp->createSprites
+	(
 		4 + rand() % 4, //6,
 		4 + rand() % 4, //6,
 		randGenFloat / 2, //3,
@@ -1203,9 +1230,11 @@ FUNCTIONHOOK(void, PlayerObject_playDeathEffect2, PlayerObject* self) {
 
 
 
-FUNCTIONHOOK(const char*, GJSearchObject_getKey, void* self) {
+FUNCTIONHOOK(const char*, GJSearchObject_getKey, void* self)
+{
 	
-	const char* toAdd = CCString::createWithFormat(
+	const char* toAdd = CCString::createWithFormat
+	(
 		"_%i_%i", 
 		GLM->getBoolForKey("legendary_filter_custom"),
 		GLM->getBoolForKey("platform_filter_custom")
@@ -1216,7 +1245,8 @@ FUNCTIONHOOK(const char*, GJSearchObject_getKey, void* self) {
 #include "LevelSearchLayer.h"
 
 
-FUNCTIONHOOK(void, LevelSearchLayer_toggleTime, LevelSearchLayer* self, CCObject* sender) {
+FUNCTIONHOOK(void, LevelSearchLayer_toggleTime, LevelSearchLayer* self, CCObject* sender)
+{
 	LevelSearchLayer_toggleTimeO(self, sender);
 	int tag = sender->getTag();
 	//CCLog("tag: %d", tag);
@@ -1238,8 +1268,8 @@ FUNCTIONHOOK(void, LevelSearchLayer_toggleTimeNum, void* self, int filterNum, bo
 
 
 #include "SearchButton.h"
-FUNCTIONHOOK(bool, LevelSearchLayer_init, CCLayer* self) {
-	
+FUNCTIONHOOK(bool, LevelSearchLayer_init, CCLayer* self)
+{
 	if(!LevelSearchLayer_initO(self)) 
 		return false;
 		
@@ -1322,8 +1352,8 @@ FUNCTIONHOOK(bool, LevelSearchLayer_init, CCLayer* self) {
 	return true;			
 }
 
-FUNCTIONHOOK(void, LevelSearchLayer_onClearFilters, LevelSearchLayer* self) {
-	
+FUNCTIONHOOK(void, LevelSearchLayer_onClearFilters, LevelSearchLayer* self)
+{
 	LevelSearchLayer_onClearFiltersO(self);
 	
 	GLM->setBoolForKey(false, "platform_filter_custom");
@@ -1333,13 +1363,14 @@ FUNCTIONHOOK(void, LevelSearchLayer_onClearFilters, LevelSearchLayer* self) {
 }
 
 
-FUNCTIONHOOK(void, SupportLayer_onEmail, void* self, void* a2) {
-	
+FUNCTIONHOOK(void, SupportLayer_onEmail, void* self, void* a2)
+{
     FLAlertLayer::create( nullptr, "Version", version2str, "OK", nullptr, 250., false, 150. )->show( );
 }
 
 
-FUNCTIONHOOK(void*, GameLevelManager_getMainLevel, void* self, int levelID) {
+FUNCTIONHOOK(void*, GameLevelManager_getMainLevel, void* self, int levelID)
+{
 	//4000 - subzero
 	//3001 - the challenge
 	if(levelID > 4003)
@@ -1348,8 +1379,8 @@ FUNCTIONHOOK(void*, GameLevelManager_getMainLevel, void* self, int levelID) {
 	return GameLevelManager_getMainLevelO(self, levelID);
 }
 
-FUNCTIONHOOK(void*, LevelSelectLayer_scene, int levelID) {
-	
+FUNCTIONHOOK(void*, LevelSelectLayer_scene, int levelID)
+{
 	CCLog("before: %d", levelID);
 	if(levelID >= 4000)
 		levelID -= 4000;
@@ -1360,8 +1391,8 @@ FUNCTIONHOOK(void*, LevelSelectLayer_scene, int levelID) {
 	return LevelSelectLayer_sceneO(levelID);
 }
 
-FUNCTIONHOOK(bool, EditorUI_shouldDeleteObject, EditorUI* self, void* obj) {
-	
+FUNCTIONHOOK(bool, EditorUI_shouldDeleteObject, EditorUI* self, void* obj)
+{
 	int cl = MBO(int, self->_levelEditor(), 0x2C50); //current layer
 	int l1 = MBO(int, obj, 0x450); //editor layer 1
 	int l2 = MBO(int, obj, 0x454); //editor layer 2
