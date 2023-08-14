@@ -5,25 +5,13 @@ std::string getPassword()
 	return "";
 }
 
-#include <thread>
-#include <unistd.h>
-
 static inline bool (*init_trp)(MultiplayerLayer *self);
 bool MultiplayerLayerExt::init_hk()
 {
-	fmtlog("mp init");
+    this->schedule(schedule_selector(MultiplayerLayerExt::onUpdate), 0.01);
 
-	GJAccountManager* am = GJAccountManager::sharedState();
-	NetworkingManager::peer = static_cast<unsigned long>(MBO(int, am, 0x10C));
-	
-	std::thread t([] {
-		NetworkingManager::Connect(2123387681, getPassword);
-		while(true) {
-			NetworkingManager::Update();
-		}
-	});
-	t.detach();
-	
+	NetworkingManager::Connect(3760762687, getPassword);
+
     return true;
 }
 
