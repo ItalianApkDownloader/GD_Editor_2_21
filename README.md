@@ -33,4 +33,3 @@ Requires [NDK r16b](https://github.com/android/ndk/wiki/Unsupported-Downloads#r1
 - edit the smali of the APK to include the shared libraries and add them to lib\armeabi-v7a folder (delete all other architectures)
   
 - optional: edit apk name/package, change servers url.
-
